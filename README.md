@@ -13,13 +13,16 @@
 
 
 ## List of components categories :
+- `db`: (not a component)
+  - `BeanBagDBWeb.js` : The web version of BanBagDB that uses PouchDB to store data locally in the user's web browser with an option to sync with a CouchDB instance 
 - `core` : the core components for BeanBagDB. This include :
-  - BeanBagDBWeb.js : The web version of BanBagDB that uses PouchDB to store data locally in the user's web browser with an option to sync with a CouchDB instance 
   - The components defined here use a consistent input format : {data,options}. They components are "dumb" in the sense that they do perform any data fetching. They just display using what is provided to them 
+  - Naming convention : ActionType (Action=New,Search,Edit; Type=Doc,DocMeta,DocResults)
   - `NewDoc` : Displays a form to create a new document 
   - `SearchDocResults` : Displays the results of a document search query.
   - `SearchQuery`: Displays a form to generate a search query for the database.
   - `EditDoc`: Displays a form to edit a give document
+  - `EditDocMeta`  : Form to edit metadata of the document
   - `ViewDoc` : To view a document in  html 
 - `util` : this repo also contain "dumb" components that takes data displays something and returns some output. These are used in assembling other components 
   - `SchemaEditor` 

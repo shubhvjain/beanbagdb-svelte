@@ -1,3 +1,15 @@
-<h1>Welcome to your library project</h1>
-<p>Create your package using @sveltejs/package and preview/showcase your work with SvelteKit</p>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script>
+  import DBManager from "$lib/settings/DBManager.svelte";
+  let temp = {}
+</script>
+<div class="container">
+  <nav class="navbar navbar-light bg-light mb-2">
+    <span class="navbar-brand mb-0 h1">BBDB</span>
+  </nav>
+  <!-- {JSON.stringify(temp,null,2)} -->
+  <DBManager bbdb_action={(details)=>{
+    temp = details
+    console.log(details)
+  }} />
+</div>
+

@@ -1,5 +1,5 @@
 {
-	"name": "svelte",
+	"name": "beanbagdb-svelte",
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "vite dev",
@@ -37,5 +37,12 @@
 		"svelte": "^5.0.0",
 		"typescript": "^5.3.2",
 		"vite": "^6.0.0"
+	},
+	"dependencies": {
+		"@json-editor/json-editor": "^2.15.2",
+		"ajv": "^8.17.1",
+		"axios": "^1.7.9",
+		"beanbagdb": "^0.5.71",
+		"bootstrap": "^5.3.3"
 	}
 }
