@@ -1,58 +1,41 @@
-# create-svelte
+# BeanBagDB-svelte-components
 
-Everything you need to build a Svelte library, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+## Svelte related commands :
+- the repo was created using [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte)
+- Svelte [docs](https://svelte.dev/docs/kit/packaging)
+- for dev :
+  - clone the repo
+  - cd into repo 
+  - run : `npm install`
+  - to run dev : `npm run dev -- --open`
+- Everything inside `src/lib` is part of the library
+- to build library : `npm run package` , `npm run build` (for production) (this is just for testing locally, it is published to npm using github workflow)
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
 
-## Creating a project
+## List of components categories :
+- `core` : the core components for BeanBagDB. This include :
+  - BeanBagDBWeb.js : The web version of BanBagDB that uses PouchDB to store data locally in the user's web browser with an option to sync with a CouchDB instance 
+  - The components defined here use a consistent input format : {data,options}. They components are "dumb" in the sense that they do perform any data fetching. They just display using what is provided to them 
+  - `NewDoc` : Displays a form to create a new document 
+  - `SearchDocResults` : Displays the results of a document search query.
+  - `SearchQuery`: Displays a form to generate a search query for the database.
+  - `EditDoc`: Displays a form to edit a give document
+  - `ViewDoc` : To view a document in  html 
+- `util` : this repo also contain "dumb" components that takes data displays something and returns some output. These are used in assembling other components 
+  - `SchemaEditor` 
+  - `SettingEditor`
+  - `KeyEditor`
+  - `LogViewer`
+  - `TextEditor`
+  - `JSONEditor`
+- `page`
+- `library`
+- `setting`
+- `ui`
 
-If you're seeing this, you've probably already done this step. Congrats!
+The basic architecture of building User interfaces using basic components are defined in the figure below : 
 
-```bash
-# create a new project in the current directory
-npx sv create
+![BeanBagDB Architecture](./static/beanbagdb-svelte-arch.png)
 
-# create a new project in my-app
-npx sv create my-app
-```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
-
-## Building
-
-To build your library:
-
-```bash
-npm run package
-```
-
-To create a production version of your showcase app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```bash
-npm publish
-```
+Core, util components are the base components using which pages, apps and setting pages are built. UI component provide a logical interface for users to interact with their database 
