@@ -227,3 +227,17 @@ const make_db_ui_ready = async (db) => {
     console.log(up);
   } catch (error) {}
 };
+
+export const destroy_db = (dbname) => {
+  pdb = new window.PouchDB(dbname);
+
+  // Destroy the database
+  pdb
+    .destroy()
+    .then(() => {
+      console.log("Database deleted successfully.");
+    })
+    .catch((err) => {
+      console.error("Error deleting database:", err);
+    });
+}

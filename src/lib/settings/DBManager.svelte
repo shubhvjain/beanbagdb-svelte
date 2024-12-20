@@ -1,7 +1,7 @@
 <script>
   import "$lib/default.style.css";
   import { onMount } from "svelte";
-  import { emit } from "$lib/bbdb_actions.js";
+  import { emit_event,get_database_list,save_database_store} from "$lib/bbdb_actions.js";
   let { bbdb_action } = $props();
 
   let databases = $state([]);
@@ -11,11 +11,7 @@
 
   // Fetch database list from localStorage on load
   onMount(() => {
-    const storedData = localStorage.getItem("beanbag_web_db_list");
-    databases = storedData ? JSON.parse(storedData) : [];
-    if (!storedData) {
-      localStorage.setItem("beanbag_web_db_list", JSON.stringify(databases));
-    }
+    databases = get_database_list()
   });
 
   const sanitizeName = (name) => {
@@ -82,11 +78,7 @@
   };
 
   const saveToLocalStorage = (index = null) => {
-    if (index != null) {
-      databases[index]["editable"] = false;
-      databases[index]["showKey"] = false;
-    }
-    localStorage.setItem("beanbag_web_db_list", JSON.stringify(databases));
+    databases = save_database_store(databases)
   };
 
   const removeDatabase = (index) => {
