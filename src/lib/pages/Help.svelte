@@ -1,0 +1,1 @@
+This is the help page. where the full help thing is displayed 

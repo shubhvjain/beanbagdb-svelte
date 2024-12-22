@@ -73,6 +73,10 @@ const commands = {
     parse : async (instance,parts)=>{
       let criteria = {}
       criteria.type = parts.length==0?"info":parts.join("")
+      let valid_type = ["info","plugins","settings","keys","help","schemas","search"]
+      if(!valid_type.includes(criteria.type)){
+        throw new Error(`Invalid page type. Valid pages : ${valid_type.join(",")}`)
+      }
       return criteria
     },
     run : async (instance,command)=>{
@@ -101,19 +105,50 @@ const commands = {
         // todo later not implemented yet 
       }else if(c_type=="settings"){
         // to show the list of all setting docs available 
-        let search = instance.search({"selector":{"schema":"system_settings"}})
-        return {docs:search.docs}
+        let search = await instance.search({"selector":{"schema":"system_setting"}})
+        let setting_docs = []
+        console.log(search)
+        search.docs.forEach(itm=>{
+          setting_docs.push({name:itm.data.name,link:itm.meta.link,value:JSON.stringify(itm.data.value,null,1)})
+        })
+        return {docs:setting_docs}
       }
       else if(c_type=="keys"){
         // to show the list of all keys present in the db 
         let search = instance.search({"selector":{"schema":"system_keys"}})
-        return {docs:search.docs}
+        let keys = []
+        search.docs.forEach(itm=>{
+          keys.push({name:item.data.name,note:itm.data.note,link:itm.meta.link})
+        })
+        return {docs:keys}
+      }
+      else if(c_type=="schemas"){
+        // to show the list of all keys present in the db 
+        let data = {}
+        try {
+          let docs = await instance.get("schema_list") 
+          data.docs = docs
+          let schema_schema = docs.find(item=>{return item.name=="schema"})
+          console.log(schema_schema)
+          data.schema = schema_schema
+        } catch (error) {
+          console.log(error)
+        }
+        return data
       }
       else{
         throw new Error("Invalid tool command")
       }
     },
   },
+  home:{
+    parse:async(instance,parts)=>{
+      return {}
+    },
+    run:async(instance,command)=>{
+      return {}
+    }
+  }
 };
 
 const parse = async (instance, text) => {

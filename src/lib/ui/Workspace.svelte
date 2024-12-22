@@ -1,33 +1,40 @@
 <script>
   import "$lib/default.style.css";
-  import "$lib/ui/workspace.css"
-  import { BeanBagDB} from "beanbagdb";
+  import "$lib/ui/workspace.css";
+  import { BeanBagDB } from "beanbagdb";
   import { onMount } from "svelte";
-  import { get_new_DB,destroy_db } from "$lib/db/beanbagdbweb.js";
-  import {text_command} from "$lib/db/textcommand.js"
-  import DBInfo from "$lib/pages/DBInfo.svelte"
-  let  {db} = $props()
-  // export let db; 
+  import { get_new_DB, destroy_db } from "$lib/db/beanbagdbweb.js";
+  import { text_command } from "$lib/db/textcommand.js";
+
+  // pages to display
+  import Document from "$lib/pages/Document.svelte";
+  import NewDocument from "$lib/pages/NewDocument.svelte";
+  import WorkSpaceErrorPage from "./WorkSpaceErrorPage.svelte";
+  import WorkSpaceHome from "./WorkSpaceHome.svelte";
+  import DbPage from "./DBPage.svelte";
+
+  let { db } = $props();
+  // export let db;
 
   let BBDB;
   let Loaded = $state(false);
   let Error = $state();
-  
+
   let workspace = $state({
     theme: "dark",
-    recent:[]
+    recent: [],
   });
   let pages = $state([]);
   let searchTerm = $state("page/info");
 
-  async function make_db_ready(){
+  async function make_db_ready() {
     console.log(db);
     await BBDB.ready();
-    await BBDB.load_plugin("txtcmd",text_command)
-    console.log("Plugin loaded")
-    // load workspace settings 
+    await BBDB.load_plugin("txtcmd", text_command);
+    console.log("Plugin loaded");
+    // load workspace settings
   }
-  
+
   onMount(async () => {
     // destroy_db("sample")
     if (!BBDB) {
@@ -36,7 +43,7 @@
         Error = "Error : No details about the database were provided";
       }
       try {
-        BBDB = get_new_DB(db)
+        BBDB = get_new_DB(db);
         Loaded = true;
       } catch (error) {
         console.log(error);
@@ -53,12 +60,26 @@
     if (BBDB.active) {
       console.log("ready...");
     } else {
-      await make_db_ready()
-      
+      await make_db_ready();
+
       //searchPage("dbsettings")
     }
 
     if (pages.length == 0) {
+      // ["info","plugins","settings","keys","help","schemas","search"]
+      let test = [
+        "home",
+        "page/info",
+        "page/help",
+        "page/search",
+      //  "page/plugins",
+        "page/schemas",
+        "page/keys",
+        "page/settings",
+      ];
+      test.forEach((itm) => {
+        runTextCommand(itm);
+      });
       // new workspace, open the dash board automatically
       //searchPage("find/search")
       //searchPage("help/search")
@@ -70,46 +91,67 @@
     workspace.theme = workspace.theme === "light" ? "dark" : "light";
   }
 
-  const runTextCommand = async (text)=>{
-    console.log(text)
-    let command = await BBDB.plugins["txtcmd"].parse(text)
-    console.log(command)
-    if(command.valid){
-      console.log(pages)
-      let search = pages.find(item=>item.name==command.name&&item.criteria.type==command.criteria.type)
-      console.log(search)
-      if(!search){
-        console.log("new page to open")
-        pages.push({...command,id: Math.round(Math.random()*10000),size:"medium"})
+  const runTextCommand = async (text) => {
+    let command = await BBDB.plugins["txtcmd"].parse(text);
+    if (command.valid) {
+      console.log(pages);
+      let search = pages.find(
+        (item) =>
+          item.name == command.name &&
+          item.criteria.type == command.criteria.type
+      );
+      console.log(search);
+      if (!search) {
+        console.log("new page to open");
+        pages.push({
+          ...command,
+          id: Math.round(Math.random() * 10000),
+          size: "medium",
+        });
 
-        console.log(pages)
-      }else{
-        console.log("page already exists")
+        console.log(pages);
+      } else {
+        console.log("page already exists");
+        focusOnItem(search.id);
       }
+    } else {
+      console.log("Error in command. Show it ");
+      pushErrorPage("command404", `${text}`);
+    }
+  };
 
-    }else{
-      console.log("Error in command. Show it ")
+  function pushErrorPage(code, message) {
+    let errorPage = {
+      id: Math.round(Math.random() * 10000),
+      size: "small",
+      name: "error",
+      criteria: {},
+      code: code,
+      message: message,
+    };
+    pages.push(errorPage);
+  }
+
+  function focusOnItem(id) {
+    if (pages.length > 2) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", inline: "center" });
+      }
     }
   }
 
-
-
-
-    // Method to close a page
-    function closePage(pageId) {
-    pages = pages.filter(page => page.id !== pageId);
+  // Method to close a page
+  function closePage(pageId) {
+    pages = pages.filter((page) => page.id !== pageId);
   }
-
-
 
   function changePageSize(page, newSize) {
-    page.size = newSize;  // Update the size property
+    page.size = newSize; // Update the size property
   }
 
-
-
-  function handleOpenLinkRequests(data){
-    searchPage(data)
+  function handleOpenLinkRequests(data) {
+    //this is the handler for opening requests coming from child components
   }
 </script>
 
@@ -126,7 +168,6 @@
             bind:value={searchTerm}
             placeholder="Search or open new page..."
             aria-label="Search term"
-
             type="text"
           />
           <button
@@ -174,7 +215,7 @@
     <!-- Pages Container -->
     <div class="pages-container">
       {#each pages as page}
-        <div class="page {page.size}">
+        <div class="page {page.size}" id={page.id}>
           <div class="d-flex justify-content-between align-items-center">
             <span class="page-title"></span>
             <div class="d-flex align-items-center">
@@ -210,8 +251,16 @@
               >
             </div>
           </div>
-          {#if page.name=="page"&&page.criteria.type=="info"}
-            <DBInfo BBDB={BBDB}/>
+
+          {#if page.name == "page"}
+            <DbPage {BBDB} {page} />
+          {/if}
+        
+          {#if page.name == "error"}
+            <WorkSpaceErrorPage details={page} />
+          {/if}
+          {#if page.name == "home"}
+            <WorkSpaceHome {BBDB} />
           {/if}
         </div>
       {/each}
