@@ -58,3 +58,33 @@ export const emit_bbdb_event = (name,data)=>{
   }
   return {name,data}
 }
+
+/// utils
+export const copy_to_clipboard = (text) => {
+  navigator.clipboard.writeText(text).then(() => {
+    
+  });
+};
+
+export const format_timestamp =  (timestamp) =>
+  new Date(timestamp * 1000).toLocaleString();
+
+
+export const remove_some_keys = (obj, keysToRemove)=>{
+  // Create a shallow copy of the original object
+  const newObj = { ...obj };
+  // Remove the specified keys
+  keysToRemove.forEach(key => delete newObj[key]);
+  return newObj;
+}
+
+
+export const stringify_object_fields = (obj)=>{
+  const newObj = { ...obj }; 
+  for (const key in newObj) {
+    if (typeof newObj[key] === 'object' && newObj[key] !== null) {
+      newObj[key] = JSON.stringify(newObj[key]);
+    }
+  }
+  return newObj;
+}

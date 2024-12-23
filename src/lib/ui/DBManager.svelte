@@ -1,3 +1,4 @@
+<!-- this is the UI to display the list of available BBDB instances and manage them -->
 <script>
   import "$lib/default.style.css";
   import { onMount } from "svelte";

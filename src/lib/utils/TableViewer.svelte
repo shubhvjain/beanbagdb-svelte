@@ -1,5 +1,5 @@
 <script>
-  let {data,labels,bbdb_action} = $props();
+  let {data=[],labels,bbdb_action} = $props();
   
   // Determine which columns to display
   const columns = Object.keys(labels).length > 0 ? Object.keys(labels) : (data[0] ? Object.keys(data[0]) : []);

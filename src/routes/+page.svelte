@@ -1,5 +1,5 @@
 <script>
-  import DBManager from "$lib/settings/DBManager.svelte";
+  import DBManager from "$lib/ui/DBManager.svelte";
   let temp = {}
 </script>
 <div class="container">

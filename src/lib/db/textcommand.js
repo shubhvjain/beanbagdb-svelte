@@ -107,7 +107,7 @@ const commands = {
         // to show the list of all setting docs available 
         let search = await instance.search({"selector":{"schema":"system_setting"}})
         let setting_docs = []
-        console.log(search)
+        //console.log(search)
         search.docs.forEach(itm=>{
           setting_docs.push({name:itm.data.name,link:itm.meta.link,value:JSON.stringify(itm.data.value,null,1)})
         })
@@ -129,7 +129,7 @@ const commands = {
           let docs = await instance.get("schema_list") 
           data.docs = docs
           let schema_schema = docs.find(item=>{return item.name=="schema"})
-          console.log(schema_schema)
+          //console.log(schema_schema)
           data.schema = schema_schema
         } catch (error) {
           console.log(error)
@@ -220,7 +220,7 @@ const run = async (instance, command) => {
 
 const parse_and_run = async(instance, text) => {
   let command = await parse(instance,text)
-  console.log(command)
+  //console.log(command)
   let command_result = await run(instance,command)
   return command_result
 }

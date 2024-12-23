@@ -7,11 +7,13 @@
   import { text_command } from "$lib/db/textcommand.js";
 
   // pages to display
-  import Document from "$lib/pages/Document.svelte";
-  import NewDocument from "$lib/pages/NewDocument.svelte";
   import WorkSpaceErrorPage from "./WorkSpaceErrorPage.svelte";
   import WorkSpaceHome from "./WorkSpaceHome.svelte";
   import DbPage from "../pages/DBPage.svelte";
+  import NewDocument from "$lib/pages/NewDocument.svelte";
+  import Document from "$lib/pages/Document.svelte";
+
+  // import DbOpen from "$lib/pages/DBOpen.svelte";
 
   let { db } = $props();
   // export let db;
@@ -25,7 +27,7 @@
     recent: [],
   });
   let pages = $state([]);
-  let searchTerm = $state("page/info");
+  let searchTerm = $state("");
 
   async function make_db_ready() {
     console.log(db);
@@ -68,13 +70,13 @@
     if (pages.length == 0) {
       // ["info","plugins","settings","keys","help","schemas","search"]
       let test = [
-        "home",
-        "page/info",
-        "page/help",
+      //  "home",
+       // "page/info",
+       // "page/help",
         "page/search",
       //  "page/plugins",
         "page/schemas",
-        "page/keys",
+       // "page/keys",
         "page/settings",
       ];
       test.forEach((itm) => {
@@ -94,22 +96,32 @@
   const runTextCommand = async (text) => {
     let command = await BBDB.plugins["txtcmd"].parse(text);
     if (command.valid) {
-      console.log(pages);
-      let search = pages.find(
+      let search
+      if(command.name=="open"){
+        search =  pages.find(
+        (item) =>
+          item.name == command.name &&
+          item.criteria.type == command.criteria.type && 
+          item.criteria.link == command.criteria.link
+      );
+      }else {
+        search =  pages.find(
         (item) =>
           item.name == command.name &&
           item.criteria.type == command.criteria.type
       );
-      console.log(search);
+      }
+      
       if (!search) {
         console.log("new page to open");
+        let new_id = Math.round(Math.random() * 10000)
         pages.push({
           ...command,
-          id: Math.round(Math.random() * 10000),
+          id:new_id ,
           size: "medium",
         });
 
-        console.log(pages);
+        focusOnItem(new_id)
       } else {
         console.log("page already exists");
         focusOnItem(search.id);
@@ -150,8 +162,11 @@
     page.size = newSize; // Update the size property
   }
 
-  function handleOpenLinkRequests(data) {
+  function handleBBDBActions(data) {
     //this is the handler for opening requests coming from child components
+    if(data.name=="textcmd"){
+      runTextCommand(data.data.text)
+    }
   }
 </script>
 
@@ -253,7 +268,15 @@
           </div>
 
           {#if page.name == "page"}
-            <DbPage {BBDB} {page} />
+            <DbPage {BBDB} {page} page_bbdb_action={handleBBDBActions} />
+          {/if}
+
+          {#if page.name == "open"}
+            <Document {BBDB} {page} page_bbdb_action={handleBBDBActions}/>
+          {/if}
+
+          {#if page.name == "new"}
+            <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions}/>
           {/if}
         
           {#if page.name == "error"}

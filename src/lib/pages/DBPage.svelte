@@ -107,12 +107,8 @@
   onMount(async () => {
     //console.log("here");
     //console.log(page);
-    let dt = await BBDB.plugins["txtcmd"].parse_and_run(
-      `page/${page.criteria.type}`
-    );
+    let dt = await BBDB.plugins["txtcmd"].parse_and_run(`page/${page.criteria.type}`);
     data = dt["result"];
-    console.log("=====")
-    console.log(data);
     loaded = true;
   });
 </script>

@@ -1,5 +1,5 @@
 <script>
-  let { data ,title,labels} = $props();
+  let { data ,title,labels={}} = $props();
     // Initialize tooltips
   import { onMount } from "svelte";
 
