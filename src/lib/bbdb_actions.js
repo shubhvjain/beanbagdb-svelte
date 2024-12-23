@@ -43,14 +43,18 @@ export const save_database_store = (dbList) => {
   return dbList;
 };
 
+// to hand bbdb_action event
 
-///////////////// Methods for pages/ settings
-
-export const emit_event = (name = "ping", data = {}) => {
-  return { name, data };
-};
-
-export const emit_open_event = (link) => {
-  return emit_event("open_link", { link: link });
-};
-
+export const emit_bbdb_event = (name,data)=>{
+  // valid types : textcmd -> data.text will be the command
+  let valid_types = ["textcmd","selectedRecords",""]
+  if(!valid_types.includes(name)){
+    throw new Error("Invalid bbdb_action name")
+  }
+  if(name=="textcmd"){
+    if(!data.text){
+      throw new Error("textcmd requires data.text")
+    }
+  }
+  return {name,data}
+}

@@ -1,19 +1,27 @@
 <script>
   // this component is used to show all pages for the "page" text command. this can be used in any ui interface
-  let { BBDB, page } = $props();
+  let { BBDB, page, page_bbdb_action } = $props();
   import "$lib/default.style.css";
   import { onMount } from "svelte";
-  import { emit_event } from "$lib/bbdb_actions.js";
+  // import {emit_bbdb_event} from "$lib/bbdb_actions.js"
 
   import ObjectViewer from "$lib/utils/ObjectViewer.svelte";
   import LogViewer from "$lib/utils/LogViewer.svelte";
   import TableViewer from "$lib/utils/TableViewer.svelte";
 
   import Help from "$lib/pages/Help.svelte";
-  import SearchPage from "$lib/pages/SearchPage.svelte";
+  import SearchPage from "$lib/pages/DBSearch.svelte";
 
   let loaded = $state(false);
   let data = $state();
+
+  function emit_bbdb_to_parent(data){
+    if(page_bbdb_action){
+      page_bbdb_action(data)
+    }else{
+      console.log(data)
+    }
+  }
 
   const labels = {
     info_obj: {
@@ -127,7 +135,7 @@
         {/if}
         {#if page.criteria.type == "search"}
           <h3>{titles[page.criteria.type]}</h3>
-          <SearchPage {BBDB} />
+          <SearchPage {BBDB} page_bbdb_action={emit_bbdb_to_parent} />
         {/if}
 
         {#if page.criteria.type == "plugins"}
@@ -135,16 +143,16 @@
         {/if}
         {#if page.criteria.type == "keys"}
           <h3>{titles[page.criteria.type]}</h3>
-          <TableViewer data={data.docs} labels={labels.key_table} />
+          <TableViewer data={data.docs} labels={labels.key_table} bbdb_action={emit_bbdb_to_parent}  />
         {/if}
         {#if page.criteria.type == "settings"}
           <h3>{titles[page.criteria.type]}</h3>
-          <TableViewer data={data.docs} labels={labels.setting_table} />
+          <TableViewer data={data.docs} labels={labels.setting_table} bbdb_action={emit_bbdb_to_parent}   />
         {/if}
 
         {#if page.criteria.type == "schemas"}
           <h3>{titles[page.criteria.type]}</h3>
-          <TableViewer data={data.docs} labels={labels.schema_table}/>
+          <TableViewer data={data.docs} labels={labels.schema_table} bbdb_action={emit_bbdb_to_parent}  />
         {/if}
       </div>
     </div>
