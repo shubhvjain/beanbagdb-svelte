@@ -11,7 +11,7 @@
   import NewDocument from "$lib/pages/NewDocument.svelte";
   import WorkSpaceErrorPage from "./WorkSpaceErrorPage.svelte";
   import WorkSpaceHome from "./WorkSpaceHome.svelte";
-  import DbPage from "./DBPage.svelte";
+  import DbPage from "../pages/DBPage.svelte";
 
   let { db } = $props();
   // export let db;
@@ -21,7 +21,7 @@
   let Error = $state();
 
   let workspace = $state({
-    theme: "dark",
+    theme: "light",
     recent: [],
   });
   let pages = $state([]);

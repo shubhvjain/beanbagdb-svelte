@@ -1,25 +1,23 @@
 <script>
-   export let data = []; // Array of JSON objects
-  export let labels = {}; // Object with keys as column names, and values with title and info
-
+  let {data,labels,bbdb_action} = $props();
+  
   // Determine which columns to display
   const columns = Object.keys(labels).length > 0 ? Object.keys(labels) : (data[0] ? Object.keys(data[0]) : []);
-  
+  import {emit_bbdb_event} from "$lib/bbdb_actions.js"
+
 
   import { onMount } from 'svelte';
 
   onMount(() => {
-    // Dynamically import Bootstrap for environments without global `bootstrap` variable
-    import("bootstrap").then(({ Tooltip }) => {
-      const tooltipTriggerList = [].slice.call(
-        document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      );
-      tooltipTriggerList.map((tooltipTriggerEl) => new Tooltip(tooltipTriggerEl));
-    });
+  
   });
 
   function handleLinkClick(link) {
-    console.log('open_link', { link });
+    if(bbdb_action){
+      bbdb_action(emit_bbdb_event("textcmd",{text:`open/link/${link}`}))
+    }else{
+      console.log(link)
+    }
     
   }
 </script>
@@ -66,7 +64,7 @@
           {#each columns as column}
             <td>
               {#if column === 'link'}
-                <a href="#" on:click|preventDefault={() => handleLinkClick(row[column])}>{row[column]}</a>
+                <a href="#" onclick={() => handleLinkClick(row[column])}>{row[column]}</a>
               {:else}
                 {row[column] || ''}
               {/if}

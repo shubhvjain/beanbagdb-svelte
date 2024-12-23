@@ -1,7 +1,7 @@
 <script>
   import "$lib/default.style.css";
   import { onMount } from "svelte";
-  import { emit_event,get_database_list,save_database_store} from "$lib/bbdb_actions.js";
+  import { get_database_list,save_database_store} from "$lib/bbdb_actions.js";
   let { bbdb_action } = $props();
 
   let databases = $state([]);
