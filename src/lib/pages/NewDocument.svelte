@@ -11,6 +11,8 @@
 
   let schemas = $state([])
   let selected_schema = $state(null)
+
+  let recent_links = $state([])
   async function load_schemas(page1) {
     console.log(page1)
     let doc = await BBDB.plugins.txtcmd.run(page1);
@@ -57,6 +59,7 @@
       try {
         let update1 = await BBDB.create(action.data.schema,action.data.data) 
         console.log(update1)     
+        recent_links.push({link:update1.meta.link,type:update1.schema})
         return {added:true,error:null}
       } catch (error) {
         console.log(error)
@@ -67,6 +70,10 @@
         return await page_bbdb_action(action);
       }
     }
+  }
+
+  function emit_open_page(link){
+    page_bbdb_action(emit_bbdb_event("textcmd",{text:`open/link/${link}`}))
   }
 
   async function load_schema_new(schema_name){
@@ -97,11 +104,20 @@
     {#if selected_schema}
     <div class="row">
       <div class="col-lg-12">
-
         <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action}/>
-
       </div>
     </div>  
+    {#if recent_links.length>0 }
+    <div class="row">
+      <div class="col-lg-12">
+        Recently created docs : 
+        {#each recent_links as rec }
+          <button class="btn btn-sm btn-link m-1" onclick={()=>emit_open_page(rec.link)}> {rec.link} ({rec.type}) </button>  
+        {/each}
+      </div>
+    </div>  
+    {/if}
+
     {/if}
     
   </div>

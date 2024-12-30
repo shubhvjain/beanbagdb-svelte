@@ -52,9 +52,6 @@
 
 {/if}
 
-<hr>
-{JSON.stringify(new_data,null,1)}
-{new_data_validity}
 <br>
 {#if new_data_validity}
 

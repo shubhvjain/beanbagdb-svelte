@@ -3,7 +3,11 @@
   import "$lib/ui/workspace.css";
   import { BeanBagDB } from "beanbagdb";
   import { onMount } from "svelte";
-  import { get_new_DB, destroy_db , sync_db_once} from "$lib/db/beanbagdbweb.js";
+  import {
+    get_new_DB,
+    destroy_db,
+    sync_db_once,
+  } from "$lib/db/beanbagdbweb.js";
   import { text_command } from "$lib/db/textcommand.js";
 
   // pages to display
@@ -18,7 +22,7 @@
   let { db } = $props();
   // export let db;
 
-  let BBDB  = $state(null);
+  let BBDB = $state(null);
   let Loaded = $state(false);
   let Error = $state();
 
@@ -37,7 +41,7 @@
     // load workspace settings
   }
 
-  let ui_setting_name = "ui_workspace"
+  let ui_setting_name = "ui_workspace";
 
   async function get_setting_doc() {
     let default_workspace_settings = {
@@ -45,30 +49,38 @@
       live_sync: false,
       recent: [],
     };
-    let setting 
+    let setting;
     try {
-      setting = await BBDB.get("system_setting",{"name":ui_setting_name},false)
+      setting = await BBDB.get(
+        "system_setting",
+        { name: ui_setting_name },
+        false
+      );
     } catch (error) {
-      setting  = await BBDB.modify_setting("ui_workspace",default_workspace_settings,"append")
+      setting = await BBDB.modify_setting(
+        "ui_workspace",
+        default_workspace_settings,
+        "append"
+      );
     }
-    return setting?.data?.value||default_workspace_settings
+    return setting?.data?.value || default_workspace_settings;
   }
 
   async function update_ws_setting(key, value) {
     let data = await BBDB.modify_setting(
       "ui_workspace",
-      {key:value},
+      { key: value },
       "append"
     );
   }
 
-  async function sync_pouchdb(){
-    console.log(db)
+  async function sync_pouchdb() {
+    console.log(db);
     try {
-      let result = await sync_db_once(db)  
-      console.log(result)
+      let result = await sync_db_once(db);
+      console.log(result);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
@@ -98,33 +110,33 @@
       console.log("ready...");
     } else {
       try {
-        await make_db_ready();  
+        await make_db_ready();
       } catch (error1) {
-        console.log(error1)
+        console.log(error1);
       }
-      
 
       //searchPage("dbsettings")
 
       try {
-        let s = await get_setting_doc()
-        console.log(s)
+        let s = await get_setting_doc();
+        console.log(s);
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     }
 
     if (pages.length == 0) {
       // ["info","plugins","settings","keys","help","schemas","search"]
       let test = [
-        //  "home",
+        "home",
         // "page/info",
         // "page/help",
-        "page/search",
+        //"page/search",
         //  "page/plugins",
-        "page/schemas",
+        //"page/schemas",
         // "page/keys",
-        "page/settings",
+        //"page/settings",
+        // "new"
       ];
       test.forEach((itm) => {
         runTextCommand(itm);
@@ -143,36 +155,88 @@
   const runTextCommand = async (text) => {
     let command = await BBDB.plugins["txtcmd"].parse(text);
     if (command.valid) {
-      let search;
-      if (command.name == "open") {
-        search = pages.find(
-          (item) =>
-            item.name == command.name &&
-            item.criteria.type == command.criteria.type &&
-            item.criteria.link == command.criteria.link
-        );
-      } else {
-        search = pages.find(
-          (item) =>
-            item.name == command.name &&
-            item.criteria.type == command.criteria.type
-        );
-      }
+      let process_commands = {
+        page: (cmd) => {
+          let search = pages.find(
+            (item) =>
+              item.name == cmd.name &&
+              item.criteria.type == cmd.criteria.type &&
+              item.criteria.link == cmd.criteria.link
+          );
 
-      if (!search) {
-        console.log("new page to open");
-        let new_id = Math.round(Math.random() * 10000);
-        pages.push({
-          ...command,
-          id: new_id,
-          size: "medium",
-        });
+          if (!search) {
+            let new_id = Math.round(Math.random() * 10000);
+            pages.push({
+              ...cmd,
+              id: new_id,
+              size: "medium",
+            });
+            setTimeout(() => {
+              focusOnItem(new_id);
+            }, 10);
+          } else {
+            console.log("page already exists");
+            focusOnItem(search.id);
+          }
+        },
+        open: (cmd) => {
+          let search = pages.find(
+            (item) =>
+              item.name == cmd.name &&
+              item.criteria.type == cmd.criteria.type &&
+              item.criteria.link == cmd.criteria.link
+          );
 
-        focusOnItem(new_id);
-      } else {
-        console.log("page already exists");
-        focusOnItem(search.id);
-      }
+          if (!search) {
+            let new_id = Math.round(Math.random() * 10000);
+            pages.push({
+              ...cmd,
+              id: new_id,
+              size: "medium",
+            });
+            setTimeout(() => {
+              focusOnItem(new_id);
+            }, 10);
+          } else {
+            console.log("page already exists");
+            focusOnItem(search.id);
+          }
+        },
+        new: (cmd) => {
+          let new_id = Math.round(Math.random() * 10000);
+          pages.push({
+              ...cmd,
+              id: new_id,
+              size:"small",
+            });
+            setTimeout(() => {
+              focusOnItem(new_id);
+            }, 10);
+        },
+        home: (cmd) => {
+          let search = pages.find(
+            (item) =>
+              item.name == cmd.name 
+          );
+
+          if (!search) {
+            let new_id = Math.round(Math.random() * 10000);
+            pages.push({
+              ...cmd,
+              id: new_id,
+              size: "small",
+            });
+            setTimeout(() => {
+              focusOnItem(new_id);
+            }, 10);
+          } else {
+            console.log("page already exists");
+            focusOnItem(search.id);
+          }
+        },
+      };
+      console.log(command)
+      process_commands[command.name](command)
     } else {
       console.log("Error in command. Show it ");
       pushErrorPage("command404", `${text}`);
@@ -269,24 +333,33 @@
               <path
                 d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07M8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3M5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"
               />
-            </svg></button>
+            </svg></button
+          >
 
-            
-
-            <button
+          <button
             onclick={sync_pouchdb}
             type="button"
             class="btn btn-sm btn-outline-secondary b"
             aria-label="Sync data"
             title="Sync data"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-arrow-repeat"
+              viewBox="0 0 16 16"
             >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
-              <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
-              <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+              <path
+                d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"
+              />
+              <path
+                fill-rule="evenodd"
+                d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"
+              />
             </svg>
           </button>
-
-
         </div>
       </div>
     </nav>
@@ -346,7 +419,7 @@
             <WorkSpaceErrorPage details={page} />
           {/if}
           {#if page.name == "home"}
-            <WorkSpaceHome {BBDB} />
+            <WorkSpaceHome {BBDB} page_bbdb_action={handleBBDBActions} />
           {/if}
         </div>
       {/each}

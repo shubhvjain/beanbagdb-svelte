@@ -68,30 +68,13 @@
 
 {#if loaded}
   {#if mode === "view"}
-    {#if doc.schema == "system_log"}
-    <ObjectViewer2 data={doc.data} schema={schema.schema}/>
-    {/if}
-
-    {#if doc.schema == "system_key"}
-      Schema key
-    {/if}
-
-    {#if doc.schema == "system_setting"}
-    <ObjectViewer2 data={doc.data} schema={schema.schema}/>
-    {/if}
-
-    {#if doc.schema == "system_edge_constraint"}
-      Schema setting
-    {/if}
-
-    {#if doc.schema == "system_edge"}
-      Schema setting
-    {/if}
-
     {#if doc.schema == "system_media"}
-      Schema setting
+      <img src={doc.data.imageBase64}  class="img-fluid" alt="">
+      <p><i>Caption : </i>{doc.data.caption}</p>
+      <p><i>Source : </i>{doc.data.source}</p>
+    {:else} 
+    <ObjectViewer2 data={doc.data} schema={schema.schema}/>
     {/if}
-
     {#if editable && editable_system_docs.includes(doc.schema)}
       <button
         class="btn btn-primary mt-3"

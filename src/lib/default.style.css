@@ -1,5 +1,5 @@
 @import url("bootstrap/dist/css/bootstrap.min.css");
-
+@import url("bootstrap-icons/font/bootstrap-icons.min.css");
 
 details {
   border: var(--bs-card-border-width) solid var(--bs-card-border-color);
