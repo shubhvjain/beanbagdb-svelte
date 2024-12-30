@@ -10,9 +10,14 @@
   let documentData = $state({});
 
   async function load_doc(page1) {
-    let doc = await BBDB.plugins.txtcmd.run(page1);
+    try {
+      let doc = await BBDB.plugins.txtcmd.run(page1);
     console.log(doc);
-    return doc.result;
+    return doc ;   
+    } catch (error) {
+      throw error
+    }
+   
   }
 
 
@@ -23,23 +28,43 @@
           "Unable to load page. Component not configured properly"
         );
       }
-      console.log(page);
-      documentData = await load_doc(page);
-      console.log("111");
-      loaded = true;
+      // console.log(page);
+      let fetch_data =  await load_doc(page);
+      if(fetch_data.valid){
+        documentData = fetch_data.result
+        loaded = true;
+      }else{
+        loaded = false;
+        error = fetch_data.errors.join(",")
+      }
+      
     } catch (err) {
       error = err.message;
+      loaded =false
     } finally {
       loading = false;
     }
   });
 
-  function on_bbdb_action(data) {
-    if (page_bbdb_action) {
-      page_bbdb_action(data);
-    } else {
-      console.log(data);
+  async function on_bbdb_action(action) {
+    console.log(action)
+    if(action.name=="edit_partial_meta"){
+      // edit a doc
+      console.log("saving changes")
+      try {
+        let update1 = await BBDB.update({link:action.data.link},  action.data.update ,action.data.rev) 
+        console.log(update1)     
+        return {update:true,error:null}
+      } catch (error) {
+        console.log(error)
+        return {update:false,error:error}
+      }
+    }else{
+      if (page_bbdb_action) {
+        return await page_bbdb_action(action);
+      }
     }
+    
   }
 </script>
 
@@ -47,10 +72,10 @@
   {#if loading}
     <p>Loading document...</p>
   {:else if error}
-    <p class="text-danger">Error: {error}</p>
+    <p class="text-danger">{error}</p>
   {:else if loaded && documentData}
   <div class="container-fluid">
-    <Doc doc={documentData.doc} schema={documentData.schema} />
+    <Doc doc={documentData.doc} schema={documentData.schema} bbdb_action={on_bbdb_action} />
   </div>
    
   {/if}

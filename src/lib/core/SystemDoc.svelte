@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import ObjectViewer2 from "$lib/utils/ObjectViewer2.svelte";
   import {
     copy_to_clipboard,
     format_timestamp,
@@ -7,7 +8,6 @@
     stringify_object_fields
   } from "$lib/bbdb_actions.js";
   import ObjectViewer from "$lib/utils/ObjectViewer.svelte";  
-  import { str, stringify } from "ajv";
   let { doc, schema, editable = false, edit_mode = "internal" } = $props();
   let loaded = $state(false);
   let mode = $state("view");
@@ -69,27 +69,7 @@
 {#if loaded}
   {#if mode === "view"}
     {#if doc.schema == "system_log"}
-      
-    <div class="card">
-      <div class="card-header">
-        <div class="d-flex">
-          <div class=" p-2 flex-grow-1"><code>{doc.data.app}</code>  </div>
-          <div class="p-2">
-            {format_timestamp(doc.data.time)}
-          </div>
-        </div>
-         
-      </div>
-      <div class="card-body">
-          <p>{doc.data.text}</p>
-          
-          <p>Details:</p>
-          <pre>{JSON.stringify(doc.data.data,null,2)}
-          </pre>
-       
-      </div>
-    </div>
-
+    <ObjectViewer2 data={doc.data} schema={schema.schema}/>
     {/if}
 
     {#if doc.schema == "system_key"}
@@ -97,8 +77,7 @@
     {/if}
 
     {#if doc.schema == "system_setting"}
-    <ObjectViewer title="Setting details" data={stringify_object_fields(doc.data)}/>
-
+    <ObjectViewer2 data={doc.data} schema={schema.schema}/>
     {/if}
 
     {#if doc.schema == "system_edge_constraint"}

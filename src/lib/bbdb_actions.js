@@ -47,13 +47,17 @@ export const save_database_store = (dbList) => {
 
 export const emit_bbdb_event = (name,data)=>{
   // valid types : textcmd -> data.text will be the command
-  let valid_types = ["textcmd","selectedRecords",""]
+  let valid_types = ["textcmd","selectedRecords","edit_partial_meta"]
   if(!valid_types.includes(name)){
     throw new Error("Invalid bbdb_action name")
   }
   if(name=="textcmd"){
     if(!data.text){
       throw new Error("textcmd requires data.text")
+    }
+  }else if (name=="edit_partial_meta"){
+    if(!data.link){
+      throw new Error("edit_partial requires data.link")
     }
   }
   return {name,data}
@@ -87,4 +91,24 @@ export const stringify_object_fields = (obj)=>{
     }
   }
   return newObj;
+}
+
+
+export const download_data = (jsonObject,fileName)=>{
+      // Convert the JSON object to a string
+      const jsonString = JSON.stringify(jsonObject, null, 2);
+    
+      // Create a Blob object with the JSON data
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      
+      // Create a temporary anchor element
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      
+      // Trigger the download by clicking the anchor
+      link.click();
+      
+      // Clean up the URL object
+      URL.revokeObjectURL(link.href);
 }

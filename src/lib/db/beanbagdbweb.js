@@ -241,3 +241,26 @@ export const destroy_db = (dbname) => {
       console.error("Error deleting database:", err);
     });
 }
+
+
+export const sync_db_once = async (db)=>{
+  if(!db.sync_url){
+    throw new Error("No sync URL found")
+  }
+  const localDB  = new window.PouchDB(db.name);
+  const remoteDB = new window.PouchDB(db.sync_url); 
+
+  localDB.sync(remoteDB, {
+    live: false,       // Enable live syncing
+    retry: true       // Retry on failure
+  }).on('change', function (info) {
+    console.log('Data changed:', info);
+  }).on('paused', function (err) {
+    console.log('Replication paused:', err);
+  }).on('active', function () {
+    console.log('Replication resumed.');
+  }).on('error', function (err) {
+    console.error('Replication error:', err);
+  });
+  
+}

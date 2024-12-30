@@ -57,12 +57,16 @@
   // Function to dynamically gather all available fields from the docs
   function gatherFields() {
     docs.forEach((doc) => {
-      Object.keys(doc.data).forEach((field) =>
+      if(doc.data){
+        Object.keys(doc.data).forEach((field) =>
         availableFields.add(`data.${field}`)
       );
-      Object.keys(doc.meta).forEach((field) =>
+      }
+      if(doc.meta){
+        Object.keys(doc.meta).forEach((field) =>
         availableFields.add(`meta.${field}`)
       );
+      }     
     });
     //console.log(availableFields)
     availableFields.add("schema");
@@ -192,6 +196,7 @@
 
   // Load data on component mount and whenever query changes
   onMount(() => {
+    console.log(docs)
     loadData();
   });
 
