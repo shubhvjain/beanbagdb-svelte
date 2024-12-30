@@ -32,8 +32,8 @@
       message = "Name already exists";
       return;
     }
-    if (newEncryptionKey.length < 16) {
-      message = "Encryption key must be at least 16 characters";
+    if (newEncryptionKey.length < 24) {
+      message = "Encryption key must be at least 24 characters";
       return;
     }
     databases = [

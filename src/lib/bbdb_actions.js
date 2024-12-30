@@ -47,7 +47,7 @@ export const save_database_store = (dbList) => {
 
 export const emit_bbdb_event = (name,data)=>{
   // valid types : textcmd -> data.text will be the command
-  let valid_types = ["textcmd","selectedRecords","edit_partial_meta"]
+  let valid_types = ["textcmd","selectedRecords","edit_partial_meta","new_document"]
   if(!valid_types.includes(name)){
     throw new Error("Invalid bbdb_action name")
   }
@@ -58,6 +58,10 @@ export const emit_bbdb_event = (name,data)=>{
   }else if (name=="edit_partial_meta"){
     if(!data.link){
       throw new Error("edit_partial requires data.link")
+    }
+  }else if (name=="new_document"){
+    if(!data.schema||!data.data){
+      throw new Error("new_document action required both schema and data")
     }
   }
   return {name,data}

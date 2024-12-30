@@ -18,7 +18,7 @@
   let { db } = $props();
   // export let db;
 
-  let BBDB;
+  let BBDB  = $state(null);
   let Loaded = $state(false);
   let Error = $state();
 
@@ -73,7 +73,7 @@
   }
 
   onMount(async () => {
-    //destroy_db("sample2")
+    // destroy_db("sample")
     if (!BBDB) {
       if (!db) {
         Loaded = true;
@@ -97,7 +97,12 @@
     if (BBDB.active) {
       console.log("ready...");
     } else {
-      await make_db_ready();
+      try {
+        await make_db_ready();  
+      } catch (error1) {
+        console.log(error1)
+      }
+      
 
       //searchPage("dbsettings")
 

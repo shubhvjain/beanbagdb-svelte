@@ -19,7 +19,7 @@ const commands = {
         if(schema_obj.docs.length==0){
           throw new Error("Schema with this name does not exists")
         }
-        return schema_obj.docs[0]
+        return schema_obj.docs
       }
     },
     help: `To create a new record. Format : new/"schema_name(optional)". If no schema name provided, a list of valid schema name is returned`
@@ -115,10 +115,11 @@ const commands = {
       }
       else if(c_type=="keys"){
         // to show the list of all keys present in the db 
-        let search = instance.search({"selector":{"schema":"system_keys"}})
+        let search = await instance.search({"selector":{"schema":"system_key"}})
+        console.log(search)
         let keys = []
         search.docs.forEach(itm=>{
-          keys.push({name:item.data.name,note:itm.data.note,link:itm.meta.link})
+          keys.push({name:itm.data.name,note:itm.data.note,link:itm.meta.link})
         })
         return {docs:keys}
       }
