@@ -8,10 +8,15 @@
   let new_data_validity = $state(false)
   let new_adding = $state(false) // true when add button is clicked 
   let new_status = $state("")
+  let schema_schema = {
+    type:"object",
+    additionalProperties:false,
+    properties:{
+      name:{type:"string"}
+    }
+  }
   onMount(() => {
     loaded = true
-
-    console.log(schema)
   });
   const on_add_click = async ()=>{
     try {
@@ -45,11 +50,10 @@
     {schema.description}
   </p>
   {#if schema.name=="schema"}
-    schema
-  {:else}
-    <JsonEditor bind:data={new_data} schema={schema.schema} bind:data_valid={new_data_validity}/>
+    <p class="text-danger">This form will just create a blank schema doc which cannot be used until you edit it and activate it.</p>
   {/if}
 
+    <JsonEditor bind:data={new_data} schema={schema.name=="schema"?schema_schema:schema.schema} bind:data_valid={new_data_validity}/>  
 {/if}
 
 <br>

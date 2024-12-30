@@ -57,7 +57,26 @@
       // edit a doc
       console.log("adding a new document ")
       try {
-        let update1 = await BBDB.create(action.data.schema,action.data.data) 
+        let data_obj 
+        if(action.data.schema=="schema"){
+          // generate blank record 
+          data_obj = {
+            name: action.data.data.name,
+            title: action.data.data.name,
+            description: action.data.data.name,
+            active:false,
+            schema:{
+              type:'object',
+              additionalProperties:false,
+              properties:{
+                title:{type:"string"}
+              }
+            }, settings:{}
+          }
+        }else{
+          data_obj = action.data.data
+        }
+        let update1 = await BBDB.create(action.data.schema,data_obj) 
         console.log(update1)     
         recent_links.push({link:update1.meta.link,type:update1.schema})
         return {added:true,error:null}
@@ -98,7 +117,7 @@
     onchange={(e) => {load_schema_new(e.target.value) }}>
       <option value="" selected>Select schema</option>
       {#each schemas as sch }
-      <option value={sch.name}>{sch.name}</option>  
+      <option value={sch.name}>{sch.title}</option>  
       {/each}
     </select>
     {#if selected_schema}
