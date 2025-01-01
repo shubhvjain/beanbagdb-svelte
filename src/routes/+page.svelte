@@ -10,6 +10,16 @@
   <DBManager bbdb_action={(details)=>{
     temp = details
     console.log(details)
-  }} />
+    }} 
+    
+    on_link_click = {
+      (data)=>{
+        if(data.page=="workspace"){
+          window.open(`ws/${data.db_name}`)
+        }
+      
+      }
+    }
+  />
 </div>
 

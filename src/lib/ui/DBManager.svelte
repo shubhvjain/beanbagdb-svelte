@@ -2,8 +2,8 @@
 <script>
   import "$lib/default.style.css";
   import { onMount } from "svelte";
-  import { get_database_list,save_database_store} from "$lib/bbdb_actions.js";
-  let { bbdb_action } = $props();
+  import { get_database_list,save_database_store,} from "$lib/bbdb_actions.js";
+  let { bbdb_action,on_link_click } = $props();
 
   let databases = $state([]);
   let newName = $state("");
@@ -94,6 +94,10 @@
     console.log(data);
     bbdb_action(data);
   };
+
+  const emit_open_link = (db_name)=>{
+    on_link_click({db_name,"page":"workspace"})
+  }
 </script>
 
 <div class="container-fluid">
@@ -189,6 +193,12 @@
                   onclick={() => toggleShowKey(index)}
                   >{database.showKey ? "Hide" : "Show"} Keys</button
                 >
+
+                <button
+                  class="btn btn-link p-1 m-1"
+                  onclick={() => emit_open_link(database.name)}> Load workspace</button>
+
+
               </td>
             </tr>
           {/each}

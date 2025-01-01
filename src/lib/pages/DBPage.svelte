@@ -96,7 +96,7 @@
   };
   const titles = {
     info: "Database information",
-    help: "Help",
+    help: "Help topics",
     search: "Search the database",
     keys: "Keys added to the database",
     settings: "Database settings",
@@ -127,7 +127,8 @@
           <LogViewer logs={data["logs"]} />
         {/if}
         {#if page.criteria.type == "help"}
-          <Help {BBDB} />
+        <h3>{titles[page.criteria.type]}</h3>
+          <Help params={page.criteria.params}  />
         {/if}
         {#if page.criteria.type == "search"}
           <h3>{titles[page.criteria.type]}</h3>
