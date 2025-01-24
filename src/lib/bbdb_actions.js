@@ -116,3 +116,23 @@ export const download_data = (jsonObject,fileName)=>{
       // Clean up the URL object
       URL.revokeObjectURL(link.href);
 }
+
+export const get_schema_schema = (schema_doc)=>{
+  let data = {
+    meta : {
+      type : "object",
+      additionalProperties: false,
+      properties: {
+      
+      }
+    },
+    schema_text: { type: "string"  },
+    settings:schema_doc.properties.settings
+  }
+  const meta_fields  = ["active","name","title","description"]
+  meta_fields.map(itm=>{
+    data.meta.properties[itm] = schema_doc.properties[itm]
+  })
+  
+  return data
+}

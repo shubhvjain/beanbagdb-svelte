@@ -1,5 +1,18 @@
 // plugin for text commands for web based ui and database exploration 
 
+const parse_params_string = (param)=>{
+  // must be of the type param1=value1,params2=value2
+  let splits = param.split(",")
+  let data = {}
+  splits.forEach(split=>{
+    let s = split.split("=")
+    if (s.length==2){
+      data[s[0]] = s[1]
+    }
+  })
+  return data
+}
+
 const commands = {
   new: {
     parse: async (instance,parts) => {
@@ -71,8 +84,10 @@ const commands = {
   },
   page:{
     parse : async (instance,parts)=>{
-      let criteria = {}
-      criteria.type = parts.length==0?"info":parts.join("")
+      let criteria = {params : {}}
+      let qsplit = parts.join().split("?")
+      if(qsplit.length>1){criteria.params = parse_params_string(qsplit[1])}
+      criteria.type = qsplit[0]
       let valid_type = ["info","plugins","settings","keys","help","schemas","search"]
       if(!valid_type.includes(criteria.type)){
         throw new Error(`Invalid page type. Valid pages : ${valid_type.join(",")}`)
@@ -92,7 +107,6 @@ const commands = {
           let schemas = await instance.get("schema_list") 
           data.schemas = schemas
           let logs_doc = await instance.search({"selector":{"schema":"system_log"}})
-          //console.log(logs_doc) 
           data.logs = logs_doc.docs          
         } catch (error) {
           console.log(error)
@@ -149,6 +163,17 @@ const commands = {
     run:async(instance,command)=>{
       return {}
     }
+  },
+  ui:{
+    parse:async(instance,parts)=>{
+      if (parts.length==0){
+        throw new Error("Invalid arguments.ui command needs a page name")
+      }
+      return {page_key:parts.join()}
+    },
+    run:async(instance,command)=>{
+      return command
+    } 
   }
 };
 

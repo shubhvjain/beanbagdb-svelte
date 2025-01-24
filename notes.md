@@ -49,3 +49,16 @@ Eg usage in UI :
 
 The module `bbdb_actions.js` can be used to create these events in the page components
 
+
+
+
+## utils or core components
+no access to DB instance 
+only gets data 
+displays/modifies data
+can return updated data to parent component 
+
+
+
+
+

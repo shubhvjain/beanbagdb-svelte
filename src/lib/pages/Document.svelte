@@ -75,7 +75,7 @@
     <p class="text-danger">{error}</p>
   {:else if loaded && documentData}
   <div class="container-fluid">
-    <Doc doc={documentData.doc} schema={documentData.schema} bbdb_action={on_bbdb_action} />
+    <Doc doc={documentData.doc} schema={documentData.schema}  bbdb_action={on_bbdb_action} editable={true}/>
   </div>
    
   {/if}

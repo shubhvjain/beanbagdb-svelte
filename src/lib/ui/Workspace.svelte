@@ -17,14 +17,29 @@
   import NewDocument from "$lib/pages/NewDocument.svelte";
   import Document from "$lib/pages/Document.svelte";
 
-  // import DbOpen from "$lib/pages/DBOpen.svelte";
 
-  let { db } = $props();
+  let { db , uiComponents} = $props();
   // export let db;
+
+/**
+ * uiComponents : {command:{component,unique}}
+ */
+
 
   let BBDB = $state(null);
   let Loaded = $state(false);
   let Error = $state();
+
+
+  let customUIComponents = $state({});
+  const registerComponent = (key,data)=>{
+    if(customUIComponents[key]){
+      console.log("Component already registered")
+      return
+    }
+    customUIComponents[key]= data
+    console.log("Component registered")
+  }
 
   let workspace = $state({
     theme: "light",
@@ -86,6 +101,17 @@
 
   onMount(async () => {
     // destroy_db("sample")
+    console.log(uiComponents);
+    // see if custom components are provided
+    if (uiComponents) {
+      Object.keys(uiComponents).forEach((key) => {
+        registerComponent(key, uiComponents[key]);
+      });
+    }
+
+    console.log(customUIComponents);
+
+
     if (!BBDB) {
       if (!db) {
         Loaded = true;
@@ -234,6 +260,25 @@
             focusOnItem(search.id);
           }
         },
+        ui:(cmd)=>{
+          console.log(cmd)
+          if(customUIComponents[cmd.criteria.page_key]){
+            let new_id = Math.round(Math.random() * 10000);
+            pages.push({
+              ...cmd,
+              id: new_id,
+              size: "medium",
+              component: customUIComponents[cmd.criteria.page_key].component,
+              component_data: cmd.criteria
+            });
+            setTimeout(() => {
+              focusOnItem(new_id);
+            }, 10);
+          }else{
+            console.log("UI component not found")
+            pushErrorPage("command404", `${text}`);
+          }
+        }
       };
       console.log(command)
       process_commands[command.name](command)
@@ -382,43 +427,27 @@
                 <option value="full">100%</option>
               </select>
 
-              <!-- Close Button -->
               <button
                 class="btn btn-sm btn-outline-danger"
                 onclick={() => closePage(page.id)}
                 aria-label="Close page"
-                ><svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  fill="currentColor"
-                  class="bi bi-x"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
-                  />
-                </svg></button
               >
+              <i class="bi bi-x"></i>
+              </button>
             </div>
           </div>
 
-          {#if page.name == "page"}
+          {#if page.name=="ui"}
+            <page.component this={page.component} {BBDB} {page} />
+          {:else if page.name == "page"}
             <DbPage {BBDB} {page} page_bbdb_action={handleBBDBActions} />
-          {/if}
-
-          {#if page.name == "open"}
+          {:else if page.name == "open"}
             <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} />
-          {/if}
-
-          {#if page.name == "new"}
+          {:else if page.name == "new"}
             <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} />
-          {/if}
-
-          {#if page.name == "error"}
+          {:else if page.name == "error"}
             <WorkSpaceErrorPage details={page} />
-          {/if}
-          {#if page.name == "home"}
+          {:else if page.name == "home"}
             <WorkSpaceHome {BBDB} page_bbdb_action={handleBBDBActions} />
           {/if}
         </div>

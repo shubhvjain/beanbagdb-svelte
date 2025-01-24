@@ -5,6 +5,8 @@
   import ObjectViewer from "$lib/utils/ObjectViewer.svelte";
   import TagsEditor from "$lib/utils/TagsEditor.svelte";
   import LinkEditor from "$lib/utils/LinkEditor.svelte";
+  import JsonEditor from "$lib/utils/JSONEditor.svelte";
+  import SchemaEditor from "$lib/utils/SchemaEditor.svelte";
   let { doc, schema, editable = false, edit_mode = "internal" , bbdb_action } = $props();
   let loaded = $state(false);
   let mode = $state("view");
@@ -41,48 +43,61 @@
 </script>
 
 {#if loaded}
-  {#if mode === "view"}
-   
-      <div class="row">
-        <div class="col-lg-12 pt-2 pb-2 ">
-          <div class="mt-4 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">{schema.title || "Document"}</h5>
 
-            <div class="d-flex align-items-center">
-              <button
-                title="Click to copy link to clipboard"
-                class="btn btn-link btn-sm"
-                aria-label="Copy link to clipboard"
-                onclick={() => {
-                  copy_to_clipboard(doc.meta.link);
-                }}
-              >
-              {doc.meta.link}
-              
-              </button>
-              <button title="Download file as json" class='btn btn-link btn-sm' onclick={()=>{ download_data({doc,schema},`${doc.meta.link}.json`) }} aria-label="JSON">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
-                  <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
-                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
-                </svg>
-              </button>
 
-               
-            {#if editable}
-            <button
-              class="btn btn-primary mt-3"
-              onclick={() => (edit_mode === "external" ? edit_external() : edit_internal())}
-            >
-              Edit
-            </button>
-          {/if}
+<div class="row">
+  <div class="col-lg-12 pt-2 pb-2 ">
+    <div class="mt-4 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">{schema.title || "Document"}</h5>
 
-            </div>
-            
-          </div>
-          <!-- <hr> -->
-        </div>
+      <div class="d-flex align-items-center">
+        <button
+          title="Click to copy link to clipboard"
+          class="btn btn-link btn-sm"
+          aria-label="Copy link to clipboard"
+          onclick={() => {
+            copy_to_clipboard(doc.meta.link);
+          }}
+        >
+        {doc.meta.link}
+        
+        </button>
+        <button title="Download file as json" class='btn btn-link btn-sm' onclick={()=>{ download_data({doc,schema},`${doc.meta.link}.json`) }} aria-label="JSON">
+          <i class="bi bi-download"></i>
+        </button>
+
+         
+      {#if editable}
+        {#if mode == "view"}
+        <button
+        class="btn btn-link btn-sm"
+        onclick={() => (edit_mode === "external" ? edit_external() : edit_internal())}
+      >
+        <i class="bi bi-pencil"></i>
+        Edit
+      </button>
+        {:else}
+        
+        <button
+        class="btn btn-link btn-sm"
+        onclick={() => (edit_mode === "external" ? edit_external() : edit_internal())}
+      >
+        <i class="bi bi-floppy"></i>
+        Save
+      </button>
+        {/if}
+     
+      {/if}
+
       </div>
+      
+    </div>
+  </div>
+</div>
+
+
+
+  {#if mode === "view"}
       <div class="row">
         <div class="col-lg-12 p-2">
          
@@ -129,9 +144,17 @@
 
     
   {:else if mode === "edit"}
-    <div class="container">
-      <h4>Editing Document</h4>
+    <div class="row">
+      <div class="col-lg-12">
+        {#if doc.schema=="schema"}
+          <SchemaEditor data={doc.data} schema={schema.schema} />
+        {:else}
+          <JsonEditor bind:data={doc.data} schema={schema.schema}/>
+        {/if}
+      </div>
     </div>
+  
+
   {/if}
 {:else}
   <div class="container text-center">
