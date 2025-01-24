@@ -51,3 +51,4 @@ export * as pouchdbMin from './db/pouchdb.min.js';
 export * as textcommand from './db/textcommand.js';
 
 
+export * as bbdb_actions from './bbdb_actions.js';

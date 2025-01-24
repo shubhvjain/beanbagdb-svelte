@@ -1,17 +1,17 @@
 <script>
   import { onMount } from "svelte";
-  import { copy_to_clipboard,format_timestamp, emit_bbdb_event,remove_some_keys,download_data } from "$lib/bbdb_actions.js";
+  import { copy_to_clipboard,format_timestamp, emit_bbdb_event,remove_some_keys,download_data } from "../bbdb_actions.js";
   import SystemDoc from "./SystemDoc.svelte";
-  import ObjectViewer from "$lib/utils/ObjectViewer.svelte";
-  import TagsEditor from "$lib/utils/TagsEditor.svelte";
-  import LinkEditor from "$lib/utils/LinkEditor.svelte";
-  import JsonEditor from "$lib/utils/JSONEditor.svelte";
-  import SchemaEditor from "$lib/utils/SchemaEditor.svelte";
+  import ObjectViewer from "../utils/ObjectViewer.svelte";
+  import TagsEditor from "../utils/TagsEditor.svelte";
+  import LinkEditor from "../utils/LinkEditor.svelte";
+  import JsonEditor from "../utils/JSONEditor.svelte";
+  import SchemaEditor from "../utils/SchemaEditor.svelte";
   let { doc, schema, editable = false, edit_mode = "internal" , bbdb_action } = $props();
   let loaded = $state(false);
   let mode = $state("view");
 
-  import ObjectViewer2 from "$lib/utils/ObjectViewer2.svelte";
+  import ObjectViewer2 from "../utils/ObjectViewer2.svelte";
   const edit_external = () => {
     console.log("External edit triggered with data:", data);
     // Implement external edit logic here

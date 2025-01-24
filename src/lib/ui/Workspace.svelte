@@ -1,6 +1,6 @@
 <script>
-  import "$lib/default.style.css";
-  import "$lib/ui/workspace.css";
+  import "../default.style.css";
+  import "./workspace.css";
   import { BeanBagDB } from "beanbagdb";
   import { onMount } from "svelte";
   import {

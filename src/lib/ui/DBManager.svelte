@@ -1,6 +1,6 @@
 <!-- this is the UI to display the list of available BBDB instances and manage them -->
 <script>
-  import "$lib/default.style.css";
+  import "../default.style.css";
   import { onMount } from "svelte";
   import { get_database_list,save_database_store,} from "$lib/bbdb_actions.js";
   let { bbdb_action,on_link_click } = $props();
