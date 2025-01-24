@@ -52,7 +52,11 @@
       // edit a doc
       console.log("saving changes")
       try {
-        let update1 = await BBDB.update({link:action.data.link},  action.data.update ,action.data.rev) 
+        let update1 = await BBDB.update({ 
+          criteria: {link:action.data.link}, 
+          updates: action.data.update ,
+          rev_id: action.data.rev
+        }) 
         console.log(update1)     
         return {update:true,error:null}
       } catch (error) {

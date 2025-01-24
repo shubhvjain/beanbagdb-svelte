@@ -14,10 +14,11 @@
 
   let recent_links = $state([])
   async function load_schemas(page1) {
-    console.log(page1)
+    //console.log("loading schemas")
+    //console.log(page1)
     let doc = await BBDB.plugins.txtcmd.run(page1);
     //if()
-    console.log(doc);
+    //console.log(doc);
 
     return doc;
   }
@@ -76,7 +77,7 @@
         }else{
           data_obj = action.data.data
         }
-        let update1 = await BBDB.create(action.data.schema,data_obj) 
+        let update1 = await BBDB.create({schema:action.data.schema,data:data_obj}) 
         console.log(update1)     
         recent_links.push({link:update1.meta.link,type:update1.schema})
         return {added:true,error:null}
@@ -99,7 +100,7 @@
     selected_schema=null
     if(schema_name){
       console.log(schema_name)
-      let schema_doc = await BBDB.get("schema",{name:schema_name}) 
+      let schema_doc = await BBDB.get({type:"schema",criteria:{name:schema_name}}) 
       console.log(schema_doc)
       selected_schema = schema_doc.data
     }

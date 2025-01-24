@@ -23,7 +23,7 @@ const commands = {
     run: async (instance,command) => {
       if (command.criteria.schema==""){
         // return a list of all schemas present in the DB
-        let all_schema = await instance.get("schema_list")
+        let all_schema = await instance.get({type:"schema_list"})
         return all_schema
       }else{
         // return the schema object for the given schema if not found throw error
@@ -74,7 +74,7 @@ const commands = {
     },
     run: async (instance,command) => {
       try {
-        let data = await instance.read(command.criteria,true)  
+        let data = await instance.read({...command.criteria,include_schema:true})  
         return data
       } catch (error) {
         throw error
@@ -104,7 +104,7 @@ const commands = {
           logs:[]
         }
         try {
-          let schemas = await instance.get("schema_list") 
+          let schemas = await instance.get({type:"schema_list"}) 
           data.schemas = schemas
           let logs_doc = await instance.search({"selector":{"schema":"system_log"}})
           data.logs = logs_doc.docs          
@@ -141,7 +141,7 @@ const commands = {
         // to show the list of all keys present in the db 
         let data = {}
         try {
-          let docs = await instance.get("schema_list") 
+          let docs = await instance.get({type:"schema_list"}) 
           data.docs = docs
           let schema_schema = docs.find(item=>{return item.name=="schema"})
           //console.log(schema_schema)

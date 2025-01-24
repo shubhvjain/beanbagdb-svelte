@@ -18,7 +18,7 @@
   import Document from "$lib/pages/Document.svelte";
 
 
-  let { db , uiComponents} = $props();
+  let { db , uiComponents, settings ={}, onWorkspaceLoad  } = $props();
   // export let db;
 
 /**
@@ -66,11 +66,10 @@
     };
     let setting;
     try {
-      setting = await BBDB.get(
-        "system_setting",
-        { name: ui_setting_name },
-        false
-      );
+      setting = await BBDB.get({
+        type:"system_setting",
+        criteria: { name: ui_setting_name },
+      });
     } catch (error) {
       setting = await BBDB.modify_setting(
         "ui_workspace",
@@ -149,6 +148,11 @@
       } catch (error) {
         console.log(error);
       }
+    }
+
+    //console.log(BBDB)
+    if (onWorkspaceLoad) {
+      await onWorkspaceLoad(BBDB);
     }
 
     if (pages.length == 0) {
