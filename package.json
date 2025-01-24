@@ -1,6 +1,6 @@
 {
 	"name": "beanbagdb-svelte",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
@@ -11,7 +11,9 @@
 	"files": [
 		"dist",
 		"!dist/**/*.test.*",
-		"!dist/**/*.spec.*"
+		"!dist/**/*.spec.*",
+		"src/lib/default.style.css",
+		"src/lib/ui/workspace.css"
 	],
 	"sideEffects": [
 		"**/*.css"
