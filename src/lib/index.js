@@ -1,3 +1,8 @@
+
+import './ui/workspace.css';
+import "./default.style.css"
+
+
 // Reexport your entry components here
 // Components from core
 export { default as Doc } from './core/Doc.svelte';
@@ -44,3 +49,5 @@ export * as beanbagdbweb from './db/beanbagdbweb.js';
 export * as pouchdbFind from './db/pouchdb.find.js';
 export * as pouchdbMin from './db/pouchdb.min.js';
 export * as textcommand from './db/textcommand.js';
+
+
