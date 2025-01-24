@@ -40,7 +40,7 @@ export { default as TagsEditor } from './utils/TagsEditor.svelte';
 
 
 // Scripts from db
-export { default as beanbagdbweb } from './db/beanbagdbweb.js';
-export { default as pouchdbFind } from './db/pouchdb.find.js';
-export { default as pouchdbMin } from './db/pouchdb.min.js';
-export { default as textcommand } from './db/textcommand.js';
+export { beanbagdbweb } from './db/beanbagdbweb.js';
+export { pouchdbFind } from './db/pouchdb.find.js';
+export { pouchdbMin } from './db/pouchdb.min.js';
+export { textcommand } from './db/textcommand.js';
