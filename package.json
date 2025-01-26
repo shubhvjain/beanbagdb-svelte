@@ -1,6 +1,6 @@
 {
 	"name": "beanbagdb-svelte",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
@@ -45,6 +45,7 @@
 		"ajv": "^8.17.1",
 		"axios": "^1.7.9",
 		"beanbagdb": "^0.6.0",
-		"bootstrap": "^5.3.3"
+		"bootstrap": "^5.3.3",
+		"svelte-jsoneditor": "^2.3.3"
 	}
 }

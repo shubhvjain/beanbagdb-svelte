@@ -18,7 +18,7 @@
   import Document from "$lib/pages/Document.svelte";
 
 
-  let { db , uiComponents, settings ={}, onWorkspaceLoad  } = $props();
+  let { db , uiComponents, settings ={}, onWorkspaceLoad  , custom_editors } = $props();
   // export let db;
 
 /**
@@ -155,8 +155,11 @@
       await onWorkspaceLoad(BBDB);
     }
 
-    if (pages.length == 0) {
-      // ["info","plugins","settings","keys","help","schemas","search"]
+    if(settings.initial_pages){
+      settings.initial_pages.forEach((itm) => {
+        runTextCommand(itm);
+      });
+    }else{
       let test = [
         "home",
         // "page/info",
@@ -171,9 +174,6 @@
       test.forEach((itm) => {
         runTextCommand(itm);
       });
-      // new workspace, open the dash board automatically
-      //searchPage("find/search")
-      //searchPage("help/search")
     }
   });
 
@@ -273,7 +273,7 @@
               id: new_id,
               size: "medium",
               component: customUIComponents[cmd.criteria.page_key].component,
-              component_data: cmd.criteria
+              component_data: cmd.criteria.params
             });
             setTimeout(() => {
               focusOnItem(new_id);
@@ -322,10 +322,30 @@
     page.size = newSize; // Update the size property
   }
 
-  function handleBBDBActions(data) {
+
+  import { writable } from 'svelte/store';
+
+  // Store to manage messages
+   const messageStore = writable([]);
+
+  // Function to add a message
+   function addMessage(text, type = "info", timeout = 3000) {
+    const id = Date.now();
+    messageStore.update((messages) => [...messages, { id, text, type }]);
+
+    // Remove message after timeout
+    setTimeout(() => {
+      messageStore.update((messages) => messages.filter((msg) => msg.id !== id));
+    }, timeout);
+  }
+
+  function handleBBDBActions(action) {
     //this is the handler for opening requests coming from child components
-    if (data.name == "textcmd") {
-      runTextCommand(data.data.text);
+    if (action.name == "textcmd") {
+      runTextCommand(action.data.text);
+    }
+    if(action.name=="show_ui_message"){
+      addMessage(action.data.message,action.data.type)
     }
   }
 </script>
@@ -338,6 +358,13 @@
           <code>{db.name}</code> DB
         </h4>
         <div class="d-flex" role="search">
+          <div class="message-container">
+            {#each $messageStore as message}
+              <div class="message {message.type}">
+                {message.text}
+              </div>
+            {/each}
+          </div>
           <input
             class="form-control form-control-sm"
             bind:value={searchTerm}
@@ -444,11 +471,11 @@
           </div>
 
           {#if page.name=="ui"}
-            <page.component this={page.component} {BBDB} {page} />
+            <page.component this={page.component} {BBDB} {page} data={page.component_data}  page_bbdb_action={handleBBDBActions} />
           {:else if page.name == "page"}
             <DbPage {BBDB} {page} page_bbdb_action={handleBBDBActions} />
           {:else if page.name == "open"}
-            <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} />
+            <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} custom_editors={custom_editors} />
           {:else if page.name == "new"}
             <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} />
           {:else if page.name == "error"}

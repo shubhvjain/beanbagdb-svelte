@@ -7,9 +7,12 @@
   import LinkEditor from "../utils/LinkEditor.svelte";
   import JsonEditor from "../utils/JSONEditor.svelte";
   import SchemaEditor from "../utils/SchemaEditor.svelte";
-  let { doc, schema, editable = false, edit_mode = "internal" , bbdb_action } = $props();
+  let { doc, schema, editable = false, edit_mode = "internal" , bbdb_action , custom_editors={}, BBDB} = $props();
   let loaded = $state(false);
   let mode = $state("view");
+  let custom_editor_loaded = $state(false)
+  let custom_editor_component = $state(null)
+  let edit_mode_data_valid = $state(false)
 
   import ObjectViewer2 from "../utils/ObjectViewer2.svelte";
   const edit_external = () => {
@@ -17,8 +20,20 @@
     // Implement external edit logic here
   };
 
-  const edit_internal = () => {
+  const open_edit = ()=>{
     mode = "edit";
+    edit_mode_data_valid = true
+  }
+
+  const edit_internal = async () => {
+    try {
+      
+    //console.log("saving....")
+    await bbdb_action(emit_bbdb_event("update_doc_data",{link:doc.meta.link,data:doc.data,rev:doc._rev}) )   
+    } catch (error) {
+      console.log(error)
+    }
+
   };
 
   const save_changes = (updatedData) => {
@@ -28,8 +43,21 @@
   };
 
   onMount(() => {
-    //console.log(schema)
-    loaded = true;
+    //console.log(custom_editors)
+    if(custom_editors[schema.name]){
+      console.log("Custom editor found")
+      custom_editor_loaded = true
+      if(custom_editors[schema.name]["component"]){
+        custom_editor_component = custom_editors[schema.name]
+        loaded = true;
+      }else{
+        loaded = false;
+        throw new Error("Custom editor component not found") 
+      }
+    }else{
+      loaded = true;
+    }
+    
   });
 
   const util_action_handler = async (data)=>{
@@ -74,7 +102,7 @@
         {#if mode == "view"}
         <button
         class="btn btn-link btn-sm"
-        onclick={() => (edit_mode === "external" ? edit_external() : edit_internal())}
+        onclick={() => (edit_mode === "external" ? edit_external() : open_edit())}
       >
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
         <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
@@ -85,6 +113,7 @@
         
         <button
         class="btn btn-link btn-sm"
+        disabled = {edit_mode_data_valid?"":"disabled"}
         onclick={() => (edit_mode === "external" ? edit_external() : edit_internal())}
       >
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-floppy" viewBox="0 0 16 16">
@@ -111,6 +140,8 @@
          
           {#if system_docs.includes(doc.schema)}
             <SystemDoc {doc} {schema} {edit_mode} {editable}/>
+          {:else if custom_editor_loaded}
+            <custom_editor_component.component this={custom_editor_component} mode={"view"} {BBDB}  {doc} {schema}  />
           {:else}
             <ObjectViewer2 data={doc.data} schema={schema.schema}/>
           {/if}
@@ -155,7 +186,9 @@
     <div class="row">
       <div class="col-lg-12">
         {#if doc.schema=="schema"}
-          <SchemaEditor data={doc.data} schema={schema.schema} />
+          <SchemaEditor bind:data={doc.data} schema={schema.schema}  bind:data_valid={edit_mode_data_valid} />
+        {:else if custom_editor_loaded}
+          <custom_editor_component.component this={custom_editor_component} mode={"edit"} {BBDB}  bind:doc={doc}     {schema}  />
         {:else}
           <JsonEditor bind:data={doc.data} schema={schema.schema}/>
         {/if}

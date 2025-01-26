@@ -169,7 +169,13 @@ const commands = {
       if (parts.length==0){
         throw new Error("Invalid arguments.ui command needs a page name")
       }
-      return {page_key:parts.join()}
+    
+      let criteria = {params : {}}
+      let qsplit = parts.join().split("?")
+      if(qsplit.length>1){criteria.params = parse_params_string(qsplit[1])}
+      criteria.page_key = qsplit[0]
+      return criteria
+
     },
     run:async(instance,command)=>{
       return command

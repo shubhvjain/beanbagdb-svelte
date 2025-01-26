@@ -297,7 +297,7 @@
                       <button
                         type="button"
                         class="btn btn-link"
-                        onclick={openPageLink(doc.meta.link)}
+                        onclick={()=>openPageLink(doc.meta.link)}
                         >{getFieldValue(doc, field)}</button
                       >
                     {:else}

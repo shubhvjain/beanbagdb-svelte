@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { copy_to_clipboard,format_timestamp, emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
-  let { page_bbdb_action, BBDB, page } = $props();
+  let { page_bbdb_action, BBDB, page,custom_editors } = $props();
   let mode = $state("view");
   let loaded = $state(false);
   let loading = $state(true);
@@ -63,7 +63,30 @@
         console.log(error)
         return {update:false,error:error}
       }
-    }else{
+
+
+    }
+    else if(action.name=="update_doc_data"){
+      // edit a doc
+      console.log("saving changes")
+      try {
+        let update1 = await BBDB.update({ 
+          criteria: {link:action.data.link}, 
+          updates: action.data ,
+          rev_id: action.data.rev
+        }) 
+        console.log(update1)     
+        page_bbdb_action(emit_bbdb_event("show_ui_message",{message:"Saved",type:"success"}))
+        return {update:true,error:null}
+      } catch (error) {
+        console.log(error)
+        page_bbdb_action(emit_bbdb_event("show_ui_message",{message:"Error in saving: "+error.message,type:"error"}))
+        return {update:false,error:error}
+      }
+
+      
+    }
+    else{
       if (page_bbdb_action) {
         return await page_bbdb_action(action);
       }
@@ -79,7 +102,7 @@
     <p class="text-danger">{error}</p>
   {:else if loaded && documentData}
   <div class="container-fluid">
-    <Doc doc={documentData.doc} schema={documentData.schema}  bbdb_action={on_bbdb_action} editable={true}/>
+    <Doc doc={documentData.doc} schema={documentData.schema}  bbdb_action={on_bbdb_action} editable={true} custom_editors={custom_editors}  {BBDB}/>
   </div>
    
   {/if}
