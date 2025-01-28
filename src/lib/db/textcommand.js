@@ -88,7 +88,7 @@ const commands = {
       let qsplit = parts.join().split("?")
       if(qsplit.length>1){criteria.params = parse_params_string(qsplit[1])}
       criteria.type = qsplit[0]
-      let valid_type = ["info","plugins","settings","keys","help","schemas","search"]
+      let valid_type = ["info","plugins","settings","keys","help","schemas","search","graph"]
       if(!valid_type.includes(criteria.type)){
         throw new Error(`Invalid page type. Valid pages : ${valid_type.join(",")}`)
       }
@@ -150,6 +150,9 @@ const commands = {
           console.log(error)
         }
         return data
+      }
+      else if(c_type=="graph"){
+        return {}
       }
       else{
         throw new Error("Invalid tool command")

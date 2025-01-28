@@ -68,6 +68,23 @@
   }
 
   const system_docs = ["system_key","system_log","system_setting","system_edge_constraint","system_edge","system_media"]
+
+  let isTitleEditing = $state(false)
+  function toggleTitleEdit() {
+    isTitleEditing = !isTitleEditing;
+  }
+
+  async function saveTitle() {
+    // Perform save logic here
+    if(doc.meta.title.trim().length==0){
+      await bbdb_action(emit_bbdb_event("show_ui_message",{type:"error",message:"Title cannot be blank"}))
+    }else{
+      let resp =  await bbdb_action(emit_bbdb_event("edit_partial_meta",{link:doc.meta.link,update:{data:{},meta:{title:doc.meta.title}}}))
+      console.log(resp)
+      toggleTitleEdit();
+    }
+    
+  }
 </script>
 
 {#if loaded}
@@ -76,8 +93,26 @@
 <div class="row">
   <div class="col-lg-12 pt-2 pb-2 ">
     <div class="mt-4 d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">{schema.title || "Document"}</h5>
-
+      <div class="d-flex align-items-center">
+        {#if isTitleEditing}
+          <!-- Editing Mode -->
+          <input
+            type="text"
+            class="form-control me-2"
+            bind:value={doc.meta.title}
+            placeholder="Enter title"
+          />
+          <button class="btn btn-primary btn-sm" onclick={saveTitle}>Save</button>
+        {:else} 
+          <!-- Display Mode -->
+          <h5 class="mb-0 me-2">{doc.meta.title}</h5>
+          <button class="btn btn-link btn-sm p-0" onclick={toggleTitleEdit} aria-label="Edit">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+              <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+            </svg>
+          </button>
+        {/if}
+      </div>
       <div class="d-flex align-items-center">
         <button
           title="Click to copy link to clipboard"
@@ -104,10 +139,11 @@
         class="btn btn-link btn-sm"
         onclick={() => (edit_mode === "external" ? edit_external() : open_edit())}
       >
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
-        <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
       </svg>
-        Edit
+        Edit Doc
       </button>
         {:else}
         

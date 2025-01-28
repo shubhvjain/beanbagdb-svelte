@@ -9,6 +9,7 @@
     sync_db_once,
   } from "$lib/db/beanbagdbweb.js";
   import { text_command } from "$lib/db/textcommand.js";
+  import {get_default_nav_items} from "../bbdb_actions.js"
 
   // pages to display
   import WorkSpaceErrorPage from "./WorkSpaceErrorPage.svelte";
@@ -16,20 +17,15 @@
   import DbPage from "../pages/DBPage.svelte";
   import NewDocument from "$lib/pages/NewDocument.svelte";
   import Document from "$lib/pages/Document.svelte";
+  import GraphView from "$lib/pages/GraphView.svelte";
 
-
-  let { db , uiComponents, settings ={}, onWorkspaceLoad  , custom_editors } = $props();
+  let { db , uiComponents, settings ={}, onWorkspaceLoad  , custom_editors , additional_nav_items=[]} = $props();
   // export let db;
-
-/**
- * uiComponents : {command:{component,unique}}
- */
 
 
   let BBDB = $state(null);
   let Loaded = $state(false);
   let Error = $state();
-
 
   let customUIComponents = $state({});
   const registerComponent = (key,data)=>{
@@ -42,7 +38,7 @@
   }
 
   let workspace = $state({
-    theme: "light",
+    theme: "dark",
     recent: [],
   });
   let pages = $state([]);
@@ -98,18 +94,31 @@
     }
   }
 
+  let nav_items = $state({outer:[],inner:[]})
   onMount(async () => {
     // destroy_db("sample")
-    console.log(uiComponents);
-    // see if custom components are provided
     if (uiComponents) {
       Object.keys(uiComponents).forEach((key) => {
         registerComponent(key, uiComponents[key]);
       });
     }
+    nav_items = get_default_nav_items();
+   
+    if(additional_nav_items){
+      nav_items.outer = [...nav_items.outer, ...additional_nav_items];
+    }
+    console.log(nav_items)
+    // Dynamically import Bootstrap for initializing dropdowns
+    import("bootstrap").then(({ Dropdown }) => {
+      const dropdownTriggerList = Array.from(
+        document.querySelectorAll('[data-bs-toggle="dropdown"]')
+      );
+      dropdownTriggerList.forEach((dropdownTriggerEl) => {
+        new Dropdown(dropdownTriggerEl);
+      });
+    });
 
-    console.log(customUIComponents);
-
+    console.log(nav_items)
 
     if (!BBDB) {
       if (!db) {
@@ -140,7 +149,6 @@
         console.log(error1);
       }
 
-      //searchPage("dbsettings")
 
       try {
         let s = await get_setting_doc();
@@ -150,7 +158,6 @@
       }
     }
 
-    //console.log(BBDB)
     if (onWorkspaceLoad) {
       await onWorkspaceLoad(BBDB);
     }
@@ -237,7 +244,7 @@
           pages.push({
               ...cmd,
               id: new_id,
-              size:"small",
+              size:"medium",
             });
             setTimeout(() => {
               focusOnItem(new_id);
@@ -265,6 +272,7 @@
           }
         },
         ui:(cmd)=>{
+          let system_ui = {graph:{component:GraphView}}
           console.log(cmd)
           if(customUIComponents[cmd.criteria.page_key]){
             let new_id = Math.round(Math.random() * 10000);
@@ -273,6 +281,18 @@
               id: new_id,
               size: "medium",
               component: customUIComponents[cmd.criteria.page_key].component,
+              component_data: cmd.criteria.params
+            });
+            setTimeout(() => {
+              focusOnItem(new_id);
+            }, 10);
+          }else if(system_ui[cmd.criteria.page_key]){
+            let new_id = Math.round(Math.random() * 10000);
+            pages.push({
+              ...cmd,
+              id: new_id,
+              size: "large",
+              component: system_ui[cmd.criteria.page_key].component,
               component_data: cmd.criteria.params
             });
             setTimeout(() => {
@@ -366,14 +386,14 @@
             {/each}
           </div>
           <input
-            class="form-control form-control-sm"
+            class="form-control"
             bind:value={searchTerm}
             placeholder="Search or open new page..."
             aria-label="Search term"
             type="text"
           />
           <button
-            class="btn btn-sm btn-outline-secondary"
+            class="btn btn-lg btn-outline-secondary"
             type="button"
             onclick={() => runTextCommand(searchTerm)}
             aria-label="Run text command.Type help for more"
@@ -395,7 +415,7 @@
           <button
             onclick={toggleTheme}
             type="button"
-            class="btn btn-sm btn-outline-secondary b"
+            class="btn btn-outline-secondary b"
             aria-label="Change theme"
             title="toggle theme"
             ><svg
@@ -415,7 +435,7 @@
           <button
             onclick={sync_pouchdb}
             type="button"
-            class="btn btn-sm btn-outline-secondary b"
+            class="btn  btn-outline-secondary b"
             aria-label="Sync data"
             title="Sync data"
           >
@@ -441,6 +461,33 @@
     </nav>
     <!-- Pages Container -->
     <div class="pages-container">
+      <div class="d-flex flex-column flex-shrink-0 bg-body-tertiary" >
+        <!-- <a href="/" class="d-block p-3 link-body-emphasis text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+          <svg class="bi pe-none" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
+          <span class="visually-hidden">Icon-only</span>
+        </a> -->
+        <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
+          {#each  nav_items.outer as itm}
+          <li class="nav-item">
+            <a  title={itm.title} onclick={()=>{runTextCommand(itm.command)}} class="nav-link  py-3 border-bottom rounded-0" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Home" data-bs-original-title="Home">
+              {@html itm.icon} 
+            </a>
+          </li>
+          {/each}
+        </ul>
+        <div class="dropdown border-top">
+          <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
+            </svg>
+          </a>
+          <ul class="dropdown-menu text-small shadow" style="">
+            {#each nav_items.inner as item }
+              <li><a class="dropdown-item" onclick={()=>runTextCommand(item.command)}> {@html item.icon}  &nbsp; {item.text}</a></li>
+            {/each}
+          </ul>
+        </div>
+      </div>
       {#each pages as page}
         <div class="page {page.size}" id={page.id}>
           <div class="d-flex justify-content-between align-items-center">
