@@ -41,11 +41,22 @@
 		"vite": "^6.0.0"
 	},
 	"dependencies": {
+		"@codemirror/autocomplete": "^6.18.4",
+		"@codemirror/commands": "^6.8.0",
+		"@codemirror/highlight": "^0.19.8",
+		"@codemirror/language": "^6.10.8",
+		"@codemirror/search": "^6.5.8",
+		"@codemirror/state": "^6.5.1",
+		"@codemirror/view": "^6.36.2",
 		"@json-editor/json-editor": "^2.15.2",
+		"@lezer/generator": "^1.7.2",
+		"@lezer/highlight": "^1.2.1",
+		"@lezer/lr": "^1.4.2",
 		"ajv": "^8.17.1",
 		"axios": "^1.7.9",
 		"beanbagdb": "^0.6.3",
 		"bootstrap": "^5.3.3",
+		"codemirror": "^6.0.1",
 		"svelte-jsoneditor": "^2.3.3",
 		"svelvet": "^10.0.2"
 	}
