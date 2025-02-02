@@ -1,11 +1,9 @@
 <script>
   import { onMount } from "svelte";
-  import { copy_to_clipboard,format_timestamp, emit_bbdb_event } from "$lib/bbdb_actions.js";
+  import {  emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
   let { page_bbdb_action, BBDB, page,custom_editors } = $props();
-  let mode = $state("view");
   let loaded = $state(false);
-  let loading = $state(true);
   let error = $state(null);
   let documentData = $state({});
 
@@ -28,22 +26,12 @@
           "Unable to load page. Component not configured properly"
         );
       }
-      // console.log(page);
-      let fetch_data =  await load_doc(page);
-      if(fetch_data.valid){
-        documentData = fetch_data.result
-        loaded = true;
-      }else{
-        loaded = false;
-        error = fetch_data.errors.join(",")
-      }
-      
+      console.log(page)
+      loaded = true
     } catch (err) {
       error = err.message;
       loaded =false
-    } finally {
-      loading = false;
-    }
+    } 
   });
 
   async function on_bbdb_action(action) {
@@ -96,14 +84,15 @@
 </script>
 
 <div>
-  {#if loading}
+  {#if loaded==false}
     <p>Loading document...</p>
-  {:else if error}
+  {#if error}
     <p class="text-danger">{error}</p>
-  {:else if loaded && documentData}
+  {/if}
+
+  {:else if loaded ==true}
   <div class="container-fluid">
-    <Doc doc={documentData.doc} schema={documentData.schema}  bbdb_action={on_bbdb_action} editable={true} custom_editors={custom_editors}  {BBDB}/>
+    <Doc   bbdb_action={on_bbdb_action}  custom_editors={custom_editors}  {BBDB}  doc_key={page.criteria}  />
   </div>
-   
   {/if}
 </div>

@@ -6,7 +6,7 @@
   // import {emit_bbdb_event} from "$lib/bbdb_actions.js"
 
   import ObjectViewer from "$lib/utils/ObjectViewer.svelte";
-  import LogViewer from "$lib/editors/LogViewer.svelte";
+  import LogViewer from "$lib/utils/LogViewer.svelte";
   import TableViewer from "$lib/utils/TableViewer.svelte";
 
   import Help from "$lib/pages/Help.svelte";

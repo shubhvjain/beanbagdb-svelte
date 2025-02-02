@@ -47,36 +47,15 @@ Core, util components are the base components using which pages, apps and settin
 
 Custom data editor :
 
-```{svelte}
-<script>
-  import { onMount } from "svelte";
-  import { emit_bbdb_event, load_editor } from "../bbdb_actions.js";
 
-  let { doc = {}, schema = {}, mode = "view", BBDB, bbdb_action } = $props();
-  let loaded = $state(false);
-  let data = $state({});
 
-  let new_doc = $state(false)
-  let blank_data = $state({})
+<selected_component.component  
+        bind:data={new_data}
+        schema={schema} 
+        mode="edit"
+        {new_doc},
+        {BBDB}
+        bbdb_action={new_handle_bbdb_action}
+        bind:data_valid={data_valid}
 
-  onMount(async () => {
-    let opt = load_editor({ doc, schema, mode });
-    new_doc = opt.new_doc
-    blank_data = opt.blank_data
-    if (new_doc) {
-      data = {...blank_data};
-      mode = "edit";
-    } else {
-      data = doc.data;
-    }
-    loaded = true;
-  });
-</script>
-{#if loaded}
-{#if mode === "view"}
-  View
-{:else if mode == "edit"}
-  Edit
-{/if}
-{/if}
-```
+/>

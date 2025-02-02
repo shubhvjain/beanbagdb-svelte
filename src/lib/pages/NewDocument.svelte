@@ -3,9 +3,8 @@
   import {
     emit_bbdb_event
   } from "$lib/bbdb_actions.js";
-  import NewDoc from "$lib/core/NewDoc.svelte";
+  import Doc from "$lib/core/Doc.svelte";
   let { page_bbdb_action, BBDB, page } = $props();
-  let new_not_allowed = ["system_log"];
   let loaded = $state(false);
   let loading = $state(true);
   let error = $state(null);
@@ -13,14 +12,8 @@
   let schemas = $state([]);
   let selected_schema = $state(null);
 
-  let recent_links = $state([]);
   async function load_schemas(page1) {
-    //console.log("loading schemas")
-    //console.log(page1)
     let doc = await BBDB.plugins.txtcmd.run(page1);
-    //if()
-    //console.log(doc);
-
     return doc;
   }
 
@@ -32,7 +25,6 @@
           "Unable to load page. Component not configured properly"
         );
       }
-      console.log(page);
 
       if (page.criteria.schema != "") {
         try {
@@ -59,79 +51,28 @@
       }
     } catch (err) {
       error = err.message;
-    } finally {
-      loading = false;
-    }
+    } 
   });
 
   async function on_bbdb_action(action) {
     console.log(action);
-    if (action.name == "new_document") {
-      // edit a doc
-      console.log("adding a new document ");
-      try {
-        let data_obj;
-        if (action.data.schema == "schema") {
-          // generate blank record
-          data_obj = {
-            name: action.data.data.name,
-            title: action.data.data.name,
-            description: action.data.data.name,
-            active: false,
-            schema: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                title: { type: "string" },
-              },
-            },
-            settings: {},
-          };
-        } else {
-          data_obj = action.data.data;
-        }
-        let update1 = await BBDB.create({
-          schema: action.data.schema,
-          data: data_obj,
-        });
-        console.log(update1);
-        recent_links.push({ link: update1.meta.link, type: update1.schema });
-        return { added: true, error: null };
-      } catch (error) {
-        console.log(error);
-        return { added: false, error: error };
-      }
-    } else {
-      if (page_bbdb_action) {
-        return await page_bbdb_action(action);
-      }
+    if (page_bbdb_action) {
+      return await page_bbdb_action(action);
     }
-  }
 
-  function emit_open_page(link) {
-    page_bbdb_action(emit_bbdb_event("textcmd", { text: `open/link/${link}` }));
   }
 
   async function load_schema_new(schema_name) {
-    selected_schema = null;
-    if (schema_name) {
-      console.log(schema_name);
-      let schema_doc = await BBDB.get({
-        type: "schema",
-        criteria: { name: schema_name },
-      });
-      console.log(schema_doc);
-      selected_schema = schema_doc.data;
-    }
+    selected_schema= null
+    setTimeout(()=>{
+      selected_schema = schema_name;
+    },50)
   }
 </script>
 
 <div>
-  {#if loading}
-    <p>Loading document...</p>
-  {:else if error}
-    <p class="text-danger">Error: {error}</p>
-  {:else if loaded}
+  {#if loaded}
+  
     <div class="container-fluid pt-1 mt-2">
 
       {#if schemas.length>0}
@@ -149,31 +90,17 @@
     </select>
       {/if}
 
-      
-
-
       {#if selected_schema}
         <div class="row">
           <div class="col-lg-12">
-            <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action} />
+            <Doc  {BBDB} bbdb_action={on_bbdb_action} new_doc={true}   schema_name={selected_schema} />
+            <!-- <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action} /> -->
           </div>
         </div>
-        {#if recent_links.length > 0}
-          <div class="row">
-            <div class="col-lg-12">
-              Recently created docs :
-              {#each recent_links as rec}
-                <button
-                  class="btn btn-sm btn-link m-1"
-                  onclick={() => emit_open_page(rec.link)}
-                >
-                  {rec.link} ({rec.type})
-                </button>
-              {/each}
-            </div>
-          </div>
-        {/if}
       {/if}
     </div>
+   
+  {:else}
+  <p>Loading document...</p>
   {/if}
 </div>

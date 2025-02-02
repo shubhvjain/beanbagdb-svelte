@@ -6,7 +6,6 @@ import "./default.style.css"
 // Reexport your entry components here
 // Components from core
 export { default as Doc } from './core/Doc.svelte';
-export { default as NewDoc } from './core/NewDoc.svelte';
 export { default as SearchDocResults } from './core/SearchDocResults.svelte';
 export { default as SearchQuery } from './core/SearchQuery.svelte';
 export { default as SystemDoc } from './core/SystemDoc.svelte';
@@ -37,9 +36,7 @@ export { default as LinkEditor } from './utils/LinkEditor.svelte';
 export { default as ObjectViewer } from './utils/ObjectViewer.svelte';
 export { default as SchemaEditor } from './editors/SchemaEditor.svelte';
 export { default as TableViewer } from './utils/TableViewer.svelte';
-export { default as TextEditor } from './utils/TextEditor.svelte';
-export { default as KeyEditor } from './utils/KeyEditor.svelte';
-export { default as LogViewer } from './editors/LogViewer.svelte';
+export { default as LogViewer } from './utils/LogViewer.svelte';
 export { default as ObjectViewer2 } from './utils/ObjectViewer2.svelte';
 export { default as SettingEditor } from './editors/SettingEditor.svelte';
 export { default as TagsEditor } from './utils/TagsEditor.svelte';

@@ -234,3 +234,37 @@ export const load_editor = (options={doc:{},schema:{},mode:""}) => {
   }
   return res
 };
+
+
+
+// to load a custom editor for a specific schema
+export const get_blank_object = (schema,schema_name="") => {
+    if(schema_name=="schema"){
+      
+       let doc =  {
+          name: "unnamed",
+          title: "Untitled",
+          description: "Undescribed",
+          active: false,
+          schema: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              name: { type: "string" },
+            },
+          },
+          settings: {
+            primary_keys:[],
+            encrypted_fields:[]
+          },
+        }
+        return doc
+      
+    }
+    const ajv = new Ajv({code: {esm: true},strict:false,useDefaults:true}) // options can be passed, e.g. {allErrors: true}
+    const data_copy = {}
+    const validate = ajv.compile(schema);
+    const valid = validate(data_copy);
+    console.log(data_copy)
+    return data_copy
+};
