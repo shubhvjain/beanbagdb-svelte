@@ -4,7 +4,7 @@
   let {schema,data= $bindable(),data_valid = $bindable()}  = $props()
   import { emit_bbdb_event, get_schema_schema } from "$lib/bbdb_actions.js";
   
-import RawJsonEditor from "./RawJSONEditor.svelte";
+import RawJsonEditor from "../utils/RawJSONEditor.svelte";
   
   let loaded = $state(false);
 

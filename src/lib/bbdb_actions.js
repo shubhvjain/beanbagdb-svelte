@@ -1,3 +1,6 @@
+import Ajv from "ajv";
+
+
 ///////////// methods related to the list of local databases available //////////
 export const LOCAL_STORAGE_KEY_NAME = "beanbag_web_db_list";
 
@@ -215,3 +218,19 @@ export const get_default_nav_items = ()=>{
 
   return {inner,outer}
 }
+
+
+// to load a custom editor for a specific schema
+export const load_editor = (options={doc:{},schema:{},mode:""}) => {
+  let res = { new_doc: false, blank_data: {} }
+  if (Object.keys(options.doc).length == 0) {res.new_doc = true} 
+  else {if (Object.keys(options.doc.data).length == 0) {res.new_doc = true;}}
+  if(res.new_doc){
+    const ajv = new Ajv({code: {esm: true},strict:false,useDefaults:true}) // options can be passed, e.g. {allErrors: true}
+    const data_copy = {}
+    const validate = ajv.compile(options.schema);
+    const valid = validate(data_copy);
+    res.blank_data = data_copy
+  }
+  return res
+};

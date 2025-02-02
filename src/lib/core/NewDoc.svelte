@@ -1,5 +1,5 @@
 <script>
-  let { schema, options, bbdb_action } = $props();
+  let { schema, options, bbdb_action, custom_editors={},BBDB } = $props();
   import { emit_bbdb_event } from "$lib/bbdb_actions.js";
   import { onMount } from "svelte";
   import JsonEditor from "$lib/utils/JSONEditor.svelte";
@@ -15,9 +15,19 @@
       name:{type:"string"}
     }
   }
+  const system_custom_components = {
+    "":{
+      title:"",
+      component: ""
+    }
+  }
+
+
   onMount(() => {
     loaded = true
   });
+
+
   const on_add_click = async ()=>{
     try {
       new_adding = true

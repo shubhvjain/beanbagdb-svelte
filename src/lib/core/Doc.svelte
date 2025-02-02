@@ -6,7 +6,7 @@
   import TagsEditor from "../utils/TagsEditor.svelte";
   import LinkEditor from "../utils/LinkEditor.svelte";
   import JsonEditor from "../utils/JSONEditor.svelte";
-  import SchemaEditor from "../utils/SchemaEditor.svelte";
+  import SchemaEditor from "../editors/SchemaEditor.svelte";
   let { doc, schema, editable = false, edit_mode = "internal" , bbdb_action , custom_editors={}, BBDB} = $props();
   let loaded = $state(false);
   let mode = $state("view");
@@ -190,6 +190,7 @@
               <div class="p-1"><i>Created</i></div>
               <div class="p-1">{format_timestamp(doc.meta.created_on)}</div>
             </li>
+
             <li class="list-group-item list-group-item-light">
              
                 <div class="p-1"> <i>Tags</i></div>  
@@ -209,7 +210,11 @@
               <div class="p-1"> <i>Link</i></div>  
               <LinkEditor  bbdb_action={util_action_handler} bind:link={doc.meta.link}/>
               
-            </li>      
+            </li>   
+            <li class="list-group-item list-group-item-light">
+              <div class="p-1"><i>ID</i></div>
+              <div class="p-1">{doc._id}</div>
+            </li>   
           </div>
         </div>
 

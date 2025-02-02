@@ -42,3 +42,41 @@ The basic architecture of building User interfaces using basic components are de
 
 
 Core, util components are the base components using which pages, apps and setting pages are built. UI component provide a logical interface for users to interact with their database 
+
+
+
+Custom data editor :
+
+```{svelte}
+<script>
+  import { onMount } from "svelte";
+  import { emit_bbdb_event, load_editor } from "../bbdb_actions.js";
+
+  let { doc = {}, schema = {}, mode = "view", BBDB, bbdb_action } = $props();
+  let loaded = $state(false);
+  let data = $state({});
+
+  let new_doc = $state(false)
+  let blank_data = $state({})
+
+  onMount(async () => {
+    let opt = load_editor({ doc, schema, mode });
+    new_doc = opt.new_doc
+    blank_data = opt.blank_data
+    if (new_doc) {
+      data = {...blank_data};
+      mode = "edit";
+    } else {
+      data = doc.data;
+    }
+    loaded = true;
+  });
+</script>
+{#if loaded}
+{#if mode === "view"}
+  View
+{:else if mode == "edit"}
+  Edit
+{/if}
+{/if}
+```

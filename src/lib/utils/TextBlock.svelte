@@ -23,7 +23,7 @@
   import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 
   let {
-    text = " ",
+    text = $bindable(),
     onContentChange,
     validation,
     isValid = true,

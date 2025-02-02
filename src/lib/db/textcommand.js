@@ -13,6 +13,27 @@ const parse_params_string = (param)=>{
   return data
 }
 
+const params_to_data_query=(params)=>{
+  let selector_and = {}
+  const custom_items = {
+    "schema": "schema",
+    "link":"meta.link",
+    "id":"_id",
+    "title":"meta.title"
+  }
+  Object.keys(params).map(itm=>{
+    let key = "data."+itm
+    let value = params[itm]
+    if(custom_items[itm]){
+      key = custom_items[itm]
+    }
+    selector_and[key] = value 
+  })  
+
+  return {selector:selector_and}
+}
+
+
 const commands = {
   new: {
     parse: async (instance,parts) => {
@@ -183,7 +204,24 @@ const commands = {
     run:async(instance,command)=>{
       return command
     } 
-  }
+  },
+  search:{
+    parse : async (instance,parts)=>{
+      let criteria = {params : {}}
+      let qsplit = parts.join().split("?")
+      if(qsplit.length>1){criteria.params = parse_params_string(qsplit[1])}
+      criteria.search_query =   params_to_data_query(criteria.params)  
+      if(Object.keys(criteria.search_query.selector).length==0){
+        throw new Error("Invalid query. Form key=value&key1=value&...")
+      }
+      return {...criteria}
+    },
+    run : async (instance,command)=>{
+      console.log(command.criteria.search_query)
+      let search = await instance.search(command.criteria.search_query)
+      return search
+    },
+  },
 };
 
 const parse = async (instance, text) => {

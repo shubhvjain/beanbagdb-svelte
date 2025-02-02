@@ -11,6 +11,10 @@
 
   let setting_schema = {}
 
+  import SearchBox from "$lib/utils/SearchBox.svelte";
+  import TextBlock from "$lib/utils/TextBlock.svelte";
+ 
+  import GraphEdgeEditor from "$lib/editors/GraphEdgeEditor.svelte";
 
   async function load_setting(page1) {
    
@@ -112,6 +116,8 @@
     page_bbdb_action(emit_bbdb_event("textcmd",{text:cmd}))
   }
 
+  let sampleText = $state("Text")
+
 </script>
 
 <div>
@@ -122,9 +128,20 @@
   {:else if loaded }
   <div class="container-fluid">
     <h3>Workspace home</h3>
-    <div class="list-group">
-    
 
+<br>
+
+<GraphEdgeEditor bbdb_action={on_bbdb_action} {BBDB}  />
+
+<!-- <SearchBox search_query={"schema=object"} on_load_select_first={true}  bbdb_action={on_bbdb_action}  max_selection={4} {BBDB} /> -->
+    <br>
+    <br>
+
+    <!-- <TextBlock bind:text={sampleText}/> -->
+
+    {sampleText}
+
+    <div class="list-group">
       {#each all_pages as pg }
         <button type="button" class="list-group-item list-group-item-action" onclick={()=>open_page(pg.command)}>  <i class="m-2"> {@html pg.icon} </i>  {pg.text}</button>
       {/each} 
