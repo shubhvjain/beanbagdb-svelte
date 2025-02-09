@@ -5,18 +5,16 @@
     copy_to_clipboard,
     format_timestamp,
     emit_bbdb_event,
-    remove_some_keys,
     download_data,
     get_blank_object,
   } from "../bbdb_actions.js";
 
-  import SystemDoc from "./SystemDoc.svelte";
   import TagsEditor from "../utils/TagsEditor.svelte";
   import LinkEditor from "../utils/LinkEditor.svelte";
   import SchemaEditor from "../editors/SchemaEditor.svelte";
   import DefaultEditor from "$lib/editors/DefaultEditor.svelte";
   import GraphEdgeEditor from "$lib/editors/GraphEdgeEditor.svelte";
-
+  import SettingEditor from "$lib/editors/SettingEditor.svelte";
   let {
     BBDB,
     bbdb_action,
@@ -26,7 +24,7 @@
 
     edit_mode = "internal",
     custom_editors = {},
-    doc_key = {},
+    doc_key = {}
   } = $props();
 
   // const system_docs1 = ["system_setting","system_script"];
@@ -56,6 +54,14 @@
         view: true,
       },
     },
+    system_setting:{
+      component: SettingEditor,
+      allow: {
+        new: true,
+        edit: true,
+        view: true,
+      },
+    }
 
   };
 
@@ -87,6 +93,9 @@
     links: [],
   });
 
+
+
+  let edit_data_valid = $state(false);
   let full_doc = $state({});
   let doc_data = $state({}); // this is to pass to the editor component
   let mode = $state("view");
@@ -125,17 +134,16 @@
         }
         let criteria = { ...doc_key, include_schema: true };
         let search = await BBDB.read(criteria);
-        schema = search.schema;
-        console.log(search);
+        schema = search.schema.schema;
+        //console.log(schema);
         full_doc = search.doc;
         doc_data = full_doc.data;
-        schema_name = schema.name
+        schema_name = search.schema.name
         if (system_schema[schema_name]) {
           selected_component = system_schema[schema_name];
         } else if (custom_editors[schema_name]) {
           selected_component = custom_editors[schema_name];
         }
-
         loaded = true;
         console.log(mode);
       } catch (error) {
@@ -151,16 +159,7 @@
     console.log(new_data);
     add_status.processing = true;
     try {
-
-      // if(schema_name == "system_edge"){
-      //   new_data["node1"] = {"id":new_data["node1"]}
-      //   new_data["node2"] = {"id":new_data["node2"]}
-      // }
-
-      let resp =
-        schema_name == "system_edge"
-          ? await BBDB.create_edge(new_data)
-          : await BBDB.create({ schema: schema_name, data: new_data });
+      let resp = await BBDB.create({ schema: schema_name, data: new_data });
       console.log(resp);
       add_status.message = `Added!`;
       add_status.status = "success";
@@ -169,14 +168,13 @@
       console.log(error);
       //add_status.processing = true
       add_status.message = `${error.message}`;
-      add_status.status = "error";
+      add_status.status = "danger";
     }
   }
   function emit_open_page(link) {
     bbdb_action(emit_bbdb_event("textcmd", { text: `open/link/${link}` }));
   }
 
-  let edit_data_valid = $state(false);
 
   const edit_external = () => {
     console.log("External edit triggered with data:", data);
@@ -190,16 +188,26 @@
 
   const edit_internal = async () => {
     try {
-      await bbdb_action(
-        emit_bbdb_event("update_doc_data", {
-          link: doc.meta.link,
-          data: doc.data,
-          rev: doc._rev,
-        })
-      );
-    } catch (error) {
-      console.log(error);
-    }
+        let update1 = await BBDB.update({
+          criteria: doc_key,
+          updates: {data: doc_data} ,
+          rev_id: full_doc._rev,
+        });
+        await bbdb_action(
+          emit_bbdb_event("show_ui_message", {
+            type: "success",
+            message: "Saved",
+          })
+        );
+        console.log(update1);
+      } catch (error) {
+        await bbdb_action(
+          emit_bbdb_event("show_ui_message", {
+            type: "error",
+            message: error.message,
+          })
+        );
+      }
   };
 
   const edit_update_meta_action_handler = async (data) => {
@@ -224,6 +232,10 @@
       }
     }
   };
+
+  const edit_handle_bbdb_action = (data)=>{
+    console.log(data)
+  }
 
   // to modify the title of the doc
   let isTitleEditing = $state(false);
@@ -257,6 +269,10 @@
         );
       }
     }
+  }
+
+  const switch_to_view = ()=>{
+    mode="view"
   }
 </script>
 
@@ -440,6 +456,16 @@
                   </svg>
                   Save
                 </button>
+                <button
+                  class="btn btn-link btn-sm"
+                  disabled={edit_data_valid ? "" : "disabled"}
+                  onclick={() => switch_to_view() }
+                >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                  <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
+                </svg>
+                  View
+                </button>
               {/if}
             {/if}
           </div>
@@ -463,7 +489,24 @@
         the button above
       {/if}
     {:else if mode == "edit"}
-    
+      {#if selected_component.allow.edit}
+          <selected_component.component
+          bind:data={doc_data}
+          {schema}
+          mode="edit"
+          {new_doc}
+          {BBDB}
+          bbdb_action={edit_handle_bbdb_action}
+          data_valid= {edit_data_valid}/>
+          
+          {#if edit_data_valid==false}
+            <p class="text text-danger">Validation error. Fix the errors to save changes</p>
+          {/if}
+
+      {:else}
+        Editing {schema_name} doc is not supported. You can download the data using
+        the button above
+      {/if}
     {/if}
 
 

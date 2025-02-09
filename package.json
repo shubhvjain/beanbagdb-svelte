@@ -54,10 +54,16 @@
 		"@lezer/lr": "^1.4.2",
 		"ajv": "^8.17.1",
 		"axios": "^1.7.9",
-		"beanbagdb": "^0.6.3",
+		"beanbagdb": "^0.6.5",
 		"bootstrap": "^5.3.3",
 		"codemirror": "^6.0.1",
+		"cytoscape": "^3.31.0",
+		"cytoscape-edgehandles": "^4.0.1",
+		"cytoscape-node-html-label": "^1.2.2",
+		"katex": "^0.16.21",
+		"mermaid": "^11.4.1",
 		"svelte-jsoneditor": "^2.3.3",
-		"svelvet": "^10.0.2"
+		"svelvet": "^10.0.2",
+		"vis-network": "^9.1.9"
 	}
 }

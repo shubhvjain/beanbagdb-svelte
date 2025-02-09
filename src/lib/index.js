@@ -8,7 +8,7 @@ import "./default.style.css"
 export { default as Doc } from './core/Doc.svelte';
 export { default as SearchDocResults } from './core/SearchDocResults.svelte';
 export { default as SearchQuery } from './core/SearchQuery.svelte';
-export { default as SystemDoc } from './core/SystemDoc.svelte';
+export { default as ShortDoc } from './core/ShortDoc.svelte';
 
 // Components from db
 // No Svelte components to export from db
@@ -48,5 +48,5 @@ export * as beanbagdbweb from './db/beanbagdbweb.js';
 export * as pouchdbFind from './db/pouchdb.find.js';
 export * as pouchdbMin from './db/pouchdb.min.js';
 export * as textcommand from './db/textcommand.js';
-
+export * as graphplugin from './db/graph.js';
 export * as bbdb_actions from './bbdb_actions.js';

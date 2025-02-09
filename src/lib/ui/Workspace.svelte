@@ -18,7 +18,6 @@
   import NewDocument from "$lib/pages/NewDocument.svelte";
   import Document from "$lib/pages/Document.svelte";
   import GraphView from "$lib/pages/GraphView.svelte";
-
   let { db , uiComponents, settings ={}, onWorkspaceLoad  , custom_editors , additional_nav_items=[]} = $props();
   // export let db;
 
@@ -168,8 +167,9 @@
       });
     }else{
       let test = [
-        "home",
-        // "page/info",
+        "ui/graph",  
+      "home",
+        
         // "page/help",
         //"page/search",
         //  "page/plugins",
@@ -338,8 +338,12 @@
     pages = pages.filter((page) => page.id !== pageId);
   }
 
-  function changePageSize(page, newSize) {
-    page.size = newSize; // Update the size property
+  function changePageSize(page) {
+
+    let currentIndex = sizes.indexOf(page.size);
+    let nextIndex = (currentIndex + 1) % sizes.length; // Loop back when reaching the last size
+    page.size = sizes[nextIndex];
+    //page.size = newSize; // Update the size property
   }
 
 
@@ -368,6 +372,7 @@
       addMessage(action.data.message,action.data.type)
     }
   }
+  const sizes = ["small", "medium", "large", "full"];
 </script>
 
 {#if !Error & Loaded}
@@ -385,15 +390,25 @@
               </div>
             {/each}
           </div>
+          {#each  nav_items.outer as itm}
+          <button
+            class="btn btn-sm btn-outline-primary"
+            type="button"
+            onclick={()=>{runTextCommand(itm.command)}}
+            aria-label="Run text command.Type help for more"
+            title="Run text command.Type help for more">
+          {@html itm.icon} 
+          </button>
+          {/each}
           <input
-            class="form-control"
+            class="form-control form-control-sm"
             bind:value={searchTerm}
             placeholder="Search or open new page..."
             aria-label="Search term"
             type="text"
           />
           <button
-            class="btn btn-lg btn-outline-secondary"
+            class="btn btn-sm btn-outline-secondary"
             type="button"
             onclick={() => runTextCommand(searchTerm)}
             aria-label="Run text command.Type help for more"
@@ -415,7 +430,7 @@
           <button
             onclick={toggleTheme}
             type="button"
-            class="btn btn-outline-secondary b"
+            class="btn btn-outline-secondary btn-sm"
             aria-label="Change theme"
             title="toggle theme"
             ><svg
@@ -461,49 +476,18 @@
     </nav>
     <!-- Pages Container -->
     <div class="pages-container">
-      <div class="d-flex flex-column flex-shrink-0 bg-body-tertiary" >
-        <!-- <a href="/" class="d-block p-3 link-body-emphasis text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-          <svg class="bi pe-none" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
-          <span class="visually-hidden">Icon-only</span>
-        </a> -->
-        <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
-          {#each  nav_items.outer as itm}
-          <li class="nav-item">
-            <a  title={itm.title} onclick={()=>{runTextCommand(itm.command)}} class="nav-link  py-3 border-bottom rounded-0" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Home" data-bs-original-title="Home">
-              {@html itm.icon} 
-            </a>
-          </li>
-          {/each}
-        </ul>
-        <div class="dropdown border-top">
-          <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
-            </svg>
-          </a>
-          <ul class="dropdown-menu text-small shadow" style="">
-            {#each nav_items.inner as item }
-              <li><a class="dropdown-item" onclick={()=>runTextCommand(item.command)}> {@html item.icon}  &nbsp; {item.text}</a></li>
-            {/each}
-          </ul>
-        </div>
-      </div>
+     
       {#each pages as page}
         <div class="page {page.size}" id={page.id}>
           <div class="d-flex justify-content-between align-items-center">
             <span class="page-title"></span>
             <div class="d-flex align-items-center">
-              <select
-                class="form-select form-select-sm"
-                style="width: auto;border-radius:0px;"
-                onchange={(e) => changePageSize(page, e.target.value)}
-                bind:value={page.size}
-              >
-                <option value="small">25%</option>
-                <option value="medium">50%</option>
-                <option value="large">75%</option>
-                <option value="full">100%</option>
-              </select>
+              <button class="btn btn-sm btn-outline-primary" onclick={()=>changePageSize(page)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows" viewBox="0 0 16 16">
+                  <path d="M1.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L2.707 7.5h10.586l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L13.293 8.5H2.707l1.147 1.146a.5.5 0 0 1-.708.708z"/>
+                </svg>
+              </button>
+             
 
               <button
                 class="btn btn-sm btn-outline-danger"

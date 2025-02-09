@@ -1,5 +1,5 @@
 <script>
-  let {link  = $bindable() ,bbdb_action} = $props()
+  let {link  = $bindable() ,bbdb_action, show_suggestion=true} = $props()
   import {emit_bbdb_event} from "$lib/bbdb_actions.js"
 
   // Props
@@ -83,7 +83,7 @@
     />
     <button class="btn btn-success btn-sm" onclick={saveLink}>Save</button>
     <button class="btn btn-secondary btn-sm" onclick={cancelEditing}>Cancel</button>
-    
+   {#if show_suggestion}
     <div class="random-id-buttons">
       {#each randomIdGenerators as { name, generate }}
         <button class="btn btn-outline-primary btn-sm btn-random-id m-1" onclick={() => addRandomIdToInput(generate)}>
@@ -91,6 +91,7 @@
         </button>
       {/each}
     </div>
+    {/if}
   {:else}
     <a href="" class="text-primary">{link}</a>
     <button class="btn btn-link btn-sm" onclick={startEditing} aria-label="Link edit">

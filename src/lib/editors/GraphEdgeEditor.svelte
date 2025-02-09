@@ -41,7 +41,9 @@
       let n1 = await BBDB.read({_id:data.node1})
       console.log(n1)
       view_data.node1 = n1.doc
+      view_data.node1_query = `id=${data.node1}`
       let n2 = await BBDB.read({_id:data.node2})
+      view_data.node2_query = `id=${data.node2}`
       console.log(n2)
       view_data.node2 = n2.doc
       console.log(view_data)
@@ -85,6 +87,7 @@ A[${view_data.node1.meta.title}]--${data.edge_name}---B[${view_data.node2.meta.t
         <h5>Select Node 1</h5>
         <SearchBox
           {BBDB}
+          search_query={view_data.node1_query||""}
           on_selection_changed={on_node1_select}
           on_load_select_first={!new_doc}
           bbdb_action={on_bbdb_action}
@@ -105,6 +108,7 @@ A[${view_data.node1.meta.title}]--${data.edge_name}---B[${view_data.node2.meta.t
         <h5>Select Node 2</h5>
         <SearchBox
           {BBDB}
+          search_query={view_data.node2_query||""}
           on_selection_changed={on_node2_select}
           on_load_select_first={!new_doc}
           bbdb_action={on_bbdb_action}

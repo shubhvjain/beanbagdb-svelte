@@ -29,8 +29,9 @@
 </script>
 
 {#if mode == "edit"}
-  <JsonEditor bind:data {schema} bind:data_valid />
-{:else}
+  <JsonEditor bind:data {schema} bind:data_valid={data_valid} />
+
+{:else if mode == "view"}
 <div class="pt-3">
   <ObjectViewer2 data={data}/>
 </div>
