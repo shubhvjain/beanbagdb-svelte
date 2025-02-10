@@ -282,44 +282,41 @@
   const on_node_selected = (data) => {
     if (data) {
       //console.log(data);
-      loadNode(data);
+      let ids  = []
+      data.map(d=>{ids.push(d.link)})
+      loadNode(ids);
       return { clear: true };
     } else {
       return { clear: false };
     }
   };
 
-  async function load_node_by_link(links) {
-    if (!links || links.length == 0) {
-      return;
-    }
-    let search = await BBDB.search({
-      selector: { "meta.link": { $in: links } },
-    });
-    console.log(search);
-    let nodes = [];
-    search.docs.map((d) => {
-      nodes.push({ ...d.meta, id: d._id });
-    });
-    loadNode(nodes);
+  async function load_neighbor_subgraph(nodes){
+    console.log(nodes)
+    let graph = await BBDB.plugins.graph.find_neighbors(nodes)
+    return graph 
   }
 
   async function loadNode(nodes) {
-    // let graph_items = await BBDB.
-    //elements.push(...data)
-    nodes.map((data) => {
-      let new_load = {
-        group: "nodes",
-        data: data,
-      };
+    console.log(nodes)
+    let  load_nodes = await load_neighbor_subgraph(nodes)
+    console.log(load_nodes)
+    load_nodes.map(itm=>{
       try {
-        cy.add(new_load);
+        cy.add(itm);
       } catch (error) {
         console.log(error);
       }
-    });
-    cy.layout({ name: "grid" }).run();
+    })
+    cy.layout({ 
+      name: "breadthfirst" , 
+      padding: 30,
+      directed :true,
+
+
+    }).run();
   }
+
 
   function removeSelected() {
     cy.$(":selected").remove();
@@ -340,7 +337,7 @@
       console.log(cms);
       if (cms.valid) {
         if (cms.name == "open") {
-          load_node_by_link([cms.criteria.link]);
+          loadNode([cms.criteria.link])
         }
       }
     }
@@ -362,6 +359,10 @@
   function toggle_new_box() {
     newBox_editor = !newBox_editor;
     newBox.style.display = newBox_editor ? "block" : "none";
+  }
+
+  function reset_view(){
+    cy.elements().remove();
   }
 </script>
 
@@ -447,9 +448,25 @@
                 />
               </svg>
             </button>
+
+            <button
+              aria-label="input"
+              onclick={reset_view}
+              class="btn btn-sm btn-primary"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+              <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+            </svg>
+             
+            </button>
+
+            
+
+
           </div>
           <div id="cy"></div>
           <div id="loadBox" bind:this={loadBox}>
+            <h5 class="p-1 m-2 mb-1 border-bottom">Load Documents</h5>
             <div class="row">
               <div class="col-lg-12 m-1">
                 <SearchBox
@@ -463,6 +480,7 @@
             </div>
           </div>
           <div id="newBox" bind:this={newBox}>
+            <h5 class="p-1 m-2 mb-1 border-bottom">New Document</h5>
             <div class="row">
               <div class="col-lg-12">
                 <NewDocument {BBDB} page_bbdb_action={handle_bbdb_action} />
@@ -491,6 +509,7 @@
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     display: none; /* Initially hidden */
     z-index: 1000; /* Ensure it stays above Cytoscape */
+    background: #1008084f;
   }
 
   #controlBox {
@@ -502,6 +521,7 @@
     border: 1px solid #cccccc3d;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000; /* Ensure it stays above Cytoscape */
+    background: #1008084f;
   }
 
   #loadBox {
@@ -514,6 +534,7 @@
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000; /* Ensure it stays above Cytoscape */
     max-width: 500px;
+    background: #1008084f;
   }
 
   #newBox {
@@ -526,6 +547,7 @@
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000; /* Ensure it stays above Cytoscape */
     max-width: 500px;
+    background: #1008084f;
   }
 
   .node-label {

@@ -24,11 +24,12 @@
     pre_check: false,
 
     editor_options : {
-      theme: "tailwind",
+      theme: "spectre",
       //theme: "html",
+      titleHidden : true,
       disable_collapse: true,
       disable_edit_json: true,
-      disable_properties: true,
+      //disable_properties: true,
       use_default_values: true,
       disable_array_delete_last_row: true,
       disable_array_reorder: true,

@@ -9,6 +9,7 @@
     sync_db_once,
   } from "$lib/db/beanbagdbweb.js";
   import { text_command } from "$lib/db/textcommand.js";
+  import {graph_query} from "$lib/db/graph.js"
   import {get_default_nav_items} from "../bbdb_actions.js"
 
   // pages to display
@@ -47,6 +48,7 @@
     console.log(db);
     await BBDB.ready();
     await BBDB.load_plugin("txtcmd", text_command);
+    await BBDB.load_plugin("graph", graph_query);
     console.log("Plugin loaded");
     // load workspace settings
   }
@@ -169,8 +171,7 @@
       let test = [
         "ui/graph",  
       "home",
-        
-        // "page/help",
+                // "page/help",
         //"page/search",
         //  "page/plugins",
         //"page/schemas",
@@ -339,7 +340,6 @@
   }
 
   function changePageSize(page) {
-
     let currentIndex = sizes.indexOf(page.size);
     let nextIndex = (currentIndex + 1) % sizes.length; // Loop back when reaching the last size
     page.size = sizes[nextIndex];

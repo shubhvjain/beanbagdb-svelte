@@ -1,30 +1,27 @@
 <script>
   import { onMount } from "svelte";
   import mermaid from "mermaid";
-  let { diagram=$bindable()} = $props()
 
+  let { diagram = "" } = $props();
   let container;
+  let id = "";
 
   async function renderDiagram() {
-      //console.log(diagram)
-      if(container){
-        const {svg} = await mermaid.render('mermaid', diagram)
-        container.innerHTML=svg;
+      if (container) {
+          const uniqueId = `mermaid-${id}`;
+          const { svg } = await mermaid.render(uniqueId, diagram);
+          container.innerHTML = svg;
       }
   }
-  // Initialize Mermaid on component mount
+
   onMount(() => {
-    mermaid.initialize({
-      theme: 'neutral',
-    });
-    console.log(diagram)
-    setTimeout(()=>{
+    id = "id" + Math.floor(Math.random() * 10000); // Ensure uniqueness
+    mermaid.initialize({ theme: 'neutral' });
+
+    setTimeout(() => {
       renderDiagram();
-    },100)
-    
+    }, 100);
   });
- 
 </script>
 
-<span bind:this={container}/>
-
+<span id={id} bind:this={container}></span>

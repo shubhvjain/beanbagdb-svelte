@@ -66,7 +66,7 @@
   function selectDocument(doc) {
     if(selected.length < max_selection){
       if (!selected.find(doc1=>doc1.id==doc._id)) {
-        selected = [...selected, {id:doc._id,link:doc.meta.link,title:doc.meta.title}]; // Add to selected
+        selected = [{id:doc._id,link:doc.meta.link,title:doc.meta.title},...selected]; // Add to selected
         if(on_selection_changed){
           on_selection_changed(selected); // Notify parent
         }
@@ -119,14 +119,14 @@
 {#if loaded}
     <!-- Selected Documents as Tags -->
     {#if selected.length > 0}
-      <div class="mb-2 d-flex flex-wrap">
-        {#each selected as doc}
-          <span class="p-1 m-1">
-              {doc.title} 
-            <button aria-label="Input" class="btn-close btn-sm ms-2" onclick={() => removeDocument(doc)}></button>
-          </span>
-        {/each}
-      </div>
+    <div class="mb-2 d-flex flex-nowrap overflow-auto" style="white-space: nowrap; max-width: 100%;">
+      {#each selected as doc}
+        <span class="p-1 m-1 badge bg-primary d-flex align-items-center">
+          {doc.title} 
+          <button aria-label="Remove" class="btn-close btn-sm ms-2" onclick={() => removeDocument(doc)}></button>
+        </span>
+      {/each}
+    </div>
     {/if}
 
 
