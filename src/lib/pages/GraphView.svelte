@@ -15,21 +15,34 @@
   import NewDocument from "./NewDocument.svelte";
   import SearchBox from "$lib/core/SearchBox.svelte";
   import ShortDoc from "$lib/core/ShortDoc.svelte";
+  import EditEdge from "$lib/utils/EditEdge.svelte";
+  import Doc from "$lib/core/Doc.svelte"
 
   let cy = $state(null);
   let eh = $state(null);
   let elements = $state([]);
+  
   let selectedNode = $state(null);
   let selectedNodeId = $state(null);
+  let selectedEdge = $state(null);
+  let selectedEdgeId = $state(null);
+
+
   let icons = $state({});
   let infoBox = $state(null);
   let loadBox = $state(null);
+  let detailsBox = $state(null);
   let edge_editor = $state(false);
   let load_editor = $state(true);
+  let details_editor = $state(false);
+  let detail_id = $state(null)
+
   let newBox = $state(null);
   let newBox_editor = $state(false);
   let new_page_command = $state(null);
   let loaded = $state(false);
+
+  let excluded_schemas = ["schema","system_log","system_edge","system_edge_constraint"]
 
   // Function to encode raw SVG to Base64
   function encodeSVG(svgString) {
@@ -57,9 +70,16 @@
   <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
   <path d="M4.5 12.5A.5.5 0 0 1 5 12h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5m0-2A.5.5 0 0 1 5 10h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5m1.639-3.708 1.33.886 1.854-1.855a.25.25 0 0 1 .289-.047l1.888.974V8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V8s1.54-1.274 1.639-1.208M6.25 6a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5"/>
 </svg>`;
+
+  //console.log(icons)
   };
 
   let load_graph = () => {
+
+    toggle_details_box()
+    toggle_new_box()
+    // toggle_search_box()
+
     cy = cytoscape({
       container: document.getElementById("cy"),
       elements,
@@ -71,7 +91,7 @@
             width: "25px", // Small enough to fit the icon
             height: "25px",
             "background-color": "#ffffff",
-
+            //'label': 'data(title)',  // Ensure label is set
             // Set the background image dynamically
             "background-image": function (ele) {
               const schema = ele.data("schema");
@@ -176,6 +196,21 @@
       infoBox.style.display = "block";
     });
 
+    cy.on("dblclick", "edge", function (evt) {
+      const edge = evt.target;
+      // const name = node.data("name");
+      // const type = node.data("type");
+
+      console.log(edge)
+      // // Show the box
+      
+      selectedEdgeId = edge.data("id");
+      selectedEdge = edge;
+     
+
+      infoBox.style.display = "block";
+    });
+
     // Enable edgehandles
     cy.on("tap", "node", function (evt) {
       eh.enable(); // Enable edgehandles after clicking a node
@@ -187,6 +222,8 @@
         infoBox.style.display = "none";
         selectedNode = null;
         selectedNodeId = null;
+        selectedEdge = null
+        selectedEdgeId = null
       }
     });
 
@@ -248,25 +285,49 @@
         addedEdge.remove(); // Remove duplicate or reversed edge
       } else {
         let edge = existingEdge[0];
-        await createNewEdge(sourceNode.id(), targetNode.id(), "related_to");
+        let data1 = await createNewEdge(sourceNode.id(), targetNode.id(), "related_to");
+        console.log(data1)
         edge.data("edge_name", "related_to");
+        edge.data("id",data1._id);
       }
     });
+
+    cy.on("tapselect", "node", (event) => {
+      const selectedNode = event.target;
+      detail_id = null
+      setTimeout(() => {
+        
+        console.log("gonna show the doc now")
+        console.log(selectedNode.data("id"))
+        load_selected_node(selectedNode.data("id"),selectedNode.data("link"))
+      }, 1000);
+    });
+
   };
+
+  async function load_selected_node(id,link){
+    if(details_editor){
+      detail_id = id
+      loadNode([link])
+    }else{
+      detail_id = null
+    }
+  }
 
   async function createNewEdge(source, target, label) {
     try {
       let edge = await BBDB.create({
         schema: "system_edge",
-        data:{
+        data: {
           node1: { _id: source },
           node2: { _id: target },
           edge_name: label,
-        }
+        },
       });
-      console.log(edge)
+      return edge
+      console.log(edge);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
@@ -282,8 +343,10 @@
   const on_node_selected = (data) => {
     if (data) {
       //console.log(data);
-      let ids  = []
-      data.map(d=>{ids.push(d.link)})
+      let ids = [];
+      data.map((d) => {
+        ids.push(d.link);
+      });
       loadNode(ids);
       return { clear: true };
     } else {
@@ -291,38 +354,54 @@
     }
   };
 
-  async function load_neighbor_subgraph(nodes){
-    console.log(nodes)
-    let graph = await BBDB.plugins.graph.find_neighbors(nodes)
-    return graph 
+  async function load_neighbor_subgraph(nodes) {
+    console.log(nodes);
+    let graph = await BBDB.plugins.graph.find_neighbors(nodes);
+    return graph;
   }
 
   async function loadNode(nodes) {
-    console.log(nodes)
-    let  load_nodes = await load_neighbor_subgraph(nodes)
-    console.log(load_nodes)
-    load_nodes.map(itm=>{
+    console.log(nodes);
+    let load_nodes = await load_neighbor_subgraph(nodes);
+    console.log(load_nodes);
+    let added = 0
+    for (let index = 0; index < load_nodes.length; index++) {
+      const element = load_nodes[index];
       try {
-        cy.add(itm);
+        if( element.group=="nodes"){
+          let schema_check = excluded_schemas.find((e)=>{return e==element.data.schema})
+          //console.log(schema_check)
+          if(schema_check){
+            continue;
+          }
+        }
+        cy.add(element);
+        added++
+        
+        
       } catch (error) {
         console.log(error);
       }
-    })
-    cy.layout({ 
-      name: "breadthfirst" , 
-      padding: 30,
-      directed :true,
-
-
+    }
+    
+    if(added>0){
+      cy.layout({
+      name: "breadthfirst",
+      padding: 10,
+      directed: true,
+      fit: false,
+      spacingFactor: 0.75, 
     }).run();
+    }
+    
   }
-
 
   function removeSelected() {
     cy.$(":selected").remove();
   }
 
   async function handle_bbdb_action(option) {
+    console.log(option);
     if (option.name == "metadata_updated") {
       console.log(option);
       let node = cy.getElementById(option.data.id);
@@ -337,8 +416,22 @@
       console.log(cms);
       if (cms.valid) {
         if (cms.name == "open") {
-          loadNode([cms.criteria.link])
+          loadNode([cms.criteria.link]);
         }
+      }
+    }else if(option.name=="edge_updated"){
+      let edge = cy.getElementById(option.data.id);
+      if(edge){
+        edge.data(option.data);
+        console.log("updating");
+      }
+    }
+    else if(option.name=="edge_deleted"){
+      let edge = cy.getElementById(option.data.id);
+      if(edge){
+        edge.remove();
+        console.log("delete")
+
       }
     }
   }
@@ -360,10 +453,25 @@
     newBox_editor = !newBox_editor;
     newBox.style.display = newBox_editor ? "block" : "none";
   }
+  // toggle_details_box
 
-  function reset_view(){
+  function toggle_details_box() {
+    details_editor = !details_editor;
+    detailsBox.style.display = details_editor ? "block" : "none";
+  }
+
+  function reset_view() {
     cy.elements().remove();
   }
+
+  function saveGraphAsImage() {
+  const pngData = cy.png({ scale: 2 }); // Higher scale for better quality
+  const link = document.createElement('a');
+  link.href = pngData;
+  link.download = 'graph.png';
+  link.click();
+}
+
 </script>
 
 <div class="container-fluid">
@@ -384,6 +492,19 @@
                 </div>
               </div>
             {/if}
+            {#if selectedEdge}
+              <div class="row">
+                <div class="col-lg-12">
+                  <h6>Edit edge</h6>
+                  <EditEdge
+                    {BBDB}
+                    edge_id={selectedEdgeId}
+                    bbdb_action={handle_bbdb_action}
+                  />
+                </div>
+              </div>
+            {/if}
+
           </div>
           <div id="controlBox">
             <button
@@ -408,6 +529,24 @@
                 />
               </svg>
             </button>
+            <!-- <button
+              aria-label="input"
+              onclick={toggle_details_box}
+              class="btn btn-sm btn-primary"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-binoculars-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M4.5 1A1.5 1.5 0 0 0 3 2.5V3h4v-.5A1.5 1.5 0 0 0 5.5 1zM7 4v1h2V4h4v.882a.5.5 0 0 0 .276.447l.895.447A1.5 1.5 0 0 1 15 7.118V13H9v-1.5a.5.5 0 0 1 .146-.354l.854-.853V9.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v.793l.854.853A.5.5 0 0 1 7 11.5V13H1V7.118a1.5 1.5 0 0 1 .83-1.342l.894-.447A.5.5 0 0 0 3 4.882V4zM1 14v.5A1.5 1.5 0 0 0 2.5 16h3A1.5 1.5 0 0 0 7 14.5V14zm8 0v.5a1.5 1.5 0 0 0 1.5 1.5h3a1.5 1.5 0 0 0 1.5-1.5V14zm4-11H9v-.5A1.5 1.5 0 0 1 10.5 1h1A1.5 1.5 0 0 1 13 2.5z"
+                />
+              </svg>
+            </button> -->
 
             <button
               aria-label="input"
@@ -449,24 +588,66 @@
               </svg>
             </button>
 
-            <button
+            <!-- does not work properly  -->
+            <!-- <button
               aria-label="input"
-              onclick={reset_view}
+              onclick={saveGraphAsImage}
               class="btn btn-sm btn-primary"
             >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
-              <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-down" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M3.5 10a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 0 0 1h2A1.5 1.5 0 0 0 14 9.5v-8A1.5 1.5 0 0 0 12.5 0h-9A1.5 1.5 0 0 0 2 1.5v8A1.5 1.5 0 0 0 3.5 11h2a.5.5 0 0 0 0-1z"/>
+              <path fill-rule="evenodd" d="M7.646 15.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 14.293V5.5a.5.5 0 0 0-1 0v8.793l-2.146-2.147a.5.5 0 0 0-.708.708z"/>
             </svg>
-             
+
+            </button> -->
+
+            <button
+              aria-label="input"
+              onclick={toggle_details_box}
+              class="btn btn-sm btn-primary"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-binoculars-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M4.5 1A1.5 1.5 0 0 0 3 2.5V3h4v-.5A1.5 1.5 0 0 0 5.5 1zM7 4v1h2V4h4v.882a.5.5 0 0 0 .276.447l.895.447A1.5 1.5 0 0 1 15 7.118V13H9v-1.5a.5.5 0 0 1 .146-.354l.854-.853V9.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v.793l.854.853A.5.5 0 0 1 7 11.5V13H1V7.118a1.5 1.5 0 0 1 .83-1.342l.894-.447A.5.5 0 0 0 3 4.882V4zM1 14v.5A1.5 1.5 0 0 0 2.5 16h3A1.5 1.5 0 0 0 7 14.5V14zm8 0v.5a1.5 1.5 0 0 0 1.5 1.5h3a1.5 1.5 0 0 0 1.5-1.5V14zm4-11H9v-.5A1.5 1.5 0 0 1 10.5 1h1A1.5 1.5 0 0 1 13 2.5z"
+                />
+              </svg>
             </button>
 
-            
+            <button
+            aria-label="input"
+            onclick={reset_view}
+            class="btn btn-sm btn-delete"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+          </svg>
+           
+          </button>
 
-
+          </div>
+          <div id="detailsBox" bind:this={detailsBox}>
+            <h5 class="p-1 m-2 mb-1 border-bottom">View Document</h5>
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-lg-12 m-1">
+                 {#if detail_id} 
+                    <Doc {BBDB} doc_key={{"_id":detail_id}} bbdb_action={handle_bbdb_action} />
+                  {/if}
+                </div>
+              </div>
+            </div>
+           
           </div>
           <div id="cy"></div>
           <div id="loadBox" bind:this={loadBox}>
-            <h5 class="p-1 m-2 mb-1 border-bottom">Load Documents</h5>
+            <h5 class="p-1 m-2 mb-1 border-bottom">Search Documents</h5>
             <div class="row">
               <div class="col-lg-12 m-1">
                 <SearchBox
@@ -474,7 +655,6 @@
                   max_selection={10}
                   action_and_release={on_node_selected}
                   search_query="schema=object"
-                  on_load_select_first={true}
                 />
               </div>
             </div>
@@ -483,7 +663,7 @@
             <h5 class="p-1 m-2 mb-1 border-bottom">New Document</h5>
             <div class="row">
               <div class="col-lg-12">
-                <NewDocument {BBDB} page_bbdb_action={handle_bbdb_action} />
+                <NewDocument {BBDB} excluded_schemas={excluded_schemas} page_bbdb_action={handle_bbdb_action} />
               </div>
             </div>
           </div>
@@ -524,6 +704,21 @@
     background: #1008084f;
   }
 
+  #detailsBox {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    /* background: white; */
+    padding: 2px;
+    border: 1px solid #cccccc3d;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000; /* Ensure it stays above Cytoscape */
+    background: #1008084f;
+    width: 500px;
+    height: 525px;
+    overflow-y: scroll;
+  }
+
   #loadBox {
     position: absolute;
     bottom: 10px;
@@ -546,7 +741,7 @@
     border: 1px solid #cccccc3d;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000; /* Ensure it stays above Cytoscape */
-    max-width: 500px;
+    width: 450px;
     background: #1008084f;
   }
 

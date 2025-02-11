@@ -165,7 +165,7 @@
     <div class="row">
       <div class="col-lg-12">
         {#if isFocused && results.length > 0}
-          <div class="list-group mt-1 overflow-auto" style="max-height: 250px;">
+          <div class="list-group mt-1 overflow-auto" style="max-height: 125px;">
             {#each results as doc}
               <div class="list-group-item">
                 <div class="d-flex justify-content-between align-items-center">

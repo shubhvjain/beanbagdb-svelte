@@ -15,6 +15,7 @@
   import DefaultEditor from "$lib/editors/DefaultEditor.svelte";
   import GraphEdgeEditor from "$lib/editors/GraphEdgeEditor.svelte";
   import SettingEditor from "$lib/editors/SettingEditor.svelte";
+  import MediaEditor from "$lib/editors/MediaEditor.svelte";
   let {
     BBDB,
     bbdb_action,
@@ -37,6 +38,9 @@
         new: true,
         view: true,
       },
+      options:{
+        new_show_title_input:false
+      }
     },
     system_edge: {
       component: GraphEdgeEditor,
@@ -45,6 +49,9 @@
         edit: true,
         view: true,
       },
+      options:{
+        new_show_title_input:false
+      }
     },
     system_log: {
       component: DefaultEditor,
@@ -53,6 +60,9 @@
         edit: false,
         view: true,
       },
+      options:{
+        new_show_title_input:false
+      }
     },
     system_setting:{
       component: SettingEditor,
@@ -61,6 +71,17 @@
         edit: true,
         view: true,
       },
+      options:{
+        new_show_title_input:false
+      }
+    },
+    system_media:{
+      component: MediaEditor,
+      allow: {
+        new: true,
+        edit: true,
+        view: true,
+      }
     }
 
   };
@@ -75,6 +96,7 @@
   let new_data = $state({});
   // let new_meta = $state({}); // later
 
+  let new_data_meta = $state({})
   let add_data_valid = $state(false);
 
   let selected_component = $state({
@@ -100,7 +122,12 @@
   let doc_data = $state({}); // this is to pass to the editor component
   let mode = $state("view");
 
+  let default_options = {
+    new_show_title_input : true
+  }
+
   onMount(async () => {
+    console.log(custom_editors)
     if (new_doc == true) {
       try {
         if (!schema_name) {
@@ -120,6 +147,20 @@
           selected_component = custom_editors[schema_name];
         }
 
+        console.log(selected_component)
+
+        if(!selected_component.options){
+          selected_component.options = {...default_options}
+        }else{
+          selected_component.options = {...default_options,...selected_component.options}
+        }
+
+
+        if(selected_component.options.new_show_title_input){
+          new_data_meta = {title:""}
+        }
+
+        console.log(selected_component)
         loaded = true;
       } catch (error) {
         console.log(error)
@@ -159,7 +200,12 @@
     console.log(new_data);
     add_status.processing = true;
     try {
-      let resp = await BBDB.create({ schema: schema_name, data: new_data });
+      let new_doc = { schema: schema_name, data: new_data }
+      if(selected_component.options.new_show_title_input){
+        new_doc["meta"] = new_data_meta
+      }
+      console.log(new_doc)
+      let resp = await BBDB.create(new_doc);
       console.log(resp);
       add_status.message = `Added!`;
       add_status.status = "success";
@@ -220,6 +266,8 @@
           rev_id: full_doc._rev,
         });
         console.log(update1);
+        await bbdb_action(emit_bbdb_event("metadata_updated", {meta:full_doc.meta,id:full_doc._id}));
+        console.log("now send to update eta")
         return {update:true,error:null}
       } catch (error) {
         await bbdb_action(
@@ -259,6 +307,7 @@
           rev_id: full_doc._rev,
         });
         console.log(update1);
+        await bbdb_action(emit_bbdb_event("metadata_updated", {meta:full_doc.meta,id:full_doc._id}));
         toggleTitleEdit();
       } catch (error) {
         await bbdb_action(
@@ -289,6 +338,11 @@
       <details>
         <summary>Meta</summary>
       </details> -->
+
+      {#if selected_component.options.new_show_title_input}
+      <input class="form-control" bind:value={new_data_meta.title} type="text" placeholder="Document title" aria-label=".form-control-lg example">      
+      {/if}
+
       <selected_component.component
         bind:data={new_data}
         {schema}

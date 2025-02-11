@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
-  let { page_bbdb_action, BBDB, page, excluded_schemas = [] } = $props();
+  let { page_bbdb_action, BBDB, page, excluded_schemas = [],custom_editors={} } = $props();
   let loaded = $state(false);
   let loading = $state(true);
   let error = $state(null);
@@ -31,6 +31,11 @@
             if (schemas.length == 1) {
               // auto select the first
             }
+
+            if(excluded_schemas.length>0){
+              schemas = schemas.filter(item => !excluded_schemas.includes(item.name));
+            }
+
             loaded = true;
           } else {
             loaded = false;
@@ -109,6 +114,7 @@
               bbdb_action={on_bbdb_action}
               new_doc={true}
               schema_name={selected_schema}
+              {custom_editors}
             />
             <!-- <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action} /> -->
           </div>

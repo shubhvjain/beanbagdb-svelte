@@ -100,6 +100,6 @@
       {/if}
     </div>
   {:else if mode == "edit"}
-    <JsonEditor bind:data {schema} bind:data_valid />
+    <JsonEditor bind:data {schema} editor_options={{disable_properties:false}} bind:data_valid />
   {/if}
 {/if}

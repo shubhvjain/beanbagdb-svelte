@@ -28,7 +28,6 @@ export { default as DBManager } from './ui/DBManager.svelte';
 export { default as WorkSpaceErrorPage } from './ui/WorkSpaceErrorPage.svelte';
 export { default as WorkSpaceHome } from './ui/WorkSpaceHome.svelte';
 export { default as Workspace } from './ui/Workspace.svelte';
-export { default as GraphNode} from "./ui/GraphNode.svelte"
 
 // Components from utils
 export { default as JSONEditor } from './utils/JSONEditor.svelte';
@@ -42,7 +41,8 @@ export { default as SettingEditor } from './editors/SettingEditor.svelte';
 export { default as TagsEditor } from './utils/TagsEditor.svelte';
 export { default as SearchBox } from './core/SearchBox.svelte';
 export { default as GraphEdgeEditor } from './editors/GraphEdgeEditor.svelte';
-
+export { default as TextBlock} from './utils/TextBlock.svelte' 
+export { default as TextPreview} from "./utils/TextPreview.svelte"
 // Scripts from db
 export * as beanbagdbweb from './db/beanbagdbweb.js';
 export * as pouchdbFind from './db/pouchdb.find.js';

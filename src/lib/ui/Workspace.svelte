@@ -22,7 +22,6 @@
   let { db , uiComponents, settings ={}, onWorkspaceLoad  , custom_editors , additional_nav_items=[]} = $props();
   // export let db;
 
-
   let BBDB = $state(null);
   let Loaded = $state(false);
   let Error = $state();
@@ -263,6 +262,7 @@
               ...cmd,
               id: new_id,
               size: "small",
+              settings : settings
             });
             setTimeout(() => {
               focusOnItem(new_id);
@@ -502,17 +502,17 @@
           </div>
 
           {#if page.name=="ui"}
-            <page.component this={page.component} {BBDB} {page} data={page.component_data}  page_bbdb_action={handleBBDBActions} />
+            <page.component this={page.component} {BBDB} {page} data={page.component_data} custom_editors={custom_editors} page_bbdb_action={handleBBDBActions} />
           {:else if page.name == "page"}
             <DbPage {BBDB} {page} page_bbdb_action={handleBBDBActions} />
           {:else if page.name == "open"}
             <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} custom_editors={custom_editors} />
           {:else if page.name == "new"}
-            <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} />
+            <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} custom_editors={custom_editors} />
           {:else if page.name == "error"}
             <WorkSpaceErrorPage details={page} />
           {:else if page.name == "home"}
-            <WorkSpaceHome {BBDB} page_bbdb_action={handleBBDBActions} />
+            <WorkSpaceHome {BBDB} {page} page_bbdb_action={handleBBDBActions} />
           {/if}
         </div>
       {/each}

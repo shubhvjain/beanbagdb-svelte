@@ -58,7 +58,9 @@ export const emit_bbdb_event = (name, data) => {
     "update_doc_data",
     "show_ui_message",
     "metadata_updated",
-    "load_links"
+    "load_links",
+    "edge_updated",
+    "edge_deleted"
   ];
   if (!valid_types.includes(name)) {
     throw new Error("Invalid bbdb_action name");

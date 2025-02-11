@@ -165,9 +165,9 @@ async function graph_query1(option){
 
 
 async function link_to_id(db,links){
-  console.log(links)
+  //console.log(links)
   if (!links || links.length == 0) {
-    console.log("ha kya")
+    // console.log("ha kya")
     return [];
   }
   
@@ -175,21 +175,21 @@ async function link_to_id(db,links){
   let search = await db.search({
     selector: { "meta.link": { $in: links } },
   });
-  console.log(ids)
+  //console.log(ids)
   search?.docs.map(d=>{ids.push(d._id)})
   return ids
 }
 
 
 const find_neighbors = async (db,links) => {
-  console.log(links)
+  //console.log(links)
   let nodes  = await link_to_id(db,links)
-  console.log(nodes)
+  //console.log(nodes)
   let data = await db.search({selector:{
     "schema":"system_edge",
     'data.node1':{"$in":nodes}
   }})
-  console.log(data)
+  //console.log(data)
   let _edges = []
   for (let index = 0; index < data?.docs.length; index++) {
     const element = data?.docs[index];
@@ -197,18 +197,18 @@ const find_neighbors = async (db,links) => {
     let find1 = nodes.find((itm)=>itm==element.data.node1)
     if(!find1){nodes.push(element.data.node1)}
     let find2 = nodes.find((itm)=>itm==element.data.node2)
-    console.log(find2)
+    //console.log(find2)
     if(!find2){nodes.push(element.data.node2)}
     
   }
   let _nodes1 = []
-  console.log(nodes)
+  //console.log(nodes)
   let data1 = await db.search({selector:{
     '_id':{"$in":nodes}
   }})
-  console.log(data1)
+  //console.log(data1)
   data1?.docs.map(itm=>{
-    _nodes1.push({group:"nodes",data:{...itm.meta,id:itm._id}})
+    _nodes1.push({group:"nodes",data:{...itm.meta,id:itm._id,schema: itm.schema}})
   })
 
   return [..._nodes1,..._edges]
