@@ -11,8 +11,10 @@
   let error = $state(null);
   import SearchBox from "$lib/core/SearchBox.svelte";
   import Doc from "$lib/core/Doc.svelte";
-
+  import EditEdge from "$lib/utils/EditEdge.svelte";
   import ShortDoc from "$lib/core/ShortDoc.svelte";
+  import TextBlock from "$lib/utils/TextBlock.svelte";
+  import TextPreview from "$lib/utils/TextPreview.svelte";
   onMount(async () => {
     try {
       if (!BBDB) {
@@ -37,7 +39,10 @@
     }
   }
   //       let valid_type = ["info","plugins","settings","keys","help","schemas","search"]
-
+  const default_app_icon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-window" viewBox="0 0 16 16">
+  <path d="M2.5 4a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m1 .5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+  <path d="M2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm13 2v2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1M2 14a1 1 0 0 1-1-1V6h14v7a1 1 0 0 1-1 1z"/>
+</svg>`;
   const all_pages = [
     {
       command: "new",
@@ -53,13 +58,13 @@
   <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
 </svg>`,
     },
-    {
-      command: "page/plugins",
-      text: "View and manage plugins",
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plugin" viewBox="0 0 16 16">
-  <path fill-rule="evenodd" d="M1 8a7 7 0 1 1 2.898 5.673c-.167-.121-.216-.406-.002-.62l1.8-1.8a3.5 3.5 0 0 0 4.572-.328l1.414-1.415a.5.5 0 0 0 0-.707l-.707-.707 1.559-1.563a.5.5 0 1 0-.708-.706l-1.559 1.562-1.414-1.414 1.56-1.562a.5.5 0 1 0-.707-.706l-1.56 1.56-.707-.706a.5.5 0 0 0-.707 0L5.318 5.975a3.5 3.5 0 0 0-.328 4.571l-1.8 1.8c-.58.58-.62 1.6.121 2.137A8 8 0 1 0 0 8a.5.5 0 0 0 1 0"/>
-</svg>`,
-    },
+//     {
+//       command: "page/plugins",
+//       text: "View and manage plugins",
+//       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plugin" viewBox="0 0 16 16">
+//   <path fill-rule="evenodd" d="M1 8a7 7 0 1 1 2.898 5.673c-.167-.121-.216-.406-.002-.62l1.8-1.8a3.5 3.5 0 0 0 4.572-.328l1.414-1.415a.5.5 0 0 0 0-.707l-.707-.707 1.559-1.563a.5.5 0 1 0-.708-.706l-1.559 1.562-1.414-1.414 1.56-1.562a.5.5 0 1 0-.707-.706l-1.56 1.56-.707-.706a.5.5 0 0 0-.707 0L5.318 5.975a3.5 3.5 0 0 0-.328 4.571l-1.8 1.8c-.58.58-.62 1.6.121 2.137A8 8 0 1 0 0 8a.5.5 0 0 0 1 0"/>
+// </svg>`,
+//     },
     {
       command: "page/settings",
       text: "DB Settings",
@@ -102,7 +107,17 @@
     page_bbdb_action(emit_bbdb_event("textcmd", { text: cmd }));
   }
 
+  let test = $state(false)
   let sampleText = $state("Text");
+  let sampleValid = $state(true)
+  let text_validation = (text)=>{
+    let errors = []
+    let new_line_check =  /^\s*$/gm.test(text)
+    if(new_line_check){errors.push("Text cannot have an empty lines")}
+    return {valid:!new_line_check,text,errors}
+  }
+
+  async function bbdb_handle(option) {}
 </script>
 
 <div>
@@ -113,9 +128,12 @@
   {:else if loaded}
     <div class="container-fluid">
       <h3>Workspace home</h3>
-
       <!-- <ShortDoc {BBDB} id={"70c0cb80-c1e7-4869-a355-249f21dece4a"} /> -->
-
+      <!-- <EditEdge 
+        edge_id={"039d2086-dcf0-42ef-ad7a-61a9046d1a35"}
+        {BBDB}
+        bbdb_action={bbdb_handle}
+      /> -->
       <!-- <div class="card">
       <div class="card-header">
         New edge
@@ -134,35 +152,14 @@
       </div>
     </div> -->
 
-      <!-- <div class="card">
-      <div class="card-header">
-        New doc
-      </div>
-      <div class="card-body">
-        <Doc {BBDB} new_doc={true}   bbdb_action={on_bbdb_action} schema_name={"object"} />
-      </div>
-    </div> -->
+    {#if test}
+    
+      <TextBlock bind:text={sampleText} bind:isValid={sampleValid}  validation={text_validation}/>
+      <code>{sampleText}</code> 
+      <code>{sampleValid}</code>
+      <TextPreview bind:text={sampleText}></TextPreview>
 
-      <br />
-      <!-- <div class="card">
-      <div class="card-header">
-        Edit doc
-      </div>
-      <div class="card-body">
-        <Doc {BBDB}   bbdb_action={on_bbdb_action} doc_key={{"link":"coffee-object"}}  />
-      </div>
-    </div> -->
-<!-- 
-      <SearchBox
-        search_query={"schema=object"}
-        on_load_select_first={true}
-        bbdb_action={on_bbdb_action}
-        max_selection={4}
-        {BBDB}
-      /> -->
-
-      <!-- <TextBlock bind:text={sampleText}/> -->
-
+      {/if}
       <div class="list-group">
         {#each all_pages as pg}
           <button
@@ -174,6 +171,30 @@
           >
         {/each}
       </div>
+
+      {#if page.settings.app_library}
+        <br /><br />
+        <h5 class="pb-1 border-bottom">App library</h5>
+        {#each page.settings.app_library as app}
+          <div class="row g-4 py-5">
+            <div class="col-sm-6">
+              <div class="mb-3" style="text-align: center;">
+                {@html app.svg_icon}
+              </div>
+              <h5 style="text-align: center;">{app.name}</h5>
+              <p style="justify-content:center">{app.description}</p>
+              <button
+                class="btn btn-sm btn-link"
+                onclick={() => {
+                  open_page(app.home_command);
+                }}
+              >
+                Home
+              </button>
+            </div>
+          </div>
+        {/each}
+      {/if}
     </div>
   {/if}
 </div>

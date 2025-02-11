@@ -43,6 +43,8 @@ export { default as SearchBox } from './core/SearchBox.svelte';
 export { default as GraphEdgeEditor } from './editors/GraphEdgeEditor.svelte';
 export { default as TextBlock} from './utils/TextBlock.svelte' 
 export { default as TextPreview} from "./utils/TextPreview.svelte"
+export {default as ScriptEditor} from "./editors/ScriptEditor.svelte"
+
 // Scripts from db
 export * as beanbagdbweb from './db/beanbagdbweb.js';
 export * as pouchdbFind from './db/pouchdb.find.js';

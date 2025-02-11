@@ -168,7 +168,8 @@
       });
     }else{
       let test = [
-        "ui/graph",  
+        "new/system_script",
+       // "ui/graph",  
       "home",
                 // "page/help",
         //"page/search",

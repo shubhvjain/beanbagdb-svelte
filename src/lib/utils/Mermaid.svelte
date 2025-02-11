@@ -2,9 +2,9 @@
   import { onMount } from "svelte";
   import mermaid from "mermaid";
 
-  let { diagram = "" } = $props();
+  let { diagram = "  " } = $props();
   let container;
-  let id = "";
+  let id = $state("");
 
   async function renderDiagram() {
       if (container) {

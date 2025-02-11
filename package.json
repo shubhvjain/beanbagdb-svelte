@@ -1,6 +1,6 @@
 {
 	"name": "beanbagdb-svelte",
-	"version": "0.0.15",
+	"version": "0.0.90",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",

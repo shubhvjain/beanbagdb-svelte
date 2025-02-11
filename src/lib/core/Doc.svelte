@@ -16,6 +16,7 @@
   import GraphEdgeEditor from "$lib/editors/GraphEdgeEditor.svelte";
   import SettingEditor from "$lib/editors/SettingEditor.svelte";
   import MediaEditor from "$lib/editors/MediaEditor.svelte";
+  import ScriptEditor from "$lib/editors/ScriptEditor.svelte";
   let {
     BBDB,
     bbdb_action,
@@ -77,6 +78,14 @@
     },
     system_media:{
       component: MediaEditor,
+      allow: {
+        new: true,
+        edit: true,
+        view: true,
+      }
+    },
+    system_script:{
+      component: ScriptEditor,
       allow: {
         new: true,
         edit: true,
@@ -340,7 +349,7 @@
       </details> -->
 
       {#if selected_component.options.new_show_title_input}
-      <input class="form-control" bind:value={new_data_meta.title} type="text" placeholder="Document title" aria-label=".form-control-lg example">      
+      <input class="form-control" bind:value={new_data_meta.title} type="text" placeholder="New {schema.title||"Document"} title" aria-label=".form-control-lg example">      
       {/if}
 
       <selected_component.component
