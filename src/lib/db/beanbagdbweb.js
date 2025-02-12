@@ -1,15 +1,15 @@
 import { BeanBagDB, DocNotFoundError, DocCreationError } from "beanbagdb";
-
-import * as PouchDB from "./pouchdb.min.js";
-import * as PouchDBFind from "./pouchdb.find.js";
+// import PouchDB from "pouchdb-browser";
+// import * as PouchDB from "./pouchdb.min.js";
+// import * as PouchDBFind from "./pouchdb.find.js";
 
 // this is a pouch db instance of beanbagdb used for testing.
 import Ajv from "ajv";
 
-let pdb;
 
-export const get_pdb_doc = (dbname, secret) => {
-  pdb = new window.PouchDB(dbname);
+export const get_pdb_doc = (PouchDB, dbname, secret) => {
+  // let pdb = new PouchDB(dbname);
+  let pdb = new PouchDB(dbname);
   const doc_obj = {
     name: dbname,
     db_name: "pouchdb",
@@ -129,7 +129,7 @@ export const get_pdb_doc = (dbname, secret) => {
   return doc_obj;
 };
 
-export const get_new_DB = (db) => {
+export const get_new_DB = (PouchDB,db) => {
   //console.log(db)
   if (!db.name) {
     throw new Error("No DB name was provided");
@@ -137,7 +137,7 @@ export const get_new_DB = (db) => {
   if (!db.encryption_key) {
     throw new Error("No encryption key was provided");
   }
-  let doc_obj = get_pdb_doc(db.name, db.encryption_key);
+  let doc_obj = get_pdb_doc(PouchDB,db.name, db.encryption_key);
   let database = new BeanBagDB(doc_obj);
   return database;
 };
@@ -244,12 +244,12 @@ export const destroy_db = (dbname) => {
 }
 
 
-export const sync_db_once = async (db)=>{
+export const sync_db_once = async (PouchDB,db)=>{
   if(!db.sync_url){
     throw new Error("No sync URL found")
   }
-  const localDB  = new window.PouchDB(db.name);
-  const remoteDB = new window.PouchDB(db.sync_url); 
+  const localDB  = new PouchDB(db.name);
+  const remoteDB = new PouchDB(db.sync_url); 
 
   localDB.sync(remoteDB, {
     live: false,       // Enable live syncing

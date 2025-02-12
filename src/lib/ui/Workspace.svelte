@@ -3,11 +3,7 @@
   import "./workspace.css";
   import { BeanBagDB } from "beanbagdb";
   import { onMount } from "svelte";
-  import {
-    get_new_DB,
-    destroy_db,
-    sync_db_once,
-  } from "$lib/db/beanbagdbweb.js";
+  import { get_new_DB,sync_db_once} from "$lib/db/beanbagdbweb.js"; 
   import { text_command } from "$lib/db/textcommand.js";
   import {graph_query} from "$lib/db/graph.js"
   import {get_default_nav_items} from "../bbdb_actions.js"
@@ -19,7 +15,7 @@
   import NewDocument from "$lib/pages/NewDocument.svelte";
   import Document from "$lib/pages/Document.svelte";
   import GraphView from "$lib/pages/GraphView.svelte";
-  let { db , uiComponents, settings ={}, onWorkspaceLoad  , custom_editors , additional_nav_items=[]} = $props();
+  let { db , PouchDB, uiComponents, settings ={}, onWorkspaceLoad  , custom_editors , additional_nav_items=[]} = $props();
   // export let db;
 
   let BBDB = $state(null);
@@ -87,7 +83,7 @@
   async function sync_pouchdb() {
     console.log(db);
     try {
-      let result = await sync_db_once(db);
+      let result = await sync_db_once(PouchDB,db);
       console.log(result);
     } catch (error) {
       console.log(error);
@@ -96,6 +92,36 @@
 
   let nav_items = $state({outer:[],inner:[]})
   onMount(async () => {
+
+    if(!PouchDB){
+      Loaded = true;
+      Error = "Error : No PouchDB provided";
+      console.log("qqq")
+      return
+    }
+    
+    if (!BBDB) {
+      if (!db) {
+        Loaded = true;
+        Error = "Error : No details about the database were provided";
+        return
+      }
+      try {
+        BBDB = get_new_DB(PouchDB,db);
+        Loaded = true;
+      } catch (error) {
+        console.log(error);
+        Error = "Error: " + error.message;
+        Loaded = true;
+        return
+      }
+    }
+
+    if (BBDB instanceof BeanBagDB == false) {
+      Loaded = true;
+      Error = "Invalid Database connection";
+    }
+  
     // destroy_db("sample")
     if (uiComponents) {
       Object.keys(uiComponents).forEach((key) => {
@@ -120,25 +146,9 @@
 
     console.log(nav_items)
 
-    if (!BBDB) {
-      if (!db) {
-        Loaded = true;
-        Error = "Error : No details about the database were provided";
-      }
-      try {
-        BBDB = get_new_DB(db);
-        Loaded = true;
-      } catch (error) {
-        console.log(error);
-        Error = "Error: " + error.message;
-        Loaded = true;
-      }
-    }
+    
 
-    if (BBDB instanceof BeanBagDB == false) {
-      Loaded = true;
-      Error = "Invalid Database connection";
-    }
+    
 
     if (BBDB.active) {
       console.log("ready...");
