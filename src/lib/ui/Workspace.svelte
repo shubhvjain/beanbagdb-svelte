@@ -168,10 +168,10 @@
       });
     }else{
       let test = [
-        "new/system_script",
+       // "new/system_script",
        // "ui/graph",  
-      "home",
-                // "page/help",
+        "home",
+        // "page/help",
         //"page/search",
         //  "page/plugins",
         //"page/schemas",

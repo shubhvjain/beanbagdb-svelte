@@ -13,6 +13,7 @@
     let doc = await BBDB.plugins.txtcmd.run(page1);
     return doc;
   }
+  function sortByDataName(arr) {return arr.sort((a, b) => a.title.localeCompare(b.title))}
 
   onMount(async () => {
     // console.log(page);
@@ -28,6 +29,7 @@
           let run_cmd = await BBDB.plugins.txtcmd.parse_and_run("new");
           if (run_cmd.valid) {
             schemas = run_cmd.result;
+            schemas = sortByDataName(schemas)
             if (schemas.length == 1) {
               // auto select the first
             }
@@ -59,6 +61,7 @@
         let run_cmd = await load_schemas(page);
         if (run_cmd.valid) {
           schemas = run_cmd.result;
+          schemas = sortByDataName(schemas)
           if (schemas.length == 1) {
             // auto select the first
           }

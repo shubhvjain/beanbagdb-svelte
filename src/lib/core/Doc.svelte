@@ -574,44 +574,49 @@
 
 
     <!-- meta data editor for all docs  -->
-    <div class="col-lg-12 fw-lighter p-2">
-      <div class="list-group">
-        <li class="list-group-item list-group-item-light">
-          <div class="p-1"><i>Created</i></div>
-          <div class="p-1">{format_timestamp(full_doc.meta.created_on)}</div>
-        </li>
-
-        <li class="list-group-item list-group-item-light">
-          <div class="p-1"><i>Tags</i></div>
-          <div class="p-1">
-            <TagsEditor
-              bbdb_action={edit_update_meta_action_handler}
-              link={full_doc.meta.link}
-              tags={full_doc.meta.tags}
-            />
-          </div>
-        </li>
-        {#if full_doc.meta.updated_on}
+<div class="row">
+  <div class="col-lg-12">
+    <details>
+      <summary>Metadata</summary>
+      <div class=" fw-lighter p-2">
+        <div class="list-group">
           <li class="list-group-item list-group-item-light">
-            <div class="p-2"><i>Updated</i></div>
-            <div class="p-2">{format_timestamp(full_doc.meta.updated_on)}</div>
+            <div class="p-1"><i>Created</i></div>
+            <div class="p-1">{format_timestamp(full_doc.meta.created_on)}</div>
           </li>
-        {/if}
-        <li class="list-group-item list-group-item-light">
-          <div class="p-1"><i>Link</i></div>
-          <LinkEditor
-            bbdb_action={edit_update_meta_action_handler}
-            bind:link={full_doc.meta.link}
-          />
-        </li>
-        <li class="list-group-item list-group-item-light">
-          <div class="p-1"><i>ID</i></div>
-          <div class="p-1">{full_doc._id}</div>
-        </li>
+  
+          <li class="list-group-item list-group-item-light">
+            <div class="p-1"><i>Tags</i></div>
+            <div class="p-1">
+              <TagsEditor
+                bbdb_action={edit_update_meta_action_handler}
+                link={full_doc.meta.link}
+                tags={full_doc.meta.tags}
+              />
+            </div>
+          </li>
+          {#if full_doc.meta.updated_on}
+            <li class="list-group-item list-group-item-light">
+              <div class="p-2"><i>Updated</i></div>
+              <div class="p-2">{format_timestamp(full_doc.meta.updated_on)}</div>
+            </li>
+          {/if}
+          <li class="list-group-item list-group-item-light">
+            <div class="p-1"><i>Link</i></div>
+            <LinkEditor
+              bbdb_action={edit_update_meta_action_handler}
+              bind:link={full_doc.meta.link}
+            />
+          </li>
+          <li class="list-group-item list-group-item-light">
+            <div class="p-1"><i>ID</i></div>
+            <div class="p-1">{full_doc._id}</div>
+          </li>
+        </div>
       </div>
-    </div>
-
-
+    </details>
+  </div>
+</div>
   {/if}
 {:else}
   <!-- not loaded successfully -->
