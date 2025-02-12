@@ -476,7 +476,7 @@
 
 <div class="container-fluid">
   <div class="row">
-    <div class="col-lg-12">
+    <div class="col-lg-12 m-0 p-0 mt-1">
       <div class="card p-1 m-1">
         <div class="card-body">
           <div id="infoBox" bind:this={infoBox}>
@@ -509,6 +509,7 @@
           <div id="controlBox">
             <button
               aria-label="input"
+              title="To toggle edge creation mode"
               onclick={toggle_edge_edit}
               class="btn btn-sm {edge_editor ? 'btn-danger' : 'btn-success'}"
             >
@@ -551,7 +552,7 @@
             <button
               aria-label="input"
               onclick={toggle_search_box}
-              class="btn btn-sm btn-primary"
+              class="btn btn-sm btn-primary1"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -569,7 +570,7 @@
             <button
               aria-label="input"
               onclick={toggle_new_box}
-              class="btn btn-sm btn-primary"
+              class="btn btn-sm btn-primary1"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -604,7 +605,7 @@
             <button
               aria-label="input"
               onclick={toggle_details_box}
-              class="btn btn-sm btn-primary"
+              class="btn btn-sm btn-primary1"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -622,6 +623,7 @@
 
             <button
             aria-label="input"
+            title="To reset current view "
             onclick={reset_view}
             class="btn btn-sm btn-delete"
           >

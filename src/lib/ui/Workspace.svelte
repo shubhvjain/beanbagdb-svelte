@@ -274,7 +274,7 @@
           }
         },
         ui:(cmd)=>{
-          let system_ui = {graph:{component:GraphView}}
+          let system_ui = {graph:{component:GraphView},export:{component:ExportData}}
           console.log(cmd)
           if(customUIComponents[cmd.criteria.page_key]){
             let new_id = Math.round(Math.random() * 10000);
@@ -349,6 +349,7 @@
 
 
   import { writable } from 'svelte/store';
+  import ExportData from "$lib/pages/ExportData.svelte";
 
   // Store to manage messages
    const messageStore = writable([]);
@@ -391,47 +392,39 @@
               </div>
             {/each}
           </div>
-          {#each  nav_items.outer as itm}
-          <button
-            class="btn btn-sm btn-outline-primary"
-            type="button"
-            onclick={()=>{runTextCommand(itm.command)}}
-            aria-label="Run text command.Type help for more"
-            title="Run text command.Type help for more">
-          {@html itm.icon} 
-          </button>
-          {/each}
+       
           <input
             class="form-control form-control-sm"
             bind:value={searchTerm}
-            placeholder="Search or open new page..."
+            placeholder="Text command"
             aria-label="Search term"
             type="text"
+            list="textcommands"
           />
+          
+          <datalist id="textcommands">
+            <option value="new">
+            <option value="home">
+            <option value="open/link/">
+            <option value="open/id/">
+            <option value="ui/">
+          </datalist>
+
           <button
-            class="btn btn-sm btn-outline-secondary"
+            class="btn btn-sm btn-secondary"
             type="button"
             onclick={() => runTextCommand(searchTerm)}
             aria-label="Run text command.Type help for more"
             title="Run text command.Type help for more"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-search"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"
-              />
-            </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+            <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+          </svg>
           </button>
           <button
             onclick={toggleTheme}
             type="button"
-            class="btn btn-outline-secondary btn-sm"
+            class="btn btn-secondary btn-sm"
             aria-label="Change theme"
             title="toggle theme"
             ><svg
@@ -451,7 +444,7 @@
           <button
             onclick={sync_pouchdb}
             type="button"
-            class="btn  btn-outline-secondary b"
+            class="btn  btn-secondary b"
             aria-label="Sync data"
             title="Sync data"
           >
@@ -472,6 +465,17 @@
               />
             </svg>
           </button>
+
+          {#each  nav_items.outer as itm}
+          <button
+            class="btn btn-sm btn-primary"
+            type="button"
+            onclick={()=>{runTextCommand(itm.command)}}
+            aria-label="Run text command.Type help for more"
+            title="Run text command.Type help for more">
+          {@html itm.icon} 
+          </button>
+          {/each}
         </div>
       </div>
     </nav>
@@ -483,7 +487,7 @@
           <div class="d-flex justify-content-between align-items-center">
             <span class="page-title"></span>
             <div class="d-flex align-items-center">
-              <button class="btn btn-sm btn-outline-primary" onclick={()=>changePageSize(page)}>
+              <button class="btn btn-sm text-secondary" onclick={()=>changePageSize(page)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows" viewBox="0 0 16 16">
                   <path d="M1.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L2.707 7.5h10.586l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L13.293 8.5H2.707l1.147 1.146a.5.5 0 0 1-.708.708z"/>
                 </svg>
@@ -491,7 +495,7 @@
              
 
               <button
-                class="btn btn-sm btn-outline-danger"
+                class="btn btn-sm text-danger"
                 onclick={() => closePage(page.id)}
                 aria-label="Close page"
               >
