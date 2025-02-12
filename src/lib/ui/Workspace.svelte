@@ -44,7 +44,7 @@
   let searchTerm = $state("");
 
   async function make_db_ready() {
-    console.log(db);
+    //console.log(db);
     await BBDB.ready();
     await BBDB.load_plugin("txtcmd", text_command);
     await BBDB.load_plugin("graph", graph_query);
@@ -274,6 +274,17 @@
           }
         },
         ui:(cmd)=>{
+          let search = pages.find(
+            (item) =>
+              item.name == cmd.name &&
+              item.criteria.type == cmd.criteria.type &&
+              item.criteria.page_key == cmd.criteria.page_key
+          );
+          //console.log(search)
+          if(search){
+            focusOnItem(search.id);
+            return;
+          }
           let system_ui = {graph:{component:GraphView},export:{component:ExportData}}
           console.log(cmd)
           if(customUIComponents[cmd.criteria.page_key]){
@@ -403,6 +414,7 @@
           />
           
           <datalist id="textcommands">
+            <!-- <option value="search/filter?"> -->
             <option value="new">
             <option value="home">
             <option value="open/link/">

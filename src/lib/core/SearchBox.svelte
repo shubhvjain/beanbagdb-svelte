@@ -42,8 +42,8 @@
       return;
     }
     try {
-      let search  =  await BBDB.plugins["txtcmd"].parse(`search/filter?${search_query}`);
-      console.log(search)
+      let search  =  await BBDB.plugins["txtcmd"].parse(`search/filter?${search_query.trim()}`);
+      // console.log(search)
       if(search.valid){
         let look = await  BBDB.plugins["txtcmd"].run(search)
         results = look.result.docs

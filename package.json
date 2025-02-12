@@ -1,6 +1,6 @@
 {
 	"name": "beanbagdb-svelte",
-	"version": "0.0.95",
+	"version": "0.0.96",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
@@ -54,7 +54,7 @@
 		"@lezer/lr": "^1.4.2",
 		"ajv": "^8.17.1",
 		"axios": "^1.7.9",
-		"beanbagdb": "^0.6.5",
+		"beanbagdb": "^0.6.6",
 		"bootstrap": "^5.3.3",
 		"codemirror": "^6.0.1",
 		"cytoscape": "^3.31.0",
