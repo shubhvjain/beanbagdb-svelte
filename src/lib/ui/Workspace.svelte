@@ -15,6 +15,7 @@
   import NewDocument from "$lib/pages/NewDocument.svelte";
   import Document from "$lib/pages/Document.svelte";
   import GraphView from "$lib/pages/GraphView.svelte";
+  // import ImportData from "$lib/pages/ImportData.svelte";
   let { db , PouchDB, uiComponents, settings ={}, onWorkspaceLoad  , custom_editors , additional_nav_items=[]} = $props();
   // export let db;
 

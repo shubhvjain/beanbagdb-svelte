@@ -2,17 +2,57 @@
 <script>
   import "../default.style.css";
   import { onMount } from "svelte";
-  import { get_database_list,save_database_store,} from "$lib/bbdb_actions.js";
-  let { bbdb_action,on_link_click } = $props();
+  import { get_database_list, save_database_store } from "$lib/bbdb_actions.js";
+  let { bbdb_action, on_link_click, PouchDB } = $props();
 
   let databases = $state([]);
-  let newName = $state("");
-  let newEncryptionKey = $state("");
+
   let message = $state("");
+  let option1 = $state({ newName: "", newEncryptionKey: "" });
+  let option2 = $state({ newName: "", newEncryptionKey: "", syncUrl: "", saveUrl:false });
+
+  function generateAlphaNumericString(length = 24) {
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  async function replicate_remote(name, url) {
+    try {
+      const rep = PouchDB.replicate(url,name, {
+        live: false,
+        retry: true,
+      })
+        .on("complete", function (info) {
+          // handle complete
+          console.log(info)
+          return info
+        })
+        .on("error", function (err) {
+          // handle error
+          throw err
+        });
+
+      //const db = new PouchDB(name);
+      //const remoteCouch = url;
+      //const opts = { live: false };
+      // db.replicate.to(remoteCouch, opts, syncError);
+
+      //let result = await db.replicate(remoteCouch, opts);
+      //return result;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
 
   // Fetch database list from localStorage on load
   onMount(() => {
-    databases = get_database_list()
+    databases = get_database_list();
   });
 
   const sanitizeName = (name) => {
@@ -22,8 +62,8 @@
       .replace(/\s+/g, "_");
   };
 
-  const addDatabase = () => {
-    const sanitizedName = sanitizeName(newName);
+  const addDatabaseOption1 = () => {
+    const sanitizedName = sanitizeName(option1.newName);
     if (!sanitizedName.trim()) {
       message = "Name cannot be empty";
       return;
@@ -32,7 +72,7 @@
       message = "Name already exists";
       return;
     }
-    if (newEncryptionKey.length < 24) {
+    if (option1.newEncryptionKey.length < 24) {
       message = "Encryption key must be at least 24 characters";
       return;
     }
@@ -42,15 +82,58 @@
         name: sanitizedName,
         note: "",
         sync_url: "",
-        encryption_key: newEncryptionKey,
+        encryption_key: option1.newEncryptionKey,
         editable: false,
         showKey: false,
       },
     ];
-    newName = "";
-    newEncryptionKey = "";
+    option1.newName = "";
+    option1.newEncryptionKey = "";
     message = "Saved successfully";
     saveToLocalStorage();
+  };
+
+  const addDatabaseOption2 = async () => {
+    const sanitizedName = sanitizeName(option2.newName);
+    if (!sanitizedName.trim()) {
+      message = "Name cannot be empty";
+      return;
+    }
+    if (databases.some((db) => db.name === sanitizedName)) {
+      message = "Name already exists";
+      return;
+    }
+    if (option2.newEncryptionKey.length < 24) {
+      message = "Encryption key must be at least 24 characters";
+      return;
+    }
+    databases = [
+      ...databases,
+      {
+        name: sanitizedName,
+        note: "",
+        sync_url: option2.saveUrl? option2.syncUrl : "",
+        encryption_key: option2.newEncryptionKey,
+        editable: false,
+        showKey: false,
+      },
+    ];
+
+    try {
+      let res = await replicate_remote(option2.newName, option2.syncUrl);
+      console.log(res);
+      option2.newName = "";
+      option2.newEncryptionKey = "";
+      option2.syncUrl = "";
+      message = "Saved successfully";
+      saveToLocalStorage();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const generate_random = () => {
+    option1.newEncryptionKey = generateAlphaNumericString();
   };
 
   const editDatabase = (index, field, value) => {
@@ -79,7 +162,7 @@
   };
 
   const saveToLocalStorage = (index = null) => {
-    databases = save_database_store(databases)
+    databases = save_database_store(databases);
   };
 
   const removeDatabase = (index) => {
@@ -95,9 +178,9 @@
     bbdb_action(data);
   };
 
-  const emit_open_link = (db_name)=>{
-    on_link_click({db_name,"page":"workspace"})
-  }
+  const emit_open_link = (db_name) => {
+    on_link_click({ db_name, page: "workspace" });
+  };
 </script>
 
 <div class="container-fluid">
@@ -110,23 +193,70 @@
         the URL to sync through couchDB
       </p>
 
-      <div class="mb-3">
-        <input
-          type="text"
-          class="form-control d-inline w-auto"
-          bind:value={newName}
-          placeholder="Database Name"
-        />
-        <input
-          type="text"
-          class="form-control d-inline w-auto"
-          bind:value={newEncryptionKey}
-          placeholder="Encryption Key"
-        />
-        <button class="btn btn-primary" onclick={addDatabase}
-          >Add Database</button
-        >
+      <div class="card">
+        <div class="card-header">New database</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <input
+              type="text"
+              class="form-control d-inline w-auto"
+              bind:value={option1.newName}
+              placeholder="Database Name"
+            />
+            <input
+              type="text"
+              class="form-control d-inline w-auto"
+              bind:value={option1.newEncryptionKey}
+              placeholder="Encryption Key"
+            />
+
+            <button class="btn btn-link" onclick={generate_random}
+              >Generate random key</button
+            >
+
+            <button class="btn btn-primary" onclick={addDatabaseOption1}
+              >Option 1 : Create a new Database</button
+            >
+          </div>
+          <hr />
+          or
+          <div class="mt-2 mb-3">
+            <input
+              type="text"
+              class="form-control d-inline w-auto"
+              bind:value={option2.newName}
+              placeholder="Database Name"
+            />
+            <input
+              type="text"
+              class="form-control d-inline w-auto"
+              bind:value={option2.newEncryptionKey}
+              placeholder="Encryption Key"
+            />
+
+            <input
+              type="text"
+              title="CouchDB URL (http://[username]:[password]@[hostname]:[port]/[database_name])"
+              class="form-control d-inline w-auto"
+              bind:value={option2.syncUrl}
+              placeholder="CouchDB URL (http://[username]:[password]@[hostname]:[port]/[database_name])"
+            />
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" bind:checked={option2.saveUrl} id="flexCheckDefault">
+              <label class="form-check-label" for="flexCheckDefault">
+                Save this as sync url 
+              </label>
+            </div>
+            
+
+            <button class="btn btn-primary mt-1" onclick={addDatabaseOption2}
+              >Option 2 : Clone an existing one using CouchDB URL</button
+            >
+          </div>
+        </div>
       </div>
+
       <p class="text-secondary">{message}</p>
 
       <table class="table table-bordered">
@@ -196,9 +326,10 @@
 
                 <button
                   class="btn btn-link p-1 m-1"
-                  onclick={() => emit_open_link(database.name)}> Load workspace</button>
-
-
+                  onclick={() => emit_open_link(database.name)}
+                >
+                  Load workspace</button
+                >
               </td>
             </tr>
           {/each}
