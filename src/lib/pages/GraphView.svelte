@@ -1,5 +1,5 @@
 <script>
-  let { BBDB } = $props();
+  let { BBDB,custom_editors } = $props();
   import { onMount } from "svelte";
 
   import cytoscape from "cytoscape";
@@ -88,9 +88,9 @@
         {
           selector: "node",
           style: {
-            shape: "ellipse", // Small circular node for the icon
-            width: "25px", // Small enough to fit the icon
-            height: "25px",
+            shape: "rectangle", // Small circular node for the icon
+            width: "30px", // Small enough to fit the icon
+            height: "30px",
             "background-color": "#ffffff",
             //'label': 'data(title)',  // Ensure label is set
             // Set the background image dynamically
@@ -641,7 +641,7 @@
               <div class="row">
                 <div class="col-lg-12 m-1">
                  {#if detail_id} 
-                    <Doc {BBDB} doc_key={{"_id":detail_id}} bbdb_action={handle_bbdb_action} />
+                    <Doc {BBDB}  {custom_editors} doc_key={{"_id":detail_id}} bbdb_action={handle_bbdb_action} />
                   {/if}
                 </div>
               </div>
@@ -666,7 +666,7 @@
             <h5 class="p-1 m-2 mb-1 border-bottom">New Document</h5>
             <div class="row">
               <div class="col-lg-12">
-                <NewDocument {BBDB} excluded_schemas={excluded_schemas} page_bbdb_action={handle_bbdb_action} />
+                <NewDocument {custom_editors}  {BBDB} excluded_schemas={excluded_schemas} page_bbdb_action={handle_bbdb_action} />
               </div>
             </div>
           </div>
