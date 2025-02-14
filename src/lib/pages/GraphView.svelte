@@ -32,6 +32,9 @@
   let infoBox = $state(null);
   let loadBox = $state(null);
   let detailsBox = $state(null);
+  let graphLayoutBox = $state(null);
+  let graphLayoutBox_editor = $state(true);
+
   let edge_editor = $state(false);
   let load_editor = $state(true);
   let details_editor = $state(false);
@@ -41,6 +44,34 @@
   let newBox_editor = $state(false);
   let new_page_command = $state(null);
   let loaded = $state(false);
+
+  let layoutJson = $state("");
+  let errorMessage = $state("");
+
+  const layouts = [
+    { name: "Grid", config: { name: "grid", fit: true, padding: 10 } },
+    { name: "Circle", config: { name: "circle", fit: true } },
+    { name: "Concentric", config: { name: "concentric", minNodeSpacing: 50 } },
+    { name: "Breadthfirst", config: { name: "breadthfirst", directed: true } },
+    { name: "Random", config: { name: "random" } }
+  ];
+
+    // Load layout settings into the textarea
+    function loadLayout(layout) {
+    layoutJson = JSON.stringify(layout.config, null, 2);
+    errorMessage = "";
+    }
+
+     // Validate and apply layout
+  function runLayout() {
+    try {
+      const parsedConfig = JSON.parse(layoutJson);
+      cy.layout(parsedConfig).run();
+      errorMessage = "";
+    } catch (error) {
+      errorMessage = "Invalid JSON format!";
+    }
+  }
 
   let excluded_schemas = ["schema","system_log","system_edge","system_edge_constraint"]
 
@@ -338,6 +369,8 @@
     setTimeout(() => {
       load_graph();
       loaded = true;
+      toggle_graph_option()
+      toggle_details_box()
     }, 100);
   });
 
@@ -388,10 +421,10 @@
     if(added>0){
       cy.layout({
       name: "breadthfirst",
-      padding: 10,
+      //padding: 20,
       directed: true,
       fit: false,
-      spacingFactor: 0.75, 
+       // spacingFactor: 1, 
     }).run();
     }
     
@@ -461,6 +494,11 @@
     detailsBox.style.display = details_editor ? "block" : "none";
   }
 
+  function toggle_graph_option(){
+    graphLayoutBox_editor = !graphLayoutBox_editor
+    graphLayoutBox.style.display = graphLayoutBox_editor ? "block" : "none";
+  }
+
   function reset_view() {
     cy.elements().remove();
   }
@@ -480,6 +518,7 @@
     <div class="col-lg-12 m-0 p-0 mt-1">
       <div class="card p-1 m-1">
         <div class="card-body">
+          
           <div id="infoBox" bind:this={infoBox}>
             {#if selectedNode}
               <div class="row">
@@ -507,6 +546,36 @@
             {/if}
 
           </div>
+     
+         
+          <div id="graphLayoutBox" bind:this={graphLayoutBox}>
+
+            <div class="card">
+              <div class="card-body">
+                 <!-- Textarea for JSON -->
+                <label class="mt-3" for="sdaa">Layout Settings (Editable JSON):</label>
+                <textarea id="sdaa" class="form-control" rows="5" bind:value={layoutJson}></textarea>
+
+                <!-- Error Message -->
+                {#if errorMessage}
+                  <div class="alert alert-danger mt-2">{errorMessage}</div>
+                {/if}
+
+                <!-- Buttons for layouts -->
+                <div class="mt-3">
+                  {#each layouts as layout}
+                    <button class="btn btn-primary m-1" onclick={() => loadLayout(layout)}>
+                      {layout.name}
+                    </button>
+                  {/each}
+                </div>
+
+                <!-- Run Layout Button -->
+                <button class="btn btn-success mt-2" onclick={runLayout}>Run</button>
+              </div>
+            </div>
+          </div>
+          
           <div id="controlBox">
             <button
               aria-label="input"
@@ -633,6 +702,16 @@
           </svg>
            
           </button>
+          <button
+            aria-label="input"
+            title="To reset current view "
+            onclick={toggle_graph_option}
+            class="btn btn-sm btn-delete"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders2" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M10.5 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4H1.5a.5.5 0 0 1 0-1H10V1.5a.5.5 0 0 1 .5-.5M12 3.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-6.5 2A.5.5 0 0 1 6 6v1.5h8.5a.5.5 0 0 1 0 1H6V10a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5M1 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 1 8m9.5 2a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V13H1.5a.5.5 0 0 1 0-1H10v-1.5a.5.5 0 0 1 .5-.5m1.5 2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
+          </svg>
+          </button>
 
           </div>
           <div id="detailsBox" bind:this={detailsBox}>
@@ -646,7 +725,6 @@
                 </div>
               </div>
             </div>
-           
           </div>
           <div id="cy"></div>
           <div id="loadBox" bind:this={loadBox}>
@@ -692,6 +770,19 @@
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     display: none; /* Initially hidden */
     z-index: 1000; /* Ensure it stays above Cytoscape */
+    background: #1008084f;
+  }
+
+  #graphLayoutBox {
+    position: absolute;
+    bottom: 10px;
+    right: 200px;
+    /* background: white; */
+    padding: 2px;
+    border: 1px solid #cccccc3d;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000; /* Ensure it stays above Cytoscape */
+    width: 500px;
     background: #1008084f;
   }
 
@@ -748,7 +839,4 @@
     background: #1008084f;
   }
 
-  .node-label {
-    width: 200px;
-  }
 </style>
