@@ -194,6 +194,7 @@
         runTextCommand(itm);
       });
     }
+    document.title = `${db.name}`;
   });
 
   // Function to toggle the theme

@@ -17,7 +17,7 @@
 </script>
 {#if loaded}
 <div class="container">
-  <nav class="navbar navbar-light bg-light mb-2">
+  <nav class="navbar navbar-light bg-dark mb-2">
     <span class="navbar-brand mb-0 h1">BBDB</span>
   </nav>
   <!-- {JSON.stringify(temp,null,2)} -->

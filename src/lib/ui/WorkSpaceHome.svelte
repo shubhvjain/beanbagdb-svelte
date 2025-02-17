@@ -170,10 +170,11 @@
 
     {#if test}
     
-      <TextBlock bind:text={sampleText} bind:isValid={sampleValid}  validation={text_validation}/>
-      <code>{sampleText}</code> 
-      <code>{sampleValid}</code>
-      <TextPreview bind:text={sampleText}></TextPreview>
+      <!-- <TextBlock bind:text={sampleText} bind:isValid={sampleValid}  validation={text_validation}/> -->
+      <!-- <code>{sampleText}</code>  -->
+      <!-- <code>{sampleValid}</code> -->
+      <!-- <TextPreview bind:text={sampleText}></TextPreview> -->
+      <!-- <SearchBox {BBDB} /> -->
 
       {/if}
       <div class="list-group">

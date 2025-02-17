@@ -9,7 +9,12 @@
 
   let message = $state("");
   let option1 = $state({ newName: "", newEncryptionKey: "" });
-  let option2 = $state({ newName: "", newEncryptionKey: "", syncUrl: "", saveUrl:false });
+  let option2 = $state({
+    newName: "",
+    newEncryptionKey: "",
+    syncUrl: "",
+    saveUrl: false,
+  });
 
   function generateAlphaNumericString(length = 24) {
     const chars =
@@ -21,29 +26,67 @@
     return result;
   }
 
+  async function exportDocuments(PouchDB, db_name) {
+    let pdb = new PouchDB(db_name);
+    const result = await pdb.allDocs({ include_docs: true });
+    let documents = result.rows.map((row) => row.doc);
+    downloadJSON({ data: documents }, `.${db_name}-backup.json`);
+  }
+
+  async function deleteDatabase(PouchDB, name) {
+    let pdb = new PouchDB(name);
+    pdb
+      .destroy()
+      .then(() => {
+        console.log("Database deleted successfully.");
+        return 
+      })
+      .catch((err) => {
+        console.error("Error deleting database:", err);
+        throw err
+      });
+  }
+
+  async function delete_a_database(dbname){
+    let a = confirm("Sure?")
+    if(a){
+      try {
+        let down_load = await exportDocuments(PouchDB,dbname)
+        let del = await deleteDatabase(PouchDB,dbname)   
+
+        databases = databases.filter(obj => obj.name !== dbname);
+        saveToLocalStorage();
+      } catch (error) {
+          console.log(error)
+      }
+    }
+  }
+
+  function downloadJSON(data, name) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = name;
+    link.click();
+  }
+
   async function replicate_remote(name, url) {
     try {
-      const rep = PouchDB.replicate(url,name, {
+      const rep = PouchDB.replicate(url, name, {
         live: false,
         retry: true,
       })
         .on("complete", function (info) {
           // handle complete
-          console.log(info)
-          return info
+          console.log(info);
+          return info;
         })
         .on("error", function (err) {
           // handle error
-          throw err
+          throw err;
         });
-
-      //const db = new PouchDB(name);
-      //const remoteCouch = url;
-      //const opts = { live: false };
-      // db.replicate.to(remoteCouch, opts, syncError);
-
-      //let result = await db.replicate(remoteCouch, opts);
-      //return result;
     } catch (error) {
       console.log(error);
       throw error;
@@ -112,7 +155,7 @@
       {
         name: sanitizedName,
         note: "",
-        sync_url: option2.saveUrl? option2.syncUrl : "",
+        sync_url: option2.saveUrl ? option2.syncUrl : "",
         encryption_key: option2.newEncryptionKey,
         editable: false,
         showKey: false,
@@ -243,12 +286,16 @@
             />
 
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" bind:checked={option2.saveUrl} id="flexCheckDefault">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                bind:checked={option2.saveUrl}
+                id="flexCheckDefault"
+              />
               <label class="form-check-label" for="flexCheckDefault">
-                Save this as sync url 
+                Save this as sync url
               </label>
             </div>
-            
 
             <button class="btn btn-primary mt-1" onclick={addDatabaseOption2}
               >Option 2 : Clone an existing one using CouchDB URL</button
@@ -321,8 +368,11 @@
                 <button
                   class="btn btn-secondary p-1 m-1"
                   onclick={() => toggleShowKey(index)}
-                  >{database.showKey ? "Hide" : "Show"} Keys</button
-                >
+                  >{database.showKey ? "Hide" : "Show"} Keys</button>
+
+                  <button
+                  class="btn btn-danger p-1 m-1"
+                  onclick={() => delete_a_database(database.name)}> Delete database</button>
 
                 <button
                   class="btn btn-link p-1 m-1"
