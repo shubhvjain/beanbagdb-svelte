@@ -19,10 +19,11 @@
     bracketMatching,
     foldKeymap,
     codeFolding,
-    syntaxHighlighting,
+    syntaxHighlighting, HighlightStyle
   } from "@codemirror/language";
   import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
-
+  import {markdown ,markdownLanguage} from "@codemirror/lang-markdown"
+  import { tags } from "@lezer/highlight"; 
 
 const darkTheme = EditorView.theme({
   "&": {
@@ -53,6 +54,7 @@ const darkTheme = EditorView.theme({
     validation,
     isValid= $bindable(true) ,
     editorOptions = {},
+    editor_mode = ""
   } = $props();
 
   let editorContainer;
@@ -72,10 +74,7 @@ const darkTheme = EditorView.theme({
       onContentChange = default_method;
     }
 
-    view = new EditorView({
-      state: EditorState.create({
-        doc: text,
-        extensions: [
+    let extensions = [
           darkTheme, 
           placeholder("Add text here"), // Placeholder text
           keymap.of([
@@ -93,6 +92,8 @@ const darkTheme = EditorView.theme({
           dropCursor(),
           codeFolding(),
           closeBrackets(),
+          
+          //editor_mode=="markdown"?:
           EditorView.lineWrapping,
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
@@ -112,7 +113,30 @@ const darkTheme = EditorView.theme({
               
             }
           }),
-        ],
+          
+        ]
+
+    if(editor_mode=="markdown"){
+
+      // Custom Markdown styles for headings, bold, italics
+const markdownHighlighting = HighlightStyle.define([
+  { tag: tags.heading1, fontSize: "1.8em", fontWeight: "bold", color: "#e06c75" },
+  { tag: tags.heading2, fontSize: "1.5em", fontWeight: "bold", color: "#61afef" },
+  { tag: tags.heading3, fontSize: "1.2em", fontWeight: "bold", color: "#98c379" },
+  { tag: tags.strong, fontWeight: "bold", color: "#d19a66" },
+  { tag: tags.emphasis, fontStyle: "italic", color: "#c678dd" },
+]);
+
+
+
+      extensions.push(markdown()) 
+      extensions.push(syntaxHighlighting(markdownHighlighting))
+    }
+
+    view = new EditorView({
+      state: EditorState.create({
+        doc: text,
+        extensions: extensions
       }),
       parent: editorContainer,
     });
