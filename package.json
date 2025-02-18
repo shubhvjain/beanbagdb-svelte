@@ -1,6 +1,6 @@
 {
 	"name": "beanbagdb-svelte",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
@@ -62,6 +62,7 @@
 		"cytoscape-edgehandles": "^4.0.1",
 		"cytoscape-node-html-label": "^1.2.2",
 		"katex": "^0.16.21",
+		"marked": "^15.0.7",
 		"mermaid": "^11.4.1",
 		"svelte-jsoneditor": "^2.3.3",
 		"svelvet": "^10.0.2",
