@@ -2,13 +2,13 @@
   import { onMount } from "svelte";
   import { emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
-  let { page_bbdb_action, BBDB, page, excluded_schemas = [],custom_editors={} } = $props();
+  let { page_bbdb_action, BBDB, page, excluded_schemas = [],custom_editors={} , show_history=true} = $props();
   let loaded = $state(false);
   let loading = $state(true);
   let error = $state(null);
   let schemas = $state([]);
+  let history = $state([])
   let selected_schema = $state(null);
-
   async function load_schemas(page1) {
     let doc = await BBDB.plugins.txtcmd.run(page1);
     return doc;
@@ -78,9 +78,17 @@
 
   async function on_bbdb_action(action) {
     console.log(action);
+    if(action.name=="new_document_created" && show_history){
+      history.push(action.data.link)
+    }
     if (page_bbdb_action) {
       return await page_bbdb_action(action);
     }
+  }
+
+  function emit_open_page(link) {
+    if(!page_bbdb_action) return 
+    page_bbdb_action(emit_bbdb_event("textcmd", { text: `open/link/${link}` }));
   }
 
   async function load_schema_new(schema_name) {
@@ -122,7 +130,30 @@
             <!-- <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action} /> -->
           </div>
         </div>
+
+
+        {#if show_history}
+        {#if history.length > 0}
+        <div class="row">
+          <div class="col-lg-12">
+            Recently created docs :
+            {#each history as rec}
+              <button
+                class="btn btn-sm btn-link m-1"
+                onclick={() => emit_open_page(rec)}
+              >
+                {rec}
+              </button>
+            {/each}
+          </div>
+        </div>
       {/if}
+        {/if}
+
+      {/if}
+
+    
+
     </div>
   {:else}
     <p>Loading document...</p>

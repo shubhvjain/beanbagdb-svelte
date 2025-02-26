@@ -10,6 +10,7 @@
   let data = $state({})
   onMount(async()=>{
     try {
+      loaded=false
       message="Loading..."
       data = await BBDB.read({"_id":edge_id})
       selected_name = data.doc.data.edge_name

@@ -107,6 +107,7 @@
 
   let new_data_meta = $state({})
   let add_data_valid = $state(false);
+  let show_add_editor = $state(false)
 
   let selected_component = $state({
     component: DefaultEditor,
@@ -147,6 +148,9 @@
           criteria: { name: schema_name },
         });
         schema = schmea_search.data.schema;
+        if(schmea_search.data.active == false){
+          throw new Error("This schema is not active. New document cannot be created")
+        }
         new_data = get_blank_object(schema,schema_name)|| {} ;
 
         mode = "edit" // since we need to show the form to create a new doc 
@@ -156,7 +160,7 @@
           selected_component = custom_editors[schema_name];
         }
 
-        console.log(selected_component)
+        // console.log(selected_component)
 
         if(!selected_component.options){
           selected_component.options = {...default_options}
@@ -166,11 +170,12 @@
 
 
         if(selected_component.options.new_show_title_input){
-          new_data_meta = {title:""}
+          new_data_meta["title"] ="" 
         }
 
-        console.log(selected_component)
+        //console.log(selected_component)
         loaded = true;
+        show_add_editor = true
       } catch (error) {
         console.log(error)
         loaded = false;
@@ -206,7 +211,7 @@
   async function new_handle_bbdb_action(option) {}
 
   async function new_handle_add_button() {
-    console.log(new_data);
+    //console.log(new_data);
     add_status.processing = true;
     try {
       let new_doc = { schema: schema_name, data: new_data }
@@ -216,9 +221,16 @@
       console.log(new_doc)
       let resp = await BBDB.create(new_doc);
       console.log(resp);
-      add_status.message = `Added!`;
+      add_status.message = `Added ${resp.meta.link}`;
       add_status.status = "success";
       add_status.links.push(resp.meta.link);
+      bbdb_action(emit_bbdb_event("new_document_created",{link:resp.meta.link, _id:resp._id})) 
+      new_data = get_blank_object(schema,schema_name)|| {} ;
+      new_data_meta = {"title":""}
+      show_add_editor = false
+      setTimeout(()=>{
+        show_add_editor = true
+      },1)
     } catch (error) {
       console.log(error);
       //add_status.processing = true
@@ -226,9 +238,7 @@
       add_status.status = "danger";
     }
   }
-  function emit_open_page(link) {
-    bbdb_action(emit_bbdb_event("textcmd", { text: `open/link/${link}` }));
-  }
+
 
 
   const edit_external = () => {
@@ -276,7 +286,7 @@
         });
         console.log(update1);
         await bbdb_action(emit_bbdb_event("metadata_updated", {meta:full_doc.meta,id:full_doc._id}));
-        console.log("now send to update eta")
+        //console.log("now send to update eta")
         return {update:true,error:null}
       } catch (error) {
         await bbdb_action(
@@ -337,58 +347,34 @@
 {#if loaded}
   {#if new_doc == true}
     {#if selected_component.allow.new}
-      <!-- <div class="mb-3 row">
-        <label for="inputPassword" class="col-sm-2 col-form-label">Title</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" id="inputPassword" bind:value={new_meta.title} >
-        </div>
-      </div>
-
-      <details>
-        <summary>Meta</summary>
-      </details> -->
-
       {#if selected_component.options.new_show_title_input}
       <input class="form-control" bind:value={new_data_meta.title} type="text" placeholder="New {schema.title||"Document"} title" aria-label=".form-control-lg example">      
       {/if}
+      {#if show_add_editor}
+      <div class="pt-2">
+        <selected_component.component
+          bind:data={new_data}
+          {schema}
+          mode="edit"
+          {new_doc}
+          {BBDB}
+          bbdb_action={new_handle_bbdb_action}
+          bind:data_valid= {add_data_valid}
+        />
+      </div>
+        {#if add_data_valid}
+          <button
+            class="btn btn-primary btn-sm m-1"
+            onclick={new_handle_add_button}>+ Add</button>
 
-      <selected_component.component
-        bind:data={new_data}
-        {schema}
-        mode="edit"
-        {new_doc}
-        {BBDB}
-        bbdb_action={new_handle_bbdb_action}
-        bind:data_valid= {add_data_valid}
-      />
-
-      {#if add_data_valid}
-        <button
-          class="btn btn-primary btn-sm m-1"
-          onclick={new_handle_add_button}>+ Add</button>
-
-      {/if}
-      {#if add_status.processing}
-        <div class="alert alert-{add_status.status}">
-          {add_status.message}
-        </div>
-      {/if}
-
-      {#if add_status.links.length > 0}
-        <div class="row">
-          <div class="col-lg-12">
-            Recently created docs :
-            {#each add_status.links as rec}
-              <button
-                class="btn btn-sm btn-link m-1"
-                onclick={() => emit_open_page(rec)}
-              >
-                {rec}
-              </button>
-            {/each}
+        {/if}
+        {#if add_status.processing}
+          <div class="alert alert-{add_status.status}">
+            {add_status.message}
           </div>
-        </div>
+        {/if}
       {/if}
+     
     {:else}
       New insertion of {schema_name} is not supported using this editor
     {/if}
@@ -418,8 +404,8 @@
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
+                  width="12"
+                  height="12"
                   fill="currentColor"
                   class="bi bi-pencil-fill"
                   viewBox="0 0 16 16"
@@ -442,33 +428,7 @@
             >
               {full_doc.meta.link}
             </button>
-            <button
-              title="Download file as json"
-              class="btn btn-link btn-sm"
-              onclick={() => {
-                download_data(
-                  { doc: full_doc, schema },
-                  `${full_doc.meta.link}.json`
-                );
-              }}
-              aria-label="JSON"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                class="bi bi-download"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
-                />
-                <path
-                  d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
-                />
-              </svg>
-            </button>
+           
 
             {#if selected_component.allow.edit}
               {#if mode == "view"}
@@ -479,8 +439,8 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                    width="12"
+                    height="12"
                     fill="currentColor"
                     class="bi bi-pencil-square"
                     viewBox="0 0 16 16"
@@ -493,7 +453,7 @@
                       d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
                     />
                   </svg>
-                  Edit Doc
+                  Edit
                 </button>
               {:else}
                 <button
@@ -506,8 +466,8 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                    width="12"
+                    height="12"
                     fill="currentColor"
                     class="bi bi-floppy"
                     viewBox="0 0 16 16"
@@ -578,6 +538,35 @@
   <div class="col-lg-12">
     <details>
       <summary>Metadata</summary>
+      
+      <button
+      title="Download file as json"
+      class="btn btn-link btn-sm"
+      onclick={() => {
+        download_data(
+          { doc: full_doc, schema },
+          `${full_doc.meta.link}.json`
+        );
+      }}
+      aria-label="JSON"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        fill="currentColor"
+        class="bi bi-download"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+        />
+        <path
+          d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+        />
+      </svg> Download doc (JSON)
+    </button>
+
       <div class=" fw-lighter p-2">
         <div class="list-group">
           <li class="list-group-item list-group-item-light">

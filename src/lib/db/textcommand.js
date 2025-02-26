@@ -109,7 +109,7 @@ const commands = {
       let qsplit = parts.join().split("?")
       if(qsplit.length>1){criteria.params = parse_params_string(qsplit[1])}
       criteria.type = qsplit[0]
-      let valid_type = ["info","plugins","settings","keys","help","schemas","search","graph"]
+      let valid_type = ["info","plugins","settings","keys","help","schemas","search"]
       if(!valid_type.includes(criteria.type)){
         throw new Error(`Invalid page type. Valid pages : ${valid_type.join(",")}`)
       }

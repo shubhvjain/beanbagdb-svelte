@@ -40,6 +40,7 @@ export { default as ObjectViewer2 } from './utils/ObjectViewer2.svelte';
 export { default as SettingEditor } from './editors/SettingEditor.svelte';
 export { default as TagsEditor } from './utils/TagsEditor.svelte';
 export { default as SearchBox } from './core/SearchBox.svelte';
+export { default as SearchBox1 } from './core/SearchBox1.svelte';
 export { default as GraphEdgeEditor } from './editors/GraphEdgeEditor.svelte';
 export { default as TextBlock} from './utils/TextBlock.svelte' 
 export { default as TextPreview} from "./utils/TextPreview.svelte"

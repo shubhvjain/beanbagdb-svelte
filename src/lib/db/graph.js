@@ -193,7 +193,7 @@ const find_neighbors = async (db,links) => {
   let _edges = []
   for (let index = 0; index < data?.docs.length; index++) {
     const element = data?.docs[index];
-    _edges.push({"group":"edges",data:{id:element._id,edge_name:element.data.edge_name,source:element.data.node1,target:element.data.node2}})
+    _edges.push({"group":"edges",data:{  edge_id:element._id, id:element._id,edge_name:element.data.edge_name,source:element.data.node1,target:element.data.node2}})
     let find1 = nodes.find((itm)=>itm==element.data.node1)
     if(!find1){nodes.push(element.data.node1)}
     let find2 = nodes.find((itm)=>itm==element.data.node2)

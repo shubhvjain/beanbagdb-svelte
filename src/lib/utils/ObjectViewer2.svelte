@@ -10,7 +10,7 @@
   }
 </script>
 
-<ul class="list-group">
+<ul class="list-group list-group-flush">
   {#each Object.entries(data) as [key, value]}
     <li class="list-group-item">
       {#if Array.isArray(value)}
