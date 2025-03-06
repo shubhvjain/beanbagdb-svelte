@@ -145,11 +145,7 @@
       });
     });
 
-    console.log(nav_items)
-
-    
-
-    
+    // console.log(nav_items)
 
     if (BBDB.active) {
       console.log("ready...");
@@ -194,8 +190,13 @@
         runTextCommand(itm);
       });
     }
-    document.title = `${db.name}`;
+    document.title = `${db.name} DB`;
   });
+
+  function get_final_size(default_size="medium"){
+    let is_small_screen = window.screen.height < 500
+    return is_small_screen?"full":default_size
+  }
 
   // Function to toggle the theme
   function toggleTheme() {
@@ -219,7 +220,7 @@
             pages.push({
               ...cmd,
               id: new_id,
-              size: "medium",
+              size: get_final_size("medium"),
             });
             setTimeout(() => {
               focusOnItem(new_id);
@@ -242,7 +243,7 @@
             pages.push({
               ...cmd,
               id: new_id,
-              size: "medium",
+              size: get_final_size("medium"),
             });
             setTimeout(() => {
               focusOnItem(new_id);
@@ -257,7 +258,7 @@
           pages.push({
               ...cmd,
               id: new_id,
-              size:"medium",
+              size:get_final_size("medium"),
             });
             setTimeout(() => {
               focusOnItem(new_id);
@@ -274,7 +275,7 @@
             pages.push({
               ...cmd,
               id: new_id,
-              size: "small",
+              size: get_final_size("small"),
               settings : settings
             });
             setTimeout(() => {
@@ -304,7 +305,7 @@
             pages.push({
               ...cmd,
               id: new_id,
-              size: "medium",
+              size: get_final_size("medium"),
               component: customUIComponents[cmd.criteria.page_key].component,
               component_data: cmd.criteria.params
             });
@@ -435,7 +436,7 @@
           </datalist>
 
           <button
-            class="btn btn-sm btn-secondary"
+            class="btn btn-sm btn-dark"
             type="button"
             onclick={() => runTextCommand(searchTerm)}
             aria-label="Run text command.Type help for more"
@@ -448,7 +449,7 @@
           <button
             onclick={toggleTheme}
             type="button"
-            class="btn btn-secondary btn-sm"
+            class="btn btn-dark btn-sm"
             aria-label="Change theme"
             title="toggle theme"
             ><svg
@@ -468,7 +469,7 @@
           <button
             onclick={sync_pouchdb}
             type="button"
-            class="btn  btn-secondary b"
+            class="btn  btn-dark b"
             aria-label="Sync data"
             title="Sync data"
           >
@@ -492,7 +493,7 @@
 
           {#each  nav_items.outer as itm}
           <button
-            class="btn btn-sm btn-primary"
+            class="btn btn-sm btn-dark"
             type="button"
             onclick={()=>{runTextCommand(itm.command)}}
             aria-label="Run text command.Type help for more"
@@ -511,7 +512,7 @@
           <div class="d-flex justify-content-between align-items-center">
             <span class="page-title"></span>
             <div class="d-flex align-items-center">
-              <button class="btn btn-sm text-secondary" onclick={()=>changePageSize(page)}>
+              <button class="btn btn-sm text-secondary" aria-label="change page size" onclick={()=>changePageSize(page)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows" viewBox="0 0 16 16">
                   <path d="M1.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L2.707 7.5h10.586l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L13.293 8.5H2.707l1.147 1.146a.5.5 0 0 1-.708.708z"/>
                 </svg>

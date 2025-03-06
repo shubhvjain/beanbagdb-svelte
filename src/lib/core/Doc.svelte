@@ -132,12 +132,49 @@
   let doc_data = $state({}); // this is to pass to the editor component
   let mode = $state("view");
 
+  function openMapInNewWindow(location) {
+    if (!location || !location.latitude || !location.longitude) {
+        throw new Error("Invalid location object");
+    }
+    const url = `https://www.openstreetmap.org/?mlat=${location.latitude}&mlon=${location.longitude}&zoom=14`;
+    window.open(url, '_blank');
+ }
+
   let default_options = {
     new_show_title_input : true
   }
 
+  async function getCurrentLocationData() {
+    if (!("geolocation" in navigator)) {
+        console.log("Geolocation not supported");
+        return {}
+    }
+
+    return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    altitude: position.coords.altitude,
+                    altitudeAccuracy: position.coords.altitudeAccuracy,
+                    heading: position.coords.heading,
+                    speed: position.coords.speed,
+                    timestamp: position.timestamp
+                });
+            },
+            (error) => {
+              console.log(error)
+              resolve({})
+              //reject(new Error(error.message));
+            }
+        );
+    });
+}
+
   onMount(async () => {
-    console.log(custom_editors)
+    //console.log(custom_editors)
     if (new_doc == true) {
       try {
         if (!schema_name) {
@@ -170,7 +207,7 @@
 
 
         if(selected_component.options.new_show_title_input){
-          new_data_meta["title"] ="" 
+          new_data_meta["title"] = `${schema_name} doc`
         }
 
         //console.log(selected_component)
@@ -218,6 +255,10 @@
       if(selected_component.options.new_show_title_input){
         new_doc["meta"] = new_data_meta
       }
+      let current_loc = await getCurrentLocationData()
+      if(current_loc){
+        new_doc["meta"]["location"] = { created:current_loc,updated:{}  }
+      }
       console.log(new_doc)
       let resp = await BBDB.create(new_doc);
       console.log(resp);
@@ -253,11 +294,24 @@
 
   const edit_internal = async () => {
     try {
+
+      let current_loc = await getCurrentLocationData()
+      let update_obj =  {data: doc_data}
+      if(current_loc){
+        let partial_meta = { ...full_doc.meta }
+        if (!partial_meta["location"]) {
+          partial_meta["location"] = {created:{},updated:{}}; // Create the location object if it doesn't exist
+        }
+        partial_meta["location"]["updated"] = current_loc
+        update_obj["meta"] = partial_meta
+      }
+
         let update1 = await BBDB.update({
           criteria: doc_key,
-          updates: {data: doc_data} ,
+          updates: update_obj,
           rev_id: full_doc._rev,
         });
+
         await bbdb_action(
           emit_bbdb_event("show_ui_message", {
             type: "success",
@@ -539,40 +593,63 @@
     <details>
       <summary>Metadata</summary>
       
-      <button
-      title="Download file as json"
-      class="btn btn-link btn-sm"
-      onclick={() => {
-        download_data(
-          { doc: full_doc, schema },
-          `${full_doc.meta.link}.json`
-        );
-      }}
-      aria-label="JSON"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="12"
-        height="12"
-        fill="currentColor"
-        class="bi bi-download"
-        viewBox="0 0 16 16"
-      >
-        <path
-          d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
-        />
-        <path
-          d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
-        />
-      </svg> Download doc (JSON)
-    </button>
+     
 
       <div class=" fw-lighter p-2">
         <div class="list-group">
+
+          <li class="list-group-item list-group-item-light">
+            <div class="p-1">
+
+              <button
+              title="Download file as json"
+              class="btn btn-link btn-sm"
+              onclick={() => {
+                download_data(
+                  { doc: full_doc, schema },
+                  `${full_doc.meta.link}.json`
+                );
+              }}
+              aria-label="JSON"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                fill="currentColor"
+                class="bi bi-download"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+                />
+                <path
+                  d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+                />
+              </svg> Download doc (JSON)
+            </button>
+            </div>
+          </li>
+
+
           <li class="list-group-item list-group-item-light">
             <div class="p-1"><i>Created</i></div>
             <div class="p-1">{format_timestamp(full_doc.meta.created_on)}</div>
           </li>
+
+          {#if full_doc.meta?.location?.created.latitude}
+          <li class="list-group-item list-group-item-light">
+            <div class="p-1"><i>Created at </i></div>
+            <div class="p-1"> <button class="btn btn-link" onclick={()=>openMapInNewWindow(full_doc.meta.location.created)}>{full_doc.meta.location.created.latitude},{full_doc.meta.location.created.longitude}</button></div>
+          </li> 
+          {/if}
+
+          {#if full_doc.meta?.location?.updated.latitude}
+          <li class="list-group-item list-group-item-light">
+            <div class="p-1"><i>Updated at </i></div>
+            <div class="p-1"> <button class="btn btn-link" onclick={()=>openMapInNewWindow(full_doc.meta.location.updated)}>{full_doc.meta.location.updated.latitude},{full_doc.meta.location.updated.longitude}</button></div>
+          </li> 
+          {/if}
   
           <li class="list-group-item list-group-item-light">
             <div class="p-1"><i>Tags</i></div>
@@ -602,7 +679,7 @@
             <div class="p-1">{full_doc._id}</div>
           </li>
         </div>
-      </div>
+      </div>     
     </details>
   </div>
 </div>
