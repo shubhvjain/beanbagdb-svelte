@@ -15,6 +15,10 @@
     syncUrl: "",
     saveUrl: false,
   });
+  let show_new_card = $state(false);
+  const toggle_new_card = () => {
+    show_new_card = !show_new_card;
+  };
 
   function generateAlphaNumericString(length = 24) {
     const chars =
@@ -39,25 +43,25 @@
       .destroy()
       .then(() => {
         console.log("Database deleted successfully.");
-        return 
+        return;
       })
       .catch((err) => {
         console.error("Error deleting database:", err);
-        throw err
+        throw err;
       });
   }
 
-  async function delete_a_database(dbname){
-    let a = confirm("Sure?")
-    if(a){
+  async function delete_a_database(dbname) {
+    let a = confirm("Sure?");
+    if (a) {
       try {
-        let down_load = await exportDocuments(PouchDB,dbname)
-        let del = await deleteDatabase(PouchDB,dbname)   
+        let down_load = await exportDocuments(PouchDB, dbname);
+        let del = await deleteDatabase(PouchDB, dbname);
 
-        databases = databases.filter(obj => obj.name !== dbname);
+        databases = databases.filter((obj) => obj.name !== dbname);
         saveToLocalStorage();
       } catch (error) {
-          console.log(error)
+        console.log(error);
       }
     }
   }
@@ -95,6 +99,7 @@
 
   // Fetch database list from localStorage on load
   onMount(() => {
+    document.title = "BBDB List"
     databases = get_database_list();
   });
 
@@ -226,7 +231,7 @@
   };
 </script>
 
-<div class="container-fluid">
+<div class="container">
   <div class="row">
     <div class="col-lg-12">
       <h3>Local database manager</h3>
@@ -236,8 +241,17 @@
         the URL to sync through couchDB
       </p>
 
+      {#if show_new_card}
       <div class="card">
-        <div class="card-header">New database</div>
+        <div class="card-header">
+          <div class="d-flex">
+            <div class="w-100">New database setup</div>
+            <div class="flex-shrink-1">  <button onclick={toggle_new_card}  class="btn btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+            </svg></button> </div>
+          </div>
+        </div>
         <div class="card-body">
           <div class="mb-3">
             <input
@@ -304,24 +318,21 @@
         </div>
       </div>
 
-      <p class="text-secondary">{message}</p>
 
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Note</th>
-            <th>Sync URL</th>
-            <th>Encryption Key</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each databases as database, index}
-            <tr>
-              <td> <code>{database.name}</code></td>
-              <td>
-                {#if database.editable}
+      <p class="text-secondary">{message}</p>
+      {/if}
+    </div>
+  </div>
+
+  <div class="row">
+    {#each databases as database, index}
+    <div class="col-lg-3  p-0 m-0">
+      <div class="card" style="max-height:200px;overflow: auto; ">
+        <div class="card-body">
+          <h5 class="card-title"> <code>{database.name}</code></h5>
+          <div class="card-text">
+           
+              {#if database.editable}
                   <input
                     type="text"
                     class="form-control"
@@ -329,12 +340,11 @@
                     placeholder="Note"
                     oninput={(e) => editDatabase(index, "note", e.target.value)}
                   />
-                {:else}
+              {:else}
                   {database.note}
-                {/if}
-              </td>
-              <td>
-                {#if database.editable}
+              {/if}
+              <br>
+              {#if database.editable}
                   <input
                     type="text"
                     class="form-control"
@@ -348,47 +358,76 @@
                 {:else}
                   ****
                 {/if}
-              </td>
-              <td>
+                <br>
                 {#if database.showKey}
                   {database.encryption_key}
                 {:else}
                   ****
                 {/if}
-              </td>
-              <td>
-                <button
-                  class="btn btn-secondary p-1 m-1"
-                  onclick={() => toggleEditable(index)}
-                >
-                  {database.editable ? "Save" : "Edit"}
-                </button>
-                <!-- <button class="btn btn-danger" on:click={() => removeDatabase(index)}>Remove</button> -->
+                
+          </div>  
+        </div>
+        <div class="card-footer">
+          <small class="text-body-secondary">   
 
-                <button
-                  class="btn btn-secondary p-1 m-1"
-                  onclick={() => toggleShowKey(index)}
-                  >{database.showKey ? "Hide" : "Show"} Keys</button>
+            <button
+            class="btn btn-link btn-sm card-link"
+            onclick={() => delete_a_database(database.name)}>
+            Delete</button>
 
-                  <button
-                  class="btn btn-danger p-1 m-1"
-                  onclick={() => delete_a_database(database.name)}> Delete database</button>
+            <button
+            class=" btn btn-link btn-sm card-link"
+            onclick={() => toggleEditable(index)}>
+            {database.editable ? "Save" : "Edit"}
+          </button>
 
-                <button
-                  class="btn btn-link p-1 m-1"
-                  onclick={() => emit_open_link(database.name)}
-                >
-                  Load workspace</button
-                >
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+          <button
+          class="btn btn-link btn-sm card-link"
+          onclick={() => toggleShowKey(index)}>{database.showKey ? "Hide" : "Show"} Keys</button>
 
-      <!-- <button class="btn btn-sm btn-dark" onclick={test}>Test</button> -->
+        
+          <button
+          class="btn btn-success btn-sm card-link"
+          onclick={() => emit_open_link(database.name)}>
+          Load </button>
+
+          
+          </small>
+        </div>
+      </div>
     </div>
+    {/each}
+
+
+
+    <div class="col  p-0 m-0">
+      <div class="card" style="height: 165px;overflow: auto; ">
+        <div class="card-body">
+       
+          <div class="card-text text-center">
+            <br><br>  
+            <button class="btn btn-lg" onclick={()=>toggle_new_card()}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+              </svg>
+              Add
+            </button>
+           
+             
+             
+               
+                
+          </div>  
+        </div>
+      </div>
+    </div>
+
+
   </div>
+</div>
+
+<div class="container-fluid">
+ 
 </div>
 
 <style>
