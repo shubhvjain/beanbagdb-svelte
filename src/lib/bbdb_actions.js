@@ -290,3 +290,11 @@ export const get_blank_object = (schema,schema_name="") => {
     console.log(data_copy)
     return data_copy
 };
+
+export const update_meta_obj = (meta_schema,current)=>{
+ const ajv = new Ajv({code: {esm: true},strict:false,useDefaults:true}) // options can be passed, e.g. {allErrors: true}
+ const data_copy = {...current}
+ const validate = ajv.compile(meta_schema);
+ const valid = validate(data_copy);
+ return data_copy
+}

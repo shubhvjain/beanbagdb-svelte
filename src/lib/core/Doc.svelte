@@ -7,6 +7,7 @@
     emit_bbdb_event,
     download_data,
     get_blank_object,
+    update_meta_obj
   } from "../bbdb_actions.js";
 
   import TagsEditor from "../utils/TagsEditor.svelte";
@@ -229,6 +230,15 @@
         schema = search.schema.schema;
         //console.log(schema);
         full_doc = search.doc;
+        // validate meta and include default fields
+        let ms = await BBDB.get({type:"editable_meta_schema"})
+        //console.log(ms)
+        //console.log(full_doc["meta"])
+        //console.log("-----")
+        let new_meta = update_meta_obj(ms,full_doc["meta"])
+        //console.log(new_meta) 
+        full_doc["meta"] = new_meta
+        console.log(full_doc)
         doc_data = full_doc.data;
         schema_name = search.schema.name
         if (system_schema[schema_name]) {
@@ -637,19 +647,27 @@
             <div class="p-1">{format_timestamp(full_doc.meta.created_on)}</div>
           </li>
 
-          {#if full_doc.meta?.location?.created.latitude}
+          {#if full_doc.meta.location.created}
+
           <li class="list-group-item list-group-item-light">
             <div class="p-1"><i>Created at </i></div>
             <div class="p-1"> <button class="btn btn-link" onclick={()=>openMapInNewWindow(full_doc.meta.location.created)}>{full_doc.meta.location.created.latitude},{full_doc.meta.location.created.longitude}</button></div>
           </li> 
-          {/if}
 
-          {#if full_doc.meta?.location?.updated.latitude}
+          {/if}
+          {#if full_doc.meta.location.updated}
+
           <li class="list-group-item list-group-item-light">
             <div class="p-1"><i>Updated at </i></div>
             <div class="p-1"> <button class="btn btn-link" onclick={()=>openMapInNewWindow(full_doc.meta.location.updated)}>{full_doc.meta.location.updated.latitude},{full_doc.meta.location.updated.longitude}</button></div>
           </li> 
+
           {/if}
+
+          <!-- {#if full_doc.meta?.location && full_doc.meta?.location?.created?.latitude}
+          {/if}
+          {#if full_doc.meta?.location && full_doc.meta?.location?.updated.latitude}
+          {/if} -->
   
           <li class="list-group-item list-group-item-light">
             <div class="p-1"><i>Tags</i></div>

@@ -25,6 +25,7 @@ export const get_pdb_doc = (PouchDB, dbname, secret) => {
         return result;
       },
       search: async (query) => {
+        query["limit"]=2000
         const results = await pdb.find(query);
         return results; // of the form {docs:[],...}
       },
@@ -170,55 +171,8 @@ const ui_app = {
     description: "Schemas required for the BeanBagDB UI",
   },
   schemas: [
-    {
-      name: "system_ai_prompts",
-      description:
-        "To store AI prompt to help you generate data for a certain schema using LLM",
-      version: 0.5,
-      schema: {
-        additionalProperties: false,
-        type: "object",
-        properties: {
-          name: {
-            type: "string",
-            description: "Name of the prompt",
-            minLength: 1,
-          },
-          content: {
-            type: "string",
-            description: "The content of the prompt",
-            minLength: 1,
-          },
-          database: {
-            type: "string",
-            description: "Name of the database associated with the prompt",
-            minLength: 1,
-          },
-        },
-        required: ["name", "content", "database"],
-      },
-      settings: {
-        primary_keys: ["name"],
-        encrypted_fields: [],
-        non_editable_fields: [],
-      },
-    },
   ],
-  records: [
-    {
-      version: 0.75,
-      schema: "system_key",
-      record: {
-        name: "YOUR_OPENAI_API_KEY",
-        value: "change_this_later",
-        note: "this_is_required_to_use_the_AI_Assistant",
-      },
-      meta: {
-        tags: ["added_by_system", "ai_assistant"],
-      },
-      title: "key required for AI assistant ",
-    },
-  ],
+  records: [],
 };
 
 const make_db_ui_ready = async (db) => {
@@ -263,5 +217,4 @@ export const sync_db_once = async (PouchDB,db)=>{
   }).on('error', function (err) {
     console.error('Replication error:', err);
   });
-  
 }
