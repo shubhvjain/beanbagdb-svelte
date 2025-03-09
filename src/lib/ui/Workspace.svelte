@@ -194,7 +194,7 @@
   });
 
   function get_final_size(default_size="medium"){
-    let is_small_screen = window.screen.height < 500
+    let is_small_screen = window.innerWidth < 800
     return is_small_screen?"full":default_size
   }
 
@@ -208,12 +208,18 @@
     if (command.valid) {
       let process_commands = {
         page: (cmd) => {
-          let search = pages.find(
-            (item) =>
-              item.name == cmd.name &&
-              item.criteria.type == cmd.criteria.type &&
-              item.criteria.link == cmd.criteria.link
-          );
+
+          let duplicate_allowed = ["search"]  
+          let search = null;
+
+          if(!duplicate_allowed.includes(cmd.criteria.type)){
+            search = pages.find(
+              (item) =>
+                item.name == cmd.name &&
+                item.criteria.type == cmd.criteria.type &&
+                item.criteria.link == cmd.criteria.link
+            );
+          }
 
           if (!search) {
             let new_id = Math.round(Math.random() * 10000);

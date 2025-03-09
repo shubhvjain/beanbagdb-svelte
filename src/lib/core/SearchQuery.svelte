@@ -1,10 +1,13 @@
 <script>
+  import { onMount } from "svelte";
 
-  let {on_submit} = $props();
+
+  let {on_submit,BBDB} = $props();
 
 
   let jsonInput = $state('{ "schema":"" }');
   let isValidJson = $state(true);
+  let schemas = $state([]);
 
   // Validate JSON
   const validateJson = () => {
@@ -30,22 +33,37 @@
   let search_query = [
    
     {
-      text:"All schemas",
+      text:"Schemas",
       query:`{ "schema":"schema"}`,
       complete:true
     },
     {
-      text:"All settings",
+      text:"Settings",
       query:`{ "schema":"system_setting"}`,
       complete:true
     },
     {
-      text:"All logs",
+      text:"Keys",
+      query:`{ "schema":"system_key"}`,
+      complete:true
+    },
+    {
+      text:"Graph edge constraints",
+      query:`{ "schema":"system_edge_constraint"}`,
+      complete:true
+    },
+    {
+      text:"Graph edges",
+      query:`{ "schema":"system_edge"}`,
+      complete:true
+    },
+    {
+      text:"Logs",
       query:`{ "schema":"system_log"}`,
       complete:true
     },
     {
-      text:"All docs",
+      text:"All Docs",
       query:`{  }`,
       complete:true
     }
@@ -150,6 +168,17 @@
     jsonInput = generatedQuery
     handleSearch()
   }
+  async function load_schemas(){
+    try {
+          let run_cmd = await BBDB.plugins.txtcmd.parse_and_run("new");
+          schemas = run_cmd.result;
+        } catch (error) {
+          console.log(error);
+        }
+  }
+  onMount(async()=>{
+    await load_schemas()
+  })
 
 
 </script>
@@ -180,8 +209,16 @@
       <div class="tab-pane fade show active" id="pills-disabled" role="tabpanel" aria-labelledby="pills-disabled-tab" tabindex="0">
         
         {#each search_query as q}
-          <button type="button" onclick={()=>{add_query(q.query);if(q.complete){  handleSearch() }  }} class="btn btn-outline-light">{q.text}</button>
+          <button type="button" onclick={()=>{add_query(q.query);if(q.complete){  handleSearch() }  }} class="btn btn-secondary m-1">{q.text}</button>
         {/each}
+        <details>
+          <summary>Schemas</summary>
+          <div class="scroll-container border p-1">
+            {#each schemas as sch}
+            <button class="btn btn-secondary m-1" onclick={()=>{add_query(`{"schema":"${sch.name}"}`); handleSearch() }}  >{sch.title}</button>
+          {/each}
+            </div>
+        </details>
       </div>
       <div class="tab-pane fade " id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
         
@@ -250,4 +287,9 @@
   textarea {
     transition: border-color 0.3s, box-shadow 0.3s;
   }
+  .scroll-container {
+            height: 65px; /* Fixed height */
+            overflow-x: auto;
+            white-space: nowrap;
+        }
 </style>

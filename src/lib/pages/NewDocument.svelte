@@ -115,6 +115,19 @@
             <option value={sch.name}>{sch.title}</option>
           {/each}
         </select>
+        
+<div class="row mb-2">
+  <div class="col-lg-12">
+    <details>
+      <summary>Or Select</summary>
+      <div class="scroll-container border p-1">
+        {#each schemas as sch}
+        <button class="btn btn-secondary m-1" onclick={()=>{load_schema_new(sch.name)}}  >{sch.title}</button>
+      {/each}
+        </div>
+    </details>
+  </div>
+</div>
       {/if}
 
       {#if selected_schema}
@@ -159,3 +172,10 @@
     <p>Loading document...</p>
   {/if}
 </div>
+<style>
+  .scroll-container {
+            height: 65px; /* Fixed height */
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+</style>
