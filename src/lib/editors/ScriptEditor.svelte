@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import TextBlock from "$lib/utils/TextBlock.svelte";
   import JsBrowserPreview from "$lib/utils/JSBrowserPreview.svelte";
-  const script_types = ["js_browser"];
+  const script_types = ["search_query"];
   let {
     schema = {},
     data = $bindable(),
@@ -25,10 +25,6 @@
 
   let browser_runnable = $state(false);
 
-
-
-
-
   const run_script = () => {
     if (data.type == "js_browser") {
       browser_runnable = true
@@ -48,7 +44,7 @@
             >
             <input
               bind:value={data.name}
-              type="email"
+              type="text"
               class="form-control"
               id="exampleFormControlInput1"
               placeholder="name-no-spaces"
@@ -69,15 +65,15 @@
           </div>
 
           <div class="mb-3 mt-3">
-            <label for="exampleFormControlTextarea1" class="form-label"
-              >Usage</label
+            <label for="exampleFormControlTextarea1" class="form-label">Input description</label
             >
-            <textarea
+            <input
               bind:value={data.usage}
+              type="text"
               class="form-control"
-              id="exampleFormControlTextarea1"
-              rows="2"
-            ></textarea>
+              id="exampleFormControlInput2"
+              placeholder="Input description"
+            />
           </div>
 
           <div class="mb-3">
@@ -93,7 +89,7 @@
             />
           </div>
 
-          <div class="form-check">
+          <!-- <div class="form-check">
             <input
               class="form-check-input"
               bind:checked={data.log_execution}
@@ -103,7 +99,7 @@
             <label class="form-check-label" for="flexCheckDefault">
               Log script run (not available for browser scripts)
             </label>
-          </div>
+          </div> -->
           <div class="mb-4 mt-3">
             <label for="exampleFormControlTextarea1" class="form-label"
               >Script</label
@@ -119,18 +115,19 @@
           </div>
         {/if}
 
-        <div class="card mb-4">
-          <div class="card-body">
-
-            {#if browser_runnable}
-              <JsBrowserPreview script={data.script} />
-            {:else}
+        {#if mode=="view"}
+        <div class="card mb-4">         
+          <div class="card-body">     
+            <div class="card-title">
+              <span><code>{data.name} v{data.version}</code></span>
+              <span class="badge badge-success">({data.type})</span>
+            </div>       
               <pre><code>{data.script}</code></pre>
-            {/if}
-
-
           </div>
         </div>
+        {/if}
+
+      
       {/if}
     </div>
   </div>

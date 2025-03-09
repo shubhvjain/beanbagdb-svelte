@@ -3,7 +3,7 @@
 
   let {  on_selection_changed, search_query = "", BBDB, max_selection=1, bbdb_action, on_load_select_first=false  } = $props();
   import { emit_bbdb_event } from "$lib/bbdb_actions.js";
-
+import SearchScript from "$lib/utils/SearchScript.svelte";
   let loaded = $state(false);
   let unloaded_message = $state("")
   let results = $state([]);
@@ -55,6 +55,19 @@
       results = [];
     }
   }
+  async function handle_script(q){
+    //console.log(q)
+    try {
+      let search  =  await BBDB.search({"selector":q});
+      console.log(search)
+      results = search.docs||[]
+      // console.log(search)
+     
+    } catch (error) {
+      console.error("Search failed:", error);
+      results = [];
+    }
+  }
 
     // Handle focus state
     function handleFocus() {
@@ -84,6 +97,9 @@
               <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
             </svg></button>
           </div>
+          
+          <SearchScript {BBDB} on_return_query={handle_script}/>
+
         </div>
       </div>
      

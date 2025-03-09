@@ -47,7 +47,7 @@ export { default as TextPreview} from "./utils/TextPreview.svelte"
 export {default as ScriptEditor} from "./editors/ScriptEditor.svelte"
 export  {default as ExportData }from  "./pages/ExportData.svelte"
 export  {default as Mermaid }from  "./utils/Mermaid.svelte"
-
+export {default as SearchScript} from "./utils/SearchScript.svelte"
 // Scripts from db
 export * as beanbagdbweb from './db/beanbagdbweb.js';
 export * as pouchdbFind from './db/pouchdb.find.js';
