@@ -199,22 +199,82 @@ export const destroy_db = (dbname) => {
 
 
 export const sync_db_once = async (PouchDB,db)=>{
-  if(!db.sync_url){
-    throw new Error("No sync URL found")
-  }
-  const localDB  = new PouchDB(db.name);
-  const remoteDB = new PouchDB(db.sync_url); 
+  try {
+    if(!db.sync_url){
+      throw new Error("No sync URL found")
+    }
+    const localDB  = new PouchDB(db.name);
+    const remoteDB = new PouchDB(db.sync_url); 
+    let sync_allowed = false
+    let errors = []
+    const mangoQuery = {
+      selector: { "schema": "system_setting", "data.name":"beanbagdb_system"}, // Adjust this to match your settings docs
+      limit: 100 // Adjust based on expected results
+    };
+    console.log(mangoQuery)
+    const remoteSettingsResult = await remoteDB.find(mangoQuery);
+    const remoteSettings = remoteSettingsResult.docs;
+    console.log(remoteSettings)
+    if (remoteSettings.length==0){
+      // blank database
+      // check if the database is blank
+      let blank_check = await isRemoteDbBlank(remoteDB)
+      if(blank_check){
+        sync_allowed = true
+      }else{
+        errors.push("The selected remote database is not empty")
+      }
+      
+    }else if (remoteSettings.length==1){
+      console.log("one rec only")
+      // only one setting doc must exist in the database 
+      const localSettingsResult = await localDB.find(mangoQuery);
+      const localSettings = localSettingsResult.docs[0];
+      console.log("local=")
+      console.log(localSettings)
+      const remoteDoc = remoteSettings[0]
+      console.log("remote=")
+      console.log(remoteDoc)
+      if(localSettings._id==remoteDoc._id && localSettings.meta.created_on == remoteDoc.meta.created_on ){
+        sync_allowed = true 
+      }else{
+        sync_allowed = false
+        errors.push("The remote database already contains another instance of bbdb. Once database can have a single bbdb instance in it. Use another remote DB")
+      }
 
-  localDB.sync(remoteDB, {
-    live: false,       // Enable live syncing
-    retry: true       // Retry on failure
-  }).on('change', function (info) {
-    console.log('Data changed:', info);
-  }).on('paused', function (err) {
-    console.log('Replication paused:', err);
-  }).on('active', function () {
-    console.log('Replication resumed.');
-  }).on('error', function (err) {
-    console.error('Replication error:', err);
-  });
+    }else{
+      sync_allowed = false
+      errors.push("The remote database already contains multiple setting document.Thus it cannot be used to sync this database")
+    }
+    //console.log
+    //sync_allowed = false
+    if(sync_allowed && errors.length==0){
+      localDB.sync(remoteDB, {
+        live: false,       // Enable live syncing
+        retry: true       // Retry on failure
+      }).on('change', function (info) {
+        console.log('Data changed:', info);
+      }).on('paused', function (err) {
+        console.log('Replication paused:', err);
+      }).on('active', function () {
+        console.log('Replication resumed.');
+      }).on('error', function (err) {
+        console.error('Replication error:', err);
+      });
+    }else{
+      throw new Error(`Unble to sync. ${errors.join(".")} `)
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
+async function isRemoteDbBlank(remoteDb) {
+  try {
+      const result = await remoteDb.allDocs({ limit: 1 });
+      return result.rows.length === 0; // True if DB is empty
+  } catch (error) {
+      console.error("Error checking remote DB:", error);
+      return false; // Assume not empty if error occurs
+  }
 }

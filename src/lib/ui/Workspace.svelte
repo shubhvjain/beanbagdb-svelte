@@ -6,7 +6,7 @@
   import { get_new_DB,sync_db_once} from "$lib/db/beanbagdbweb.js"; 
   import { text_command } from "$lib/db/textcommand.js";
   import {graph_query} from "$lib/db/graph.js"
-  import {get_default_nav_items} from "../bbdb_actions.js"
+  import {get_default_nav_items,get_database_details} from "../bbdb_actions.js"
 
   // pages to display
   import WorkSpaceErrorPage from "./WorkSpaceErrorPage.svelte";
@@ -82,11 +82,14 @@
   }
 
   async function sync_pouchdb() {
-    console.log(db);
     try {
-      let result = await sync_db_once(PouchDB,db);
+      console.log(db);
+      let new_db = get_database_details(db.name)
+      let result = await sync_db_once(PouchDB,new_db);
       console.log(result);
+      addMessage("Synced with remote","success")
     } catch (error) {
+      addMessage(error.message,"error")
       console.log(error);
     }
   }

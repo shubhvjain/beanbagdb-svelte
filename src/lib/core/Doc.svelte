@@ -266,7 +266,12 @@
         new_doc["meta"] = new_data_meta
       }
       let current_loc = await getCurrentLocationData()
+      console.log(current_loc)
+
       if(current_loc){
+        if(!new_doc["meta"]){
+          new_doc["meta"] = {}
+        }
         new_doc["meta"]["location"] = { created:current_loc,updated:{}  }
       }
       console.log(new_doc)
