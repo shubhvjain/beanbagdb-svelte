@@ -411,13 +411,54 @@
   const switch_to_view = ()=>{
     mode="view"
   }
+
+  const generate_append = (t) => {
+  switch (t) {
+    case "dt":
+      return new Date().toLocaleString(); // Human-readable date-time
+
+    case "ut":
+      return Math.floor(Date.now() / 1000); // Unix epoch timestamp
+
+    default:
+      return "Invalid type"; // Handle unknown cases
+  }
+};
+
+  const append_to_edit_title= (t)=>{
+    full_doc.meta.title += " "+generate_append(t)
+  }
+
+  const append_to_new_title = (t)=>{
+    new_data_meta.title += " "+generate_append(t)
+  }
+
 </script>
 
 {#if loaded}
   {#if new_doc == true}
     {#if selected_component.allow.new}
       {#if selected_component.options.new_show_title_input}
-      <input class="form-control" bind:value={new_data_meta.title} type="text" placeholder="New {schema.title||"Document"} title" aria-label=".form-control-lg example">      
+     
+     
+
+
+
+       <div class="input-group">
+              <input   bind:value={new_data_meta.title} type="text" class="form-control" aria-label="Text input with dropdown button">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+              </svg></button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><button onclick={()=>append_to_new_title("dt")} class="dropdown-item" href="#">Append Date time </button></li>
+                <li><button  onclick={()=>append_to_new_title("ut")} class="dropdown-item" href="#">Append Unix Epoch</button></li>
+                <!-- <li><a class="dropdown-item" href="#">Append </a></li> -->
+              </ul>
+            </div>
+  
+      <!-- <input class="form-control" bind:value={new_data_meta.title} type="text" placeholder="New {schema.title||"Document"} title" aria-label=".form-control-lg example">       -->
+     
+     
       {/if}
       {#if show_add_editor}
       <div class="pt-2">
@@ -450,116 +491,168 @@
   {:else if new_doc == false}
     <div class="row">
       <div class="col-lg-12 ">
-        <div class="mt-1 d-flex justify-content-between align-items-center">
-          <div class="d-flex align-items-center">
+        <div class="d-flex">
+          <div class="p-2 flex-grow-1">
+
             {#if isTitleEditing}
-              <!-- Editing Mode -->
-              <input
-                type="text"
-                class="form-control me-2"
-                bind:value={full_doc.meta.title}
-                placeholder="Enter title"
-              />
-              <button class="btn btn-primary btn-sm" onclick={saveTitle}
-                >Save</button
+            <!-- Editing Mode -->
+            <!-- <input
+              type="text"
+              class="form-control me-2"
+              bind:value={full_doc.meta.title}
+              placeholder="Enter title"
+            /> -->
+
+            <div class="input-group">
+              <input   bind:value={full_doc.meta.title} type="text" class="form-control" aria-label="Text input with dropdown button">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+              </svg></button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><button onclick={()=>append_to_edit_title("dt")} class="dropdown-item" href="#">Append Date time </button></li>
+                <li><button  onclick={()=>append_to_edit_title("ut")} class="dropdown-item" href="#">Append Unix Epoch</button></li>
+                <!-- <li><a class="dropdown-item" href="#">Append </a></li> -->
+              </ul>
+            </div>
+
+            
+          {:else}
+            <!-- Display Mode -->
+            <h5 class="mb-0 me-2">{full_doc.meta.title}</h5>
+           
+          {/if}
+
+
+          </div>
+          <div class="p-2">
+            {#if isTitleEditing}
+            <!-- Editing Mode -->
+            <!-- <input
+              type="text"
+              class="form-control me-2"
+              bind:value={full_doc.meta.title}
+              placeholder="Enter title"
+            /> -->
+
+
+            
+            <button class="btn btn-primary btn-sm" onclick={saveTitle}
+              >Save</button
+            >
+          {:else}
+            <!-- Display Mode -->
+           
+            <button
+              class="btn btn-link btn-sm p-0"
+              onclick={toggleTitleEdit}
+              aria-label="Edit"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                fill="currentColor"
+                class="bi bi-pencil-fill"
+                viewBox="0 0 16 16"
               >
-            {:else}
-              <!-- Display Mode -->
-              <h5 class="mb-0 me-2">{full_doc.meta.title}</h5>
+                <path
+                  d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                />
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-type-h1" viewBox="0 0 16 16">
+                <path d="M7.648 13V3H6.3v4.234H1.348V3H0v10h1.348V8.421H6.3V13zM14 13V3h-1.333l-2.381 1.766V6.12L12.6 4.443h.066V13z"/>
+              </svg>
+            </button>
+          {/if}
+
+
+          </div>
+          <div class="p-2"> <button
+            title="Click to copy link to clipboard"
+            class="btn btn-link btn-sm"
+            aria-label="Copy link to clipboard"
+            onclick={() => {
+              copy_to_clipboard(full_doc.meta.link);
+            }}
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+          </svg>
+
+            <!-- {full_doc.meta.link} -->
+          </button>
+         
+
+          {#if selected_component.allow.edit}
+            {#if mode == "view"}
               <button
-                class="btn btn-link btn-sm p-0"
-                onclick={toggleTitleEdit}
-                aria-label="Edit"
+                class="btn btn-link btn-sm"
+                onclick={() =>
+                  edit_mode === "external" ? edit_external() : open_edit()}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="12"
                   height="12"
                   fill="currentColor"
-                  class="bi bi-pencil-fill"
+                  class="bi bi-pencil-square"
                   viewBox="0 0 16 16"
                 >
                   <path
-                    d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"
+                    d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"
+                  />
+                  <path
+                    fill-rule="evenodd"
+                    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
                   />
                 </svg>
+                Edit
+              </button>
+            {:else}
+              <button
+                class="btn btn-link btn-sm"
+                disabled={edit_data_valid ? "" : "disabled"}
+                onclick={() =>
+                  edit_mode === "external"
+                    ? edit_external()
+                    : edit_internal()}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  fill="currentColor"
+                  class="bi bi-floppy"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M11 2H9v3h2z" />
+                  <path
+                    d="M1.5 0h11.586a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13A1.5 1.5 0 0 1 1.5 0M1 1.5v13a.5.5 0 0 0 .5.5H2v-4.5A1.5 1.5 0 0 1 3.5 9h9a1.5 1.5 0 0 1 1.5 1.5V15h.5a.5.5 0 0 0 .5-.5V2.914a.5.5 0 0 0-.146-.353l-1.415-1.415A.5.5 0 0 0 13.086 1H13v4.5A1.5 1.5 0 0 1 11.5 7h-7A1.5 1.5 0 0 1 3 5.5V1H1.5a.5.5 0 0 0-.5.5m3 4a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V1H4zM3 15h10v-4.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"
+                  />
+                </svg>
+                Save
+              </button>
+              <button
+                class="btn btn-link btn-sm"
+                disabled={edit_data_valid ? "" : "disabled"}
+                onclick={() => switch_to_view() }
+              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
+              </svg>
+                View
               </button>
             {/if}
+          {/if}</div>
+        </div>
+
+        <div class="mt-1 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+          
           </div>
           <div class="d-flex align-items-center">
-            <button
-              title="Click to copy link to clipboard"
-              class="btn btn-link btn-sm"
-              aria-label="Copy link to clipboard"
-              onclick={() => {
-                copy_to_clipboard(full_doc.meta.link);
-              }}
-            >
-              {full_doc.meta.link}
-            </button>
            
-
-            {#if selected_component.allow.edit}
-              {#if mode == "view"}
-                <button
-                  class="btn btn-link btn-sm"
-                  onclick={() =>
-                    edit_mode === "external" ? edit_external() : open_edit()}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    fill="currentColor"
-                    class="bi bi-pencil-square"
-                    viewBox="0 0 16 16"
-                  >
-                    <path
-                      d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"
-                    />
-                    <path
-                      fill-rule="evenodd"
-                      d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                    />
-                  </svg>
-                  Edit
-                </button>
-              {:else}
-                <button
-                  class="btn btn-link btn-sm"
-                  disabled={edit_data_valid ? "" : "disabled"}
-                  onclick={() =>
-                    edit_mode === "external"
-                      ? edit_external()
-                      : edit_internal()}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    fill="currentColor"
-                    class="bi bi-floppy"
-                    viewBox="0 0 16 16"
-                  >
-                    <path d="M11 2H9v3h2z" />
-                    <path
-                      d="M1.5 0h11.586a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13A1.5 1.5 0 0 1 1.5 0M1 1.5v13a.5.5 0 0 0 .5.5H2v-4.5A1.5 1.5 0 0 1 3.5 9h9a1.5 1.5 0 0 1 1.5 1.5V15h.5a.5.5 0 0 0 .5-.5V2.914a.5.5 0 0 0-.146-.353l-1.415-1.415A.5.5 0 0 0 13.086 1H13v4.5A1.5 1.5 0 0 1 11.5 7h-7A1.5 1.5 0 0 1 3 5.5V1H1.5a.5.5 0 0 0-.5.5m3 4a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V1H4zM3 15h10v-4.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"
-                    />
-                  </svg>
-                  Save
-                </button>
-                <button
-                  class="btn btn-link btn-sm"
-                  disabled={edit_data_valid ? "" : "disabled"}
-                  onclick={() => switch_to_view() }
-                >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
-                  <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
-                </svg>
-                  View
-                </button>
-              {/if}
-            {/if}
           </div>
         </div>
       </div>
