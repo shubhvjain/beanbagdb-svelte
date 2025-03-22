@@ -1,146 +1,181 @@
 <script>
   import { onMount } from "svelte";
-  import { copy_to_clipboard,format_timestamp, emit_bbdb_event } from "$lib/bbdb_actions.js";
+  import { emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
-  import NewDoc from "$lib/core/NewDoc.svelte";
-  let { page_bbdb_action, BBDB, page } = $props();
-  let new_not_allowed = ["system_log"]
+  let { page_bbdb_action, BBDB, page, excluded_schemas = [],custom_editors={} , show_history=true} = $props();
   let loaded = $state(false);
   let loading = $state(true);
   let error = $state(null);
-
-  let schemas = $state([])
-  let selected_schema = $state(null)
-
-  let recent_links = $state([])
+  let schemas = $state([]);
+  let history = $state([])
+  let selected_schema = $state(null);
   async function load_schemas(page1) {
-    console.log(page1)
     let doc = await BBDB.plugins.txtcmd.run(page1);
-    //if()
-    console.log(doc);
-
     return doc;
   }
+  function sortByDataName(arr) {return arr.sort((a, b) => a.title.localeCompare(b.title))}
 
   onMount(async () => {
+    // console.log(page);
     try {
       if (!BBDB) {
         throw new Error(
           "Unable to load page. Component not configured properly"
         );
       }
-      console.log(page);
-      let run_cmd  =  await load_schemas(page);
-      if (run_cmd.valid){
-        schemas = run_cmd.result
-        if(schemas.length==1){
-          // auto select the first 
+
+      if (!page) {
+        try {
+          let run_cmd = await BBDB.plugins.txtcmd.parse_and_run("new");
+          if (run_cmd.valid) {
+            schemas = run_cmd.result;
+            schemas = sortByDataName(schemas)
+            if (schemas.length == 1) {
+              // auto select the first
+            }
+
+            if(excluded_schemas.length>0){
+              schemas = schemas.filter(item => !excluded_schemas.includes(item.name));
+            }
+
+            loaded = true;
+          } else {
+            loaded = false;
+            error = run_cmd.errors.join(",");
+          }
+        } catch (error) {
+          console.log(error);
         }
-        loaded = true;
-      }else{
-        loaded = false
-        error = run_cmd.errors.join(",")
       }
-      
-      
-      
+
+      if (page.criteria.schema != "") {
+        try {
+          await load_schema_new(page.criteria.schema)
+          loaded = true;   
+        } catch (error) {
+          console.log(error)
+          error = error.message
+          loaded = false
+        }
+      } else {
+        let run_cmd = await load_schemas(page);
+        if (run_cmd.valid) {
+          schemas = run_cmd.result;
+          schemas = sortByDataName(schemas)
+          if (schemas.length == 1) {
+            // auto select the first
+          }
+          loaded = true;
+        } else {
+          loaded = false;
+          error = run_cmd.errors.join(",");
+        }
+      }
     } catch (err) {
       error = err.message;
-    } finally {
-      loading = false;
     }
   });
 
   async function on_bbdb_action(action) {
-    console.log(action)
-    if(action.name=="new_document"){
-      // edit a doc
-      console.log("adding a new document ")
-      try {
-        let data_obj 
-        if(action.data.schema=="schema"){
-          // generate blank record 
-          data_obj = {
-            name: action.data.data.name,
-            title: action.data.data.name,
-            description: action.data.data.name,
-            active:false,
-            schema:{
-              type:'object',
-              additionalProperties:false,
-              properties:{
-                title:{type:"string"}
-              }
-            }, settings:{}
-          }
-        }else{
-          data_obj = action.data.data
-        }
-        let update1 = await BBDB.create(action.data.schema,data_obj) 
-        console.log(update1)     
-        recent_links.push({link:update1.meta.link,type:update1.schema})
-        return {added:true,error:null}
-      } catch (error) {
-        console.log(error)
-        return {added:false,error:error}
-      }
-    }else{
-      if (page_bbdb_action) {
-        return await page_bbdb_action(action);
-      }
+    console.log(action);
+    if(action.name=="new_document_created" && show_history){
+      history.push(action.data.link)
+    }
+    if (page_bbdb_action) {
+      return await page_bbdb_action(action);
     }
   }
 
-  function emit_open_page(link){
-    page_bbdb_action(emit_bbdb_event("textcmd",{text:`open/link/${link}`}))
+  function emit_open_page(link) {
+    if(!page_bbdb_action) return 
+    page_bbdb_action(emit_bbdb_event("textcmd", { text: `open/link/${link}` }));
   }
 
-  async function load_schema_new(schema_name){
-    selected_schema=null
-    if(schema_name){
-      console.log(schema_name)
-      let schema_doc = await BBDB.get("schema",{name:schema_name}) 
-      console.log(schema_doc)
-      selected_schema = schema_doc.data
-    }
+  async function load_schema_new(schema_name) {
+    selected_schema = null;
+    setTimeout(() => {
+      selected_schema = schema_name;
+    }, 50);
   }
 </script>
 
 <div>
-  {#if loading}
-    <p>Loading document...</p>
-  {:else if error}
-    <p class="text-danger">Error: {error}</p>
-  {:else if loaded}
-  <div class="container-fluid pt-1 mt-2">
-    <select class="form-select form-select-lg mb-3" aria-label="select schema" 
-    onchange={(e) => {load_schema_new(e.target.value) }}>
-      <option value="" selected>Select schema</option>
-      {#each schemas as sch }
-      <option value={sch.name}>{sch.title}</option>  
+  {#if loaded}
+    <div class="container-fluid pt-1 mt-2">
+      {#if schemas.length > 0}
+        <select
+          class="form-select form-select-lg mb-3"
+          aria-label="select schema"
+          onchange={(e) => {
+            load_schema_new(e.target.value);
+          }}
+        >
+          <option value="" selected>Select schema</option>
+          {#each schemas as sch}
+            <option value={sch.name}>{sch.title}</option>
+          {/each}
+        </select>
+        
+<div class="row mb-2">
+  <div class="col-lg-12">
+    <details>
+      <summary>Or Select</summary>
+      <div class="scroll-container border p-1">
+        {#each schemas as sch}
+        <button class="btn btn-secondary m-1" onclick={()=>{load_schema_new(sch.name)}}  >{sch.title}</button>
       {/each}
-    </select>
-    {#if selected_schema}
-    <div class="row">
-      <div class="col-lg-12">
-        <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action}/>
-      </div>
-    </div>  
-    {#if recent_links.length>0 }
-    <div class="row">
-      <div class="col-lg-12">
-        Recently created docs : 
-        {#each recent_links as rec }
-          <button class="btn btn-sm btn-link m-1" onclick={()=>emit_open_page(rec.link)}> {rec.link} ({rec.type}) </button>  
-        {/each}
-      </div>
-    </div>  
-    {/if}
-
-    {/if}
-    
+        </div>
+    </details>
   </div>
-  
-   
+</div>
+      {/if}
+
+      {#if selected_schema}
+        <div class="row">
+          <div class="col-lg-12">
+            <Doc
+              {BBDB}
+              bbdb_action={on_bbdb_action}
+              new_doc={true}
+              schema_name={selected_schema}
+              {custom_editors}
+            />
+            <!-- <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action} /> -->
+          </div>
+        </div>
+
+
+        {#if show_history}
+        {#if history.length > 0}
+        <div class="row">
+          <div class="col-lg-12">
+            Recently created docs :
+            {#each history as rec}
+              <button
+                class="btn btn-sm btn-link m-1"
+                onclick={() => emit_open_page(rec)}
+              >
+                {rec}
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
+        {/if}
+
+      {/if}
+
+    
+
+    </div>
+  {:else}
+    <p>Loading document...</p>
   {/if}
 </div>
+<style>
+  .scroll-container {
+            height: 65px; /* Fixed height */
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+</style>

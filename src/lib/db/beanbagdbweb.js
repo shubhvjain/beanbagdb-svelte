@@ -1,15 +1,15 @@
 import { BeanBagDB, DocNotFoundError, DocCreationError } from "beanbagdb";
-
-import * as PouchDB from "./pouchdb.min.js";
-import * as PouchDBFind from "./pouchdb.find.js";
+// import PouchDB from "pouchdb-browser";
+// import * as PouchDB from "./pouchdb.min.js";
+// import * as PouchDBFind from "./pouchdb.find.js";
 
 // this is a pouch db instance of beanbagdb used for testing.
 import Ajv from "ajv";
 
-let pdb;
 
-export const get_pdb_doc = (dbname, secret) => {
-  pdb = new window.PouchDB(dbname);
+export const get_pdb_doc = (PouchDB, dbname, secret) => {
+  // let pdb = new PouchDB(dbname);
+  let pdb = new PouchDB(dbname);
   const doc_obj = {
     name: dbname,
     db_name: "pouchdb",
@@ -25,6 +25,7 @@ export const get_pdb_doc = (dbname, secret) => {
         return result;
       },
       search: async (query) => {
+        query["limit"]=2000
         const results = await pdb.find(query);
         return results; // of the form {docs:[],...}
       },
@@ -129,7 +130,7 @@ export const get_pdb_doc = (dbname, secret) => {
   return doc_obj;
 };
 
-export const get_new_DB = (db) => {
+export const get_new_DB = (PouchDB,db) => {
   //console.log(db)
   if (!db.name) {
     throw new Error("No DB name was provided");
@@ -137,7 +138,7 @@ export const get_new_DB = (db) => {
   if (!db.encryption_key) {
     throw new Error("No encryption key was provided");
   }
-  let doc_obj = get_pdb_doc(db.name, db.encryption_key);
+  let doc_obj = get_pdb_doc(PouchDB,db.name, db.encryption_key);
   let database = new BeanBagDB(doc_obj);
   return database;
 };
@@ -170,55 +171,8 @@ const ui_app = {
     description: "Schemas required for the BeanBagDB UI",
   },
   schemas: [
-    {
-      name: "system_ai_prompts",
-      description:
-        "To store AI prompt to help you generate data for a certain schema using LLM",
-      version: 0.5,
-      schema: {
-        additionalProperties: false,
-        type: "object",
-        properties: {
-          name: {
-            type: "string",
-            description: "Name of the prompt",
-            minLength: 1,
-          },
-          content: {
-            type: "string",
-            description: "The content of the prompt",
-            minLength: 1,
-          },
-          database: {
-            type: "string",
-            description: "Name of the database associated with the prompt",
-            minLength: 1,
-          },
-        },
-        required: ["name", "content", "database"],
-      },
-      settings: {
-        primary_keys: ["name"],
-        encrypted_fields: [],
-        non_editable_fields: [],
-      },
-    },
   ],
-  records: [
-    {
-      version: 0.75,
-      schema: "system_key",
-      record: {
-        name: "YOUR_OPENAI_API_KEY",
-        value: "change_this_later",
-        note: "this_is_required_to_use_the_AI_Assistant",
-      },
-      meta: {
-        tags: ["added_by_system", "ai_assistant"],
-      },
-      title: "key required for AI assistant ",
-    },
-  ],
+  records: [],
 };
 
 const make_db_ui_ready = async (db) => {
@@ -244,24 +198,83 @@ export const destroy_db = (dbname) => {
 }
 
 
-export const sync_db_once = async (db)=>{
-  if(!db.sync_url){
-    throw new Error("No sync URL found")
-  }
-  const localDB  = new window.PouchDB(db.name);
-  const remoteDB = new window.PouchDB(db.sync_url); 
+export const sync_db_once = async (PouchDB,db)=>{
+  try {
+    if(!db.sync_url){
+      throw new Error("No sync URL found")
+    }
+    const localDB  = new PouchDB(db.name);
+    const remoteDB = new PouchDB(db.sync_url); 
+    let sync_allowed = false
+    let errors = []
+    const mangoQuery = {
+      selector: { "schema": "system_setting", "data.name":"beanbagdb_system"}, // Adjust this to match your settings docs
+      limit: 100 // Adjust based on expected results
+    };
+    console.log(mangoQuery)
+    const remoteSettingsResult = await remoteDB.find(mangoQuery);
+    const remoteSettings = remoteSettingsResult.docs;
+    console.log(remoteSettings)
+    if (remoteSettings.length==0){
+      // blank database
+      // check if the database is blank
+      let blank_check = await isRemoteDbBlank(remoteDB)
+      if(blank_check){
+        sync_allowed = true
+      }else{
+        errors.push("The selected remote database is not empty")
+      }
+      
+    }else if (remoteSettings.length==1){
+      console.log("one rec only")
+      // only one setting doc must exist in the database 
+      const localSettingsResult = await localDB.find(mangoQuery);
+      const localSettings = localSettingsResult.docs[0];
+      console.log("local=")
+      console.log(localSettings)
+      const remoteDoc = remoteSettings[0]
+      console.log("remote=")
+      console.log(remoteDoc)
+      if(localSettings._id==remoteDoc._id && localSettings.meta.created_on == remoteDoc.meta.created_on ){
+        sync_allowed = true 
+      }else{
+        sync_allowed = false
+        errors.push("The remote database already contains another instance of bbdb. Once database can have a single bbdb instance in it. Use another remote DB")
+      }
 
-  localDB.sync(remoteDB, {
-    live: false,       // Enable live syncing
-    retry: true       // Retry on failure
-  }).on('change', function (info) {
-    console.log('Data changed:', info);
-  }).on('paused', function (err) {
-    console.log('Replication paused:', err);
-  }).on('active', function () {
-    console.log('Replication resumed.');
-  }).on('error', function (err) {
-    console.error('Replication error:', err);
-  });
-  
+    }else{
+      sync_allowed = false
+      errors.push("The remote database already contains multiple setting document.Thus it cannot be used to sync this database")
+    }
+    //console.log
+    //sync_allowed = false
+    if(sync_allowed && errors.length==0){
+      localDB.sync(remoteDB, {
+        live: false,       // Enable live syncing
+        retry: true       // Retry on failure
+      }).on('change', function (info) {
+        console.log('Data changed:', info);
+      }).on('paused', function (err) {
+        console.log('Replication paused:', err);
+      }).on('active', function () {
+        console.log('Replication resumed.');
+      }).on('error', function (err) {
+        console.error('Replication error:', err);
+      });
+    }else{
+      throw new Error(`Unble to sync. ${errors.join(".")} `)
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
+async function isRemoteDbBlank(remoteDb) {
+  try {
+      const result = await remoteDb.allDocs({ limit: 1 });
+      return result.rows.length === 0; // True if DB is empty
+  } catch (error) {
+      console.error("Error checking remote DB:", error);
+      return false; // Assume not empty if error occurs
+  }
 }

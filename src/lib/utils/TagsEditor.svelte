@@ -40,9 +40,9 @@
     display: inline-flex;
     align-items: center;
     background-color: #e0e0e0;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 14px;
+    padding: 2px 5px;
+    /* border-radius: 15px; */
+    font-size: 10px;
   }
 
   .tag button {
@@ -65,7 +65,7 @@
 
 <div class="tags-editor">
   {#each tags as tag}
-    <span class="tag text-secondary" ondblclick={() => inputTag = tag} aria-roledescription="To copy to text">
+    <span class="tag text-secondary " ondblclick={() => inputTag = tag} aria-roledescription="To copy to text">
       {tag}
       <button onclick={() => removeTag(tag)}>x</button>
     </span>

@@ -13,6 +13,27 @@ const parse_params_string = (param)=>{
   return data
 }
 
+const params_to_data_query=(params)=>{
+  let selector_and = {}
+  const custom_items = {
+    "schema": "schema",
+    "link":"meta.link",
+    "id":"_id",
+    "title":"meta.title"
+  }
+  Object.keys(params).map(itm=>{
+    let key = "data."+itm
+    let value = params[itm]
+    if(custom_items[itm]){
+      key = custom_items[itm]
+    }
+    selector_and[key] = value 
+  })  
+
+  return {selector:selector_and}
+}
+
+
 const commands = {
   new: {
     parse: async (instance,parts) => {
@@ -23,7 +44,7 @@ const commands = {
     run: async (instance,command) => {
       if (command.criteria.schema==""){
         // return a list of all schemas present in the DB
-        let all_schema = await instance.get("schema_list")
+        let all_schema = await instance.get({type:"schema_list"})
         return all_schema
       }else{
         // return the schema object for the given schema if not found throw error
@@ -74,7 +95,7 @@ const commands = {
     },
     run: async (instance,command) => {
       try {
-        let data = await instance.read(command.criteria,true)  
+        let data = await instance.read({...command.criteria,include_schema:true})  
         return data
       } catch (error) {
         throw error
@@ -104,7 +125,7 @@ const commands = {
           logs:[]
         }
         try {
-          let schemas = await instance.get("schema_list") 
+          let schemas = await instance.get({type:"schema_list"}) 
           data.schemas = schemas
           let logs_doc = await instance.search({"selector":{"schema":"system_log"}})
           data.logs = logs_doc.docs          
@@ -141,7 +162,7 @@ const commands = {
         // to show the list of all keys present in the db 
         let data = {}
         try {
-          let docs = await instance.get("schema_list") 
+          let docs = await instance.get({type:"schema_list"}) 
           data.docs = docs
           let schema_schema = docs.find(item=>{return item.name=="schema"})
           //console.log(schema_schema)
@@ -150,6 +171,9 @@ const commands = {
           console.log(error)
         }
         return data
+      }
+      else if(c_type=="graph"){
+        return {}
       }
       else{
         throw new Error("Invalid tool command")
@@ -169,12 +193,35 @@ const commands = {
       if (parts.length==0){
         throw new Error("Invalid arguments.ui command needs a page name")
       }
-      return {page_key:parts.join()}
+    
+      let criteria = {params : {}}
+      let qsplit = parts.join().split("?")
+      if(qsplit.length>1){criteria.params = parse_params_string(qsplit[1])}
+      criteria.page_key = qsplit[0]
+      return criteria
+
     },
     run:async(instance,command)=>{
       return command
     } 
-  }
+  },
+  search:{
+    parse : async (instance,parts)=>{
+      let criteria = {params : {}}
+      let qsplit = parts.join().split("?")
+      if(qsplit.length>1){criteria.params = parse_params_string(qsplit[1])}
+      criteria.search_query =   params_to_data_query(criteria.params)  
+      if(Object.keys(criteria.search_query.selector).length==0){
+        throw new Error("Invalid query. Form key=value&key1=value&...")
+      }
+      return {...criteria}
+    },
+    run : async (instance,command)=>{
+      console.log(command.criteria.search_query)
+      let search = await instance.search(command.criteria.search_query)
+      return search
+    },
+  },
 };
 
 const parse = async (instance, text) => {

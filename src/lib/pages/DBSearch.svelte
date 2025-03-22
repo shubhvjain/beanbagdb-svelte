@@ -18,12 +18,11 @@
       page_bbdb_action(data)
     }else{
       console.log(data)
-    }
-    
+    } 
   }
 </script>
 
-<SearchQuery on_submit={handSearch} />
+<SearchQuery {BBDB} on_submit={handSearch} />
 {#if resultsLoaded}
   <SearchDocResults docs={results} bbdb_action={handleSearchBBDBActions}/>
 {/if}

@@ -1,40 +1,18 @@
 <script>
-
   import { onMount } from "svelte";
-  import  {JSONEditor} from "@json-editor/json-editor";
-  let {schema,data=$bindable(),data_valid=$bindable()}  = $props()
-
+  import { JSONEditor } from "@json-editor/json-editor";
+  let {
+    schema,
+    data = $bindable(),
+    data_valid = $bindable(),
+    editor_options = {},
+  } = $props();
 
   // const dispatch = createEventDispatcher(); // Create event dispatcher
 
-  let theEditor = $state(null) ; // this is where the json editor is loaded
+  let theEditor = $state(null); // this is where the json editor is loaded
 
-  let config = $state({
-    editable: true,
-    data_exists: false,
-    schema_exists: false,
-
-    show_error: false,
-    error: "Error in editor",
-    error_class: "alert-warning",
-
-    id: "",
-
-    editor_loaded: false,
-    pre_check: false,
-
-    editor_options : {
-      theme: "tailwind",
-      //theme: "html",
-      disable_collapse: true,
-      disable_edit_json: true,
-      disable_properties: true,
-      use_default_values: true,
-      disable_array_delete_last_row: true,
-      disable_array_reorder: true,
-      array_controls_top: false
-    }
-  });
+  let config = $state({});
   print = (obj) => {
     console.log(obj);
   };
@@ -73,31 +51,34 @@
     let all_good = errors.length === 0;
     if (!all_good) {
       _set_error("Initialization Error : " + errors.join(", "), "alert-danger");
-      throw new Error(config.error)
+      throw new Error(config.error);
     }
     config.pre_checks = all_good;
     //print(config)
   };
 
-  const load_editor =  () => {
+  const load_editor = () => {
     //const { JSONEditor } = await import("@json-editor/json-editor");
     const element = document.getElementById(config.id);
     // console.log(element)
-    if(element){
+    if (element) {
       const editorOptions = {
-      //show_errors:"change",
-      //show_opt_in:true,
-      //object_layout:"table",
-      ...config.editor_options,
-      schema: schema,
-    };
+        //show_errors:"change",
+        //show_opt_in:true,
+        //object_layout:"table",
+        ...config.editor_options,
+        schema: schema,
+      };
       theEditor = new JSONEditor(element, editorOptions);
     }
 
     setTimeout(() => {
-  
-      if(config.data_exists){theEditor.setValue(data)}
-      if(!config.editable){theEditor.disable()}
+      if (config.data_exists) {
+        theEditor.setValue(data);
+      }
+      if (!config.editable) {
+        theEditor.disable();
+      }
 
       // theEditor.enable();
 
@@ -107,10 +88,10 @@
         if (errors.length) {
           console.log(errors);
           // display Error(`Validation Errors \n${valErrMag(errors)}`)
-          data_valid = false
+          data_valid = false;
         } else {
           data = theEditor.getValue();
-          data_valid = true
+          data_valid = true;
           console.log(data);
         }
 
@@ -119,31 +100,55 @@
         //   valid: errors.length === 0, // Check if there are validation errors
         //   data: data // Return the current data
         // });
+      });
 
-      })
-      
-      config.editor_loaded = true
-    }, 100);  
-
-
-
+      config.editor_loaded = true;
+    }, 100);
   };
 
   onMount(async () => {
     // Initialize the editor on load
-    console.log(1)
+    console.log(1);
+
+    config = {
+      editable: true,
+      data_exists: false,
+      schema_exists: false,
+
+      show_error: false,
+      error: "Error in editor",
+      error_class: "alert-warning",
+
+      id: "",
+
+      editor_loaded: false,
+      pre_check: false,
+
+      editor_options: {
+        theme: "spectre",
+        //theme: "html",
+        titleHidden: true,
+        disable_collapse: true,
+        disable_edit_json: true,
+        disable_properties: true,
+        use_default_values: true,
+        disable_array_delete_last_row: true,
+        disable_array_reorder: true,
+        array_controls_top: false,
+        ...editor_options,
+      },
+    };
+
     try {
       pre_checks();
-      console.log(2)
-      setTimeout(()=>{
+      console.log(2);
+      setTimeout(() => {
         load_editor();
-      },100)
-      
+      }, 100);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   });
-
 
   let valErrMag = (error) => {
     let val = [];
@@ -153,9 +158,6 @@
     });
     return val.join("\n");
   };
-
-  
-
 </script>
 
 <div class="row">

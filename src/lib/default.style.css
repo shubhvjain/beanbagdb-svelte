@@ -1,5 +1,4 @@
 @import url("bootstrap/dist/css/bootstrap.min.css");
-@import url("bootstrap-icons/font/bootstrap-icons.min.css");
 
 details {
   border: var(--bs-card-border-width) solid var(--bs-card-border-color);
@@ -21,4 +20,16 @@ details[open] {
 details[open] summary {
   border-bottom:var(--bs-card-border-width) solid var(--bs-card-border-color);
   margin-bottom: 0.5em;
+}
+
+.btn{
+  border-radius: 0px;
+}
+
+.form-control{
+  border-radius: 0px;;
+}
+
+.card{
+  border-radius: 0px;
 }

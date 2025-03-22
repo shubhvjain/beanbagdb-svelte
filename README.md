@@ -42,3 +42,20 @@ The basic architecture of building User interfaces using basic components are de
 
 
 Core, util components are the base components using which pages, apps and setting pages are built. UI component provide a logical interface for users to interact with their database 
+
+
+
+Custom data editor :
+
+
+
+<selected_component.component  
+        bind:data={new_data}
+        schema={schema} 
+        mode="edit"
+        {new_doc},
+        {BBDB}
+        bbdb_action={new_handle_bbdb_action}
+        bind:data_valid={data_valid}
+
+/>

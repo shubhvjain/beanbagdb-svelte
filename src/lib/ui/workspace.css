@@ -36,7 +36,7 @@
   position: relative;
   margin-right: -14px;
   overflow-y: scroll;
-  border-right: 5px solid hsl(180, 0%, 49%);
+  border-right: 3px solid hsl(180, 0%, 49%);
 }
 
 
@@ -99,4 +99,46 @@
   padding-left: 1.5rem; /* Smaller padding */
   width: auto; /* Adjust width if needed */
   padding-right: 1.35rem;
+}
+
+
+.message-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  padding: 10px 15px;
+  border-radius: 5px;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: fadein 0.3s;
+}
+
+.message.info {
+  background-color: #17a2b8;
+}
+
+.message.success {
+  background-color: #28a745;
+}
+
+.message.error {
+  background-color: #dc3545;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

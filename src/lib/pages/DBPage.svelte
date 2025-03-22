@@ -1,7 +1,7 @@
 <script>
   // this component is used to show all pages for the "page" text command. this can be used in any ui interface
   let { BBDB, page, page_bbdb_action } = $props();
-  import "$lib/default.style.css";
+  import "../default.style.css";
   import { onMount } from "svelte";
   // import {emit_bbdb_event} from "$lib/bbdb_actions.js"
 

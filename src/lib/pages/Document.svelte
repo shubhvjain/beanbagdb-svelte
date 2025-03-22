@@ -1,11 +1,9 @@
 <script>
   import { onMount } from "svelte";
-  import { copy_to_clipboard,format_timestamp, emit_bbdb_event } from "$lib/bbdb_actions.js";
+  import {  emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
-  let { page_bbdb_action, BBDB, page } = $props();
-  let mode = $state("view");
+  let { page_bbdb_action, BBDB, page,custom_editors } = $props();
   let loaded = $state(false);
-  let loading = $state(true);
   let error = $state(null);
   let documentData = $state({});
 
@@ -28,22 +26,12 @@
           "Unable to load page. Component not configured properly"
         );
       }
-      // console.log(page);
-      let fetch_data =  await load_doc(page);
-      if(fetch_data.valid){
-        documentData = fetch_data.result
-        loaded = true;
-      }else{
-        loaded = false;
-        error = fetch_data.errors.join(",")
-      }
-      
+      console.log(page)
+      loaded = true
     } catch (err) {
       error = err.message;
       loaded =false
-    } finally {
-      loading = false;
-    }
+    } 
   });
 
   async function on_bbdb_action(action) {
@@ -52,14 +40,41 @@
       // edit a doc
       console.log("saving changes")
       try {
-        let update1 = await BBDB.update({link:action.data.link},  action.data.update ,action.data.rev) 
+        let update1 = await BBDB.update({ 
+          criteria: {link:action.data.link}, 
+          updates: action.data.update ,
+          rev_id: action.data.rev
+        }) 
         console.log(update1)     
         return {update:true,error:null}
       } catch (error) {
         console.log(error)
         return {update:false,error:error}
       }
-    }else{
+
+
+    }
+    else if(action.name=="update_doc_data"){
+      // edit a doc
+      console.log("saving changes")
+      try {
+        let update1 = await BBDB.update({ 
+          criteria: {link:action.data.link}, 
+          updates: action.data ,
+          rev_id: action.data.rev
+        }) 
+        console.log(update1)     
+        page_bbdb_action(emit_bbdb_event("show_ui_message",{message:"Saved",type:"success"}))
+        return {update:true,error:null}
+      } catch (error) {
+        console.log(error)
+        page_bbdb_action(emit_bbdb_event("show_ui_message",{message:"Error in saving: "+error.message,type:"error"}))
+        return {update:false,error:error}
+      }
+
+      
+    }
+    else{
       if (page_bbdb_action) {
         return await page_bbdb_action(action);
       }
@@ -69,14 +84,15 @@
 </script>
 
 <div>
-  {#if loading}
+  {#if loaded==false}
     <p>Loading document...</p>
-  {:else if error}
+  {#if error}
     <p class="text-danger">{error}</p>
-  {:else if loaded && documentData}
+  {/if}
+
+  {:else if loaded ==true}
   <div class="container-fluid">
-    <Doc doc={documentData.doc} schema={documentData.schema}  bbdb_action={on_bbdb_action} editable={true}/>
+    <Doc   bbdb_action={on_bbdb_action}  custom_editors={custom_editors}  {BBDB}  doc_key={page.criteria}  />
   </div>
-   
   {/if}
 </div>
