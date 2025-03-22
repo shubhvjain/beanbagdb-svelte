@@ -158,14 +158,12 @@
       } catch (error1) {
         console.log(error1);
       }
-
-
-      try {
-        let s = await get_setting_doc();
-        console.log(s);
-      } catch (error) {
-        console.log(error);
-      }
+      // try {
+      //   let s = await get_setting_doc();
+      //   console.log(s);
+      // } catch (error) {
+      //   console.log(error);
+      // }
     }
 
     if (onWorkspaceLoad) {

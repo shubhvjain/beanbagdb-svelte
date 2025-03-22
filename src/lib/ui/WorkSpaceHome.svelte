@@ -29,6 +29,12 @@
     } finally {
       loading = false;
     }
+    import("bootstrap").then(({ Tooltip }) => {
+      const tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
+      tooltipTriggerList.map((tooltipTriggerEl) => new Tooltip(tooltipTriggerEl));
+    });
   });
 
   function on_bbdb_action(data) {
@@ -143,7 +149,7 @@
     <p class="text-danger">Error: {error}</p>
   {:else if loaded}
     <div class="container-fluid">
-      <h3>Workspace home</h3>
+      <h5 class="pb-2">Workspace </h5>
       <!-- <ShortDoc {BBDB} id={"70c0cb80-c1e7-4869-a355-249f21dece4a"} /> -->
       <!-- <EditEdge 
         edge_id={"039d2086-dcf0-42ef-ad7a-61a9046d1a35"}
@@ -191,26 +197,35 @@
 
       {#if page.settings.app_library}
         <br /><br />
-        <h5 class="pb-1 border-bottom">App library</h5>
+        <h5 class="pb-1 mb-2 mt-2 border-bottom">App library</h5>
+        <div class="row pt-2">
         {#each page.settings.app_library as app}
-          <div class="row g-4 py-5">
-            <div class="col-sm-6">
-              <div class="mb-3" style="text-align: center;">
-                {@html app.svg_icon}
-              </div>
-              <h5 style="text-align: center;">{app.name}</h5>
-              <p style="justify-content:center">{app.description}</p>
-              <button
+          
+            <div class="col-lg-4 card">
+              <div class="card-body " style="text-align: center;">
+                
+                <button
                 class="btn btn-sm btn-link"
                 onclick={() => {
                   open_page(app.home_command);
                 }}
               >
-                Home
+              {@html app.svg_icon}
               </button>
+              </div>
+              <h5 style="text-align: center;">{app.name}  
+              </h5>
+              <button type="button" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{app.description}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info" viewBox="0 0 16 16">
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                </svg>
+              </button>
+              <!-- <p style="justify-content:center">{app.description}</p> -->
+              
             </div>
-          </div>
+          
         {/each}
+      </div>
       {/if}
     </div>
   {/if}

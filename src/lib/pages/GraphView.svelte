@@ -40,11 +40,14 @@
   let layoutJson = $state("");
   let errorMessage = $state("");
 
+  let initialZoom = $state() //cy.zoom();
+  let initialPan = $state() // cy.pan();
+
   const layouts = [
     { name: "Grid", config: { name: "grid", fit: true, padding: 10 } },
     { name: "Circle", config: { name: "circle", fit: true } },
     { name: "Concentric", config: { name: "concentric", minNodeSpacing: 50 } },
-    { name: "Breadthfirst", config: { name: "breadthfirst", directed: true } },
+    { name: "Breadthfirst", config: { "name": "breadthfirst", "directed": true,"padding": 5,"spacingFactor": 1.25} },
     { name: "Random", config: { name: "random" } },
   ];
 
@@ -99,6 +102,9 @@
   <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
   <path d="M4.5 12.5A.5.5 0 0 1 5 12h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5m0-2A.5.5 0 0 1 5 10h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5m1.639-3.708 1.33.886 1.854-1.855a.25.25 0 0 1 .289-.047l1.888.974V8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V8s1.54-1.274 1.639-1.208M6.25 6a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5"/>
 </svg>`;
+    icons["system_deleted_document"] = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+  <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+</svg>`
 
     //console.log(icons)
   };
@@ -109,6 +115,7 @@
     cy = cytoscape({
       container: document.getElementById("cy"),
       elements,
+      wheelSensitivity: 0, // Disable zooming via trackpad scroll
       style: [
         {
           selector: "node",
@@ -203,9 +210,25 @@
         name: "circle",
         fit: false,
       },
-      minZoom: 0.75, // Set the minimum zoom level
-      maxZoom: 3, // Optionally set a maximum zoom level
+      //minZoom: 0.75, // Set the minimum zoom level
+      //maxZoom: 3, // Optionally set a maximum zoom level
     });
+
+   
+    // Custom event listener to pan instead of zoom
+    cy.container().addEventListener('wheel', function(event) {
+      event.preventDefault(); // Prevent default zoom behavior
+      const deltaX = event.deltaX; // Get horizontal scroll amount
+      const deltaY = event.deltaY; // Get vertical scroll amount
+      cy.panBy({ x: deltaX, y: deltaY }); // Move graph accordingly
+    });
+
+    //initialZoom = cy.zoom();
+    //initialPan = cy.pan();
+
+    cy.ready(storeInitialView);
+
+
 
     // Handle node double-click
     cy.on("dblclick", "node", function (evt) {
@@ -451,7 +474,17 @@
         node.data({ ...option.data.meta, id: option.data.id });
         console.log("updating");
       }
-    } else if (option.name == "textcmd") {
+    }
+    else if (option.name == "doc_deleted") {
+      console.log(option);
+      let node = cy.getElementById(option.data.id);
+      if (node) {
+        node.remove();
+        console.log("node deleted");
+      }
+    }  
+    
+    else if (option.name == "textcmd") {
       console.log(option.data);
       // load_node_by_link(option.data.links)
       let cms = await BBDB.plugins.txtcmd.parse(option.data.text);
@@ -503,6 +536,26 @@
   function reset_view() {
     cy.elements().remove();
   }
+
+
+  function reset_to_home() {
+    cy.zoom(initialZoom);  // Reset zoom level
+    cy.pan(initialPan);    // Reset position
+  }
+
+  function zoom_in(){
+    cy.zoom(cy.zoom() * 1.2); // Increase zoom by 20%
+  }
+  function zoom_out(){
+    cy.zoom(cy.zoom() * 0.8); // Decrease zoom by 20%
+  }
+
+  function storeInitialView() {
+    cy.fit(); // Ensures the entire graph is visible
+    initialZoom = cy.zoom();
+    initialPan = cy.pan();
+  }
+
 
   let current_card = $state("search");
   const change_card = (new_card) => {
@@ -801,6 +854,39 @@
                   d="M6 4.5H1.866a1 1 0 1 0 0 1h2.668A6.52 6.52 0 0 0 1.814 9H2.5q.186 0 .358.043a5.52 5.52 0 0 1 3.185-3.185A1.5 1.5 0 0 1 6 5.5zm3.957 1.358A1.5 1.5 0 0 0 10 5.5v-1h4.134a1 1 0 1 1 0 1h-2.668a6.52 6.52 0 0 1 2.72 3.5H13.5q-.185 0-.358.043a5.52 5.52 0 0 0-3.185-3.185"
                 />
               </svg>
+            </button>
+
+            <button
+              aria-label="input"
+              title="To go back to the current view "
+              onclick={reset_to_home}
+              class="btn btn-sm btn-dark"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+              <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+            </svg>
+            </button>
+
+            <button
+              aria-label="input"
+              title="To go back to the current view "
+              onclick={zoom_in}
+              class="btn btn-sm btn-dark"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+            </svg>
+            </button>
+
+            <button
+              aria-label="input"
+              title="To go back to the current view "
+              onclick={zoom_out}
+              class="btn btn-sm btn-dark"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">
+              <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
+            </svg>
             </button>
 
             <button

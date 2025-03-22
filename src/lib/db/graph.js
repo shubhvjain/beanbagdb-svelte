@@ -182,12 +182,12 @@ async function link_to_id(db,links){
 
 
 const find_neighbors = async (db,links) => {
-  //console.log(links)
+  // links is the list of links of documents 
   let nodes  = await link_to_id(db,links)
   //console.log(nodes)
   let data = await db.search({selector:{
     "schema":"system_edge",
-    'data.node1':{"$in":nodes}
+    "$or":[ {'data.node1':{"$in":nodes}},{'data.node2':{"$in":nodes}}]
   }})
   //console.log(data)
   let _edges = []
@@ -202,20 +202,20 @@ const find_neighbors = async (db,links) => {
     
   }
   let _nodes1 = []
-  //console.log(nodes)
   let data1 = await db.search({selector:{
     '_id':{"$in":nodes}
   }})
-  //console.log(data1)
-  data1?.docs.map(itm=>{
-    _nodes1.push({group:"nodes",data:{...itm.meta,id:itm._id,schema: itm.schema}})
-  })
 
+  nodes.map(n=>{
+    let find_node = data1.docs.find(itm=>itm._id==n)
+    if(find_node){
+      _nodes1.push({group:"nodes",data:{node_exists:true,...find_node.meta,id:find_node._id,schema: find_node.schema}})
+    }else{
+      _nodes1.push({group:"nodes",data:{node_exists:false,title:"Deleted Document",link:"not_available",id:n,schema: "system_deleted_document"}})
+    }
+  })
   return [..._nodes1,..._edges]
 }
-
-
-
 
 
 export const graph_query = {

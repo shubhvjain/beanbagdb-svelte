@@ -62,7 +62,8 @@ export const emit_bbdb_event = (name, data) => {
     "edge_updated",
     "edge_deleted",
     "new_document_created",
-    "load_this_node"
+    "load_this_node",
+    "doc_deleted"
   ];
   if (!valid_types.includes(name)) {
     throw new Error("Invalid bbdb_action name");

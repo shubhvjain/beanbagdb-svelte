@@ -4,11 +4,12 @@
   import TagsEditor from "../utils/TagsEditor.svelte";
   import LinkEditor from "../utils/LinkEditor.svelte";
   import { emit_bbdb_event } from "../bbdb_actions.js";
-
+  import ConfimButton from "$lib/ui/confimButton.svelte";
   let { BBDB, id, bbdb_action } = $props();
   let loaded = $state(false);
   let edit = $state(false);
   let full_doc = $state({});
+  let loading_message = $state("Loading")
   onMount(async () => {
     console.log(id);
 
@@ -29,6 +30,15 @@
       emit_bbdb_event("metadata_updated", {
         id: id,
         schema: full_doc.schema,
+        meta: full_doc.meta,
+      })
+    );
+  };
+
+  const emit_delete = () => {
+    bbdb_action(
+      emit_bbdb_event("doc_deleted", {
+        id: id,
         meta: full_doc.meta,
       })
     );
@@ -71,6 +81,19 @@
       return { update: false, error: error };
     }
   };
+
+  let delete_sure = false
+  // const dont_delete = ()=>{  delete_sure=false }
+  const delete_doc = async ()=>{
+    try {
+      await BBDB.delete({"_id":full_doc["_id"]})
+      loading_message = "Document deleted"
+      loaded = false
+      emit_delete()
+    } catch (error) {
+      console.log(error)
+    }
+  }
 </script>
 
 {#if loaded}
@@ -98,14 +121,24 @@
               >
             </div>
           </div>
-          <div class="row">
-            <div class="col-lg-12 ps-3 pt-2">
+          <div class="row pt-2 pb-1">
+            
+            <div class="col-lg-8 ">
               <LinkEditor
                 bbdb_action={edit_update_meta_action_handler}
                 bind:link={full_doc.meta.link}
                 show_suggestion={false}
               />
+
+              
             </div>
+            <div class="col-lg-4 ">
+              <ConfimButton title="Delete doc" onclick={delete_doc} />
+            </div>
+
+           
+          </div>
+          <div class="row">
             <div class="col-lg-12 p-1">
               <TagsEditor
                 bbdb_action={edit_update_meta_action_handler}
@@ -121,5 +154,5 @@
     {JSON.stringify(data.meta, null, 2)}
   {/if}
 {:else}
-  Cannot be loaded or still loading
+  {loading_message}
 {/if}
