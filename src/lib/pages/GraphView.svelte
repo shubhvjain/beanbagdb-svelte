@@ -410,9 +410,9 @@
   }
 
   async function loadNode(nodes) {
-    console.log(nodes);
+    //console.log(nodes);
     let load_nodes = await load_neighbor_subgraph(nodes);
-    console.log(load_nodes);
+    //console.log(load_nodes);
     let added = 0;
     let to_add = [];
 
@@ -427,8 +427,17 @@
           if (schema_check) {
             continue;
           }
+          to_add.push(element);
         }
-        to_add.push(element);
+        if (element.group == "edges") {
+          let edgeExists = cy.edges().some(edge => edge.data('edge_id') === element.data.edge_id);
+
+          if (!edgeExists) {
+            to_add.push(element);
+          }else{
+            continue;
+          }
+        }
         //cy.add();
         added++;
       } catch (error) {
@@ -438,13 +447,15 @@
 
     if (added > 0) {
       let newNodes = cy.add(to_add);
-      console.log(newNodes);
+      // console.log(newNodes);
 
       // Run layout first
       let layout = cy.layout({
         name: "breadthfirst",
         fit: false,
         directed: true,
+       "padding": 5,
+       "spacingFactor": 1.25
       });
 
       layout.run();
