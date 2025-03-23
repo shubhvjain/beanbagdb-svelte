@@ -428,18 +428,19 @@
             continue;
           }
           to_add.push(element);
+          added++;
         }
         if (element.group == "edges") {
           let edgeExists = cy.edges().some(edge => edge.data('edge_id') === element.data.edge_id);
 
           if (!edgeExists) {
             to_add.push(element);
+            added++;
           }else{
             continue;
           }
         }
         //cy.add();
-        added++;
       } catch (error) {
         console.log(error);
       }
@@ -454,8 +455,10 @@
         name: "breadthfirst",
         fit: false,
         directed: true,
-       "padding": 5,
-       "spacingFactor": 1.25
+        avoidOverlap: true, 
+       "padding": 20,
+       "spacingFactor": 1.5,
+       depthSort: function(a, b){ return a.data('level_weight') - b.data('level_weight') }
       });
 
       layout.run();

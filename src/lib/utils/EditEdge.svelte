@@ -6,6 +6,7 @@
   let loaded = $state(false)
   let message  = $state("")
   let selected_name = $state(null)
+  let selected_level_weight = $state(1)
   let edge_names = $state([])
   let data = $state({})
   onMount(async()=>{
@@ -14,6 +15,7 @@
       message="Loading..."
       data = await BBDB.read({"_id":edge_id})
       selected_name = data.doc.data.edge_name
+      selected_level_weight = data.doc.data?.level_weight
       let edge_c_search = await BBDB.search({"selector":{"schema":"system_edge_constraint"}})
       console.log(edge_c_search)
       edge_names = edge_c_search?.docs||[]
@@ -31,8 +33,8 @@
 
 
   const save_edge = async ()=>{
-
-    if(selected_name != data.doc.data.edge_name){
+    
+    //if(selected_name != data.doc.data.edge_name){
       try {
         message = "Saving..."
 
@@ -40,21 +42,30 @@
           "criteria":{"_id":edge_id},
           "updates":{
             "data":{
-              "edge_name":selected_name
+              "edge_name":selected_name,
+              "level_weight":selected_level_weight
             }
-
           },
+          "rev_id":data.doc._rev
         })
-        console.log(update)
+       //console.log(update)
+       
         let updated_read = await BBDB.read({"_id":edge_id})
-        await bbdb_action(emit_bbdb_event("edge_updated",{id:edge_id,source:updated_read.doc.data.node1,edge_name:updated_read.doc.data.edge_name,target:updated_read.doc.data.node2}))
+        //console.log(updated_read)
+        await bbdb_action(emit_bbdb_event("edge_updated",{id:edge_id,
+          source:updated_read.doc.data.node1,
+          edge_name:selected_name,
+          target:updated_read.doc.data.node2,
+          level_weight:selected_level_weight
+        }))
         message = "Edge label updated..."
 
       } catch (error) {
         message = error.message
         console.log(error)
       }
-    }
+    //}else{}
+    //if()
   }
 
   const delete_edge = async ()=>{
@@ -63,6 +74,8 @@
       try {
       let dele = await BBDB.delete({"_id":edge_id})
       await bbdb_action(emit_bbdb_event("edge_deleted",{id:edge_id}))
+      message="Edge deleted"
+      loaded= false
     } catch (error) {
       console.log(error)
       message = error.message
@@ -81,6 +94,7 @@
     <option value={suggestion.data.name}></option>
   {/each}
 </datalist>
+<input type="number"   bind:value={selected_level_weight} class="form-control" placeholder="Level weight" />
 
 <button class="btn btn-sm btn-primary p-1 m-1" onclick={save_edge}>Save</button>
 
