@@ -82,6 +82,10 @@
       btoa(icons[svgString] ? icons[svgString] : icons["default"])
     );
   }
+
+  function getSVG(svgString) {
+    return icons[svgString] ? icons[svgString] : icons["default"]
+  }
   function renderMathWithText(text) {
     if (text) {
       return text.replace(/\$(.*?)\$/g, (match, math) => {
@@ -117,25 +121,25 @@
       elements,
       wheelSensitivity: 0, // Disable zooming via trackpad scroll
       style: [
-        {
-          selector: "node",
-          style: {
-            shape: "rectangle", // Small circular node for the icon
-            width: "30px", // Small enough to fit the icon
-            height: "30px",
-            "background-color": "#ffffff",
-            //'label': 'data(title)',  // Ensure label is set
-            // Set the background image dynamically
-            "background-image": function (ele) {
-              const schema = ele.data("schema");
-              return encodeSVG(schema);
-            },
-            "background-repeat": "no-repeat",
+        // {
+        //   selector: "node",
+        //   style: {
+        //     shape: "rectangle", // Small circular node for the icon
+        //     width: "30px", // Small enough to fit the icon
+        //     height: "30px",
+        //     "background-color": "#ffffff",
+        //     //'label': 'data(title)',  // Ensure label is set
+        //     // Set the background image dynamically
+        //     "background-image": function (ele) {
+        //       const schema = ele.data("schema");
+        //       return encodeSVG(schema);
+        //     },
+        //     "background-repeat": "no-repeat",
 
-            // Dynamic label (multiple fields combined)
-            //'label': function(ele) {return `${ele.data('title')}`},
-          },
-        },
+        //     // Dynamic label (multiple fields combined)
+        //     //'label': function(ele) {return `${ele.data('title')}`},
+        //   },
+        // },
         {
           selector: "edge",
           style: {
@@ -144,7 +148,7 @@
             "line-color": "#666",
             "target-arrow-color": "#666",
             label: "data(edge_name)",
-            "font-size": "12px",
+            "font-size": "14px",
             "text-background-color": "#fff",
             "text-background-opacity": 1,
             "text-margin-y": -10,
@@ -275,19 +279,48 @@
       }
     });
 
+    // cy.nodeHtmlLabel([
+    //   {
+    //     query: "node", // cytoscape query selector
+    //     halign: "center", // title vertical position. Can be 'left',''center, 'right'
+    //     valign: "top", // title vertical position. Can be 'top',''center, 'bottom'
+    //     halignBox: "center", // title vertical position. Can be 'left',''center, 'right'
+    //     valignBox: "top", // title relative box vertical position. Can be 'top',''center, 'bottom'
+    //     cssClass: "node_div", // any classes will be as attribute of <div> container for every title
+    //     tpl: function (data) {
+    //       return `<div class="node-label math-label" style="max-width:200px"">${renderMathWithText(data.title)}</div>`;
+    //     },
+    //   },
+    // ]);
+
     cy.nodeHtmlLabel([
-      {
-        query: "node", // cytoscape query selector
-        halign: "center", // title vertical position. Can be 'left',''center, 'right'
-        valign: "top", // title vertical position. Can be 'top',''center, 'bottom'
-        halignBox: "center", // title vertical position. Can be 'left',''center, 'right'
-        valignBox: "top", // title relative box vertical position. Can be 'top',''center, 'bottom'
-        cssClass: "", // any classes will be as attribute of <div> container for every title
-        tpl: function (data) {
-          return `<div class="node-label math-label" style="max-width:200px"">${renderMathWithText(data.title)}</div>`;
-        },
-      },
-    ]);
+  {
+    query: 'node', // Applies to all nodes
+    halign: 'center', // Horizontal alignment
+    valign: 'center', // Vertical alignment
+    tpl: function (data) {
+      const schema_icon = getSVG(data.schema); 
+
+      return `
+        <div style="
+          display: flex;
+          align-items: center;
+          background: #424649;
+          border-radius: 8px;
+          padding: 8px;
+          box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+          max-width: 250px;
+          font-size: 15px;
+        ">
+          <div style="width: 25px; height: 25px; margin-right: 10px;">
+            ${schema_icon}
+          </div>
+          <span>${renderMathWithText(data.title)}</span>
+        </div>
+      `;
+    }
+  }
+]);
 
     // the default values of each option are outlined below:
     let defaults = {
@@ -1017,4 +1050,5 @@
     width: 450px;
     background: #1008084f;
   }
+
 </style>
