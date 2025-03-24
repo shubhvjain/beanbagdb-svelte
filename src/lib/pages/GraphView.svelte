@@ -42,6 +42,10 @@
 
   let initialZoom = $state() //cy.zoom();
   let initialPan = $state() // cy.pan();
+  let load_on_click = $state(true)
+  const toggle_load_on_click = ()=>{
+    load_on_click = !load_on_click
+  }
 
   const layouts = [
     { name: "Grid", config: { name: "grid", fit: true, padding: 10 } },
@@ -241,6 +245,12 @@
       // if user already viewing doc , no need to show quick doc
       if (current_card == "view") return;
       // Show the box
+      infoBox.style.display = "none";
+      selectedNode = null;
+      selectedNodeId = null;
+      selectedEdge = null;
+      selectedEdgeId = null;
+
       selectedNode = node;
       selectedNodeId = node.id();
       infoBox.style.display = "block";
@@ -253,6 +263,12 @@
 
       console.log(edge);
       // // Show the box
+      infoBox.style.display = "none";
+      selectedNode = null;
+      selectedNodeId = null;
+      selectedEdge = null;
+      selectedEdgeId = null;
+
       console.log(edge.data("edge_id"));
       selectedEdgeId = edge.data("edge_id");
       selectedEdge = edge;
@@ -290,34 +306,34 @@
     // ]);
 
     cy.nodeHtmlLabel([
-  {
-    query: 'node', // Applies to all nodes
-    halign: 'center', // Horizontal alignment
-    valign: 'top', // Vertical alignment
-    tpl: function (data) {
-      const schema_icon = getSVG(data.schema); 
+      {
+        query: 'node', // Applies to all nodes
+        halign: 'center', // Horizontal alignment
+        valign: 'top', // Vertical alignment
+        tpl: function (data) {
+          const schema_icon = getSVG(data.schema); 
 
-      return `
-        <div style="
-          display: flex;
-          align-items: center;
-          pointer-events: none;
-          background: #424649;
-          border-radius: 8px;
-          padding: 8px;
-          box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-          max-width: 250px;
-          font-size: 15px;
-        ">
-          <div style="width: 25px; height: 25px; margin-right: 10px;">
-            ${schema_icon}
-          </div>
-          <span>${renderMathWithText(data.title)}</span>
-        </div>
-      `;
-    }
-  }
-]);
+          return `
+            <div style="
+              display: flex;
+              align-items: center;
+              pointer-events: none;
+              background: #424649;
+              border-radius: 8px;
+              padding: 8px;
+              box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+              max-width: 250px;
+              font-size: 15px;
+            ">
+              <div style="width: 25px; height: 25px; margin-right: 10px;">
+                ${schema_icon}
+              </div>
+              <span>${renderMathWithText(data.title)}</span>
+            </div>
+          `;
+        }
+      }
+    ]);
 
     // the default values of each option are outlined below:
     let defaults = {
@@ -392,19 +408,23 @@
       const selectedNode = event.target;
       detail_id = null;
       setTimeout(() => {
-        load_selected_node(selectedNode.data("id"), selectedNode.data("link"));
+        load_selected_node(selectedNode.data("id"), selectedNode.data("link"),selectedNode);
       }, 250);
     });
   };
 
-  async function load_selected_node(id, link) {
+  async function load_selected_node(id, link,current_node=null) {
     if (current_card == "view") {
       console.log("gonna show the doc now");
       //console.log(selectedNode.data("id"));
       detail_id = id;
-      loadNode([link]);
+      
     } else {
       detail_id = null;
+    }
+
+    if(load_on_click){
+      loadNode([link],current_node);
     }
   }
 
@@ -439,13 +459,13 @@
     return graph;
   }
 
-  async function loadNode(nodes) {
+  async function loadNode(nodes,currentNode=null) {
     //console.log(nodes);
     let load_nodes = await load_neighbor_subgraph(nodes);
     //console.log(load_nodes);
     let added = 0;
     let to_add = [];
-
+    
     for (let index = 0; index < load_nodes.length; index++) {
       const element = load_nodes[index];
       try {
@@ -457,8 +477,15 @@
           if (schema_check) {
             continue;
           }
-          to_add.push(element);
-          added++;
+          let node = cy.getElementById(element.data.id);
+
+            if (node.nonempty()) {
+                console.log('Node exists:', node);
+            } else {
+                console.log('Node does not exist.');
+                to_add.push(element);
+                added++;
+            }    
         }
         if (element.group == "edges") {
           let edgeExists = cy.edges().some(edge => edge.data('edge_id') === element.data.edge_id);
@@ -475,13 +502,26 @@
         console.log(error);
       }
     }
-
+    console.log(added)
+    console.log(to_add)
     if (added > 0) {
       let newNodes = cy.add(to_add);
       // console.log(newNodes);
 
+      let currentZoom = cy.zoom();
+      let currentPan = cy.pan();
       run_layout()
       // Run layout first
+      cy.zoom(currentZoom);
+      //cy.pan(currentPan);
+
+      setTimeout(() => {
+        cy.zoom(currentZoom); // Restore zoom level
+        if(currentNode){
+          cy.center(currentNode); // Move view to keep the clicked node in focus
+        }
+        
+    }, 50);
     }
   }
 
@@ -490,25 +530,39 @@
     let layout = cy.layout({
         name: "breadthfirst",
         nodeDimensionsIncludeLabels:true,
-        fit: true,
+        fit: false,
         directed: true,
         avoidOverlap: true, 
-       "padding": 20,
-       "spacingFactor": 4,
-       depthSort: function(a, b){ return a.data('level_weight') - b.data('level_weight') }
+       "padding": 10,
+       "spacingFactor": 3,
+       depthSort: function(a, b){ 
+        //return a.data('level_weight') - b.data('level_weight') 
+            // Get the incoming edge for each node (there should be at most one in a simple directed graph)
+          let edgeA = a.incomers('edge')[0]; // Get the first incoming edge (if any)
+          let edgeB = b.incomers('edge')[0]; 
+
+          // Extract level_weight from the edge, defaulting to 1 if no edge exists
+          let weightA = edgeA ? edgeA.data('level_weight') || 1 : 1;
+          let weightB = edgeB ? edgeB.data('level_weight') || 1 : 1;
+
+          return weightA - weightB;
+        }
       });
+
+      
 
       layout.run();
 
+      
       // Ensure animation happens *after* layout is applied
-      setTimeout(() => {
-        let lastNode = newNodes.last(); // Get the last added node safely
-        cy.animate({
-          center: { eles: lastNode },
-          zoom: 0.75, // Adjust zoom level as needed
-          duration: 200, // Optional: Smooth transition
-        });
-      }, 200); // Give time for layout to finish
+      // setTimeout(() => {
+      //   let lastNode = newNodes.last(); // Get the last added node safely
+      //   cy.animate({
+      //     center: { eles: lastNode },
+      //     zoom: 0.75, // Adjust zoom level as needed
+      //     duration: 200, // Optional: Smooth transition
+      //   });
+      // }, 200); // Give time for layout to finish
   }
 
   function removeSelected() {
@@ -907,6 +961,17 @@
             </button>
 
             <button
+            aria-label="input"
+            title="To load neighbors on node click "
+            onclick={()=>toggle_load_on_click()}
+            class="btn btn-sm {load_on_click ? 'btn-success' : 'btn-danger'}"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-node-plus-fill" viewBox="0 0 16 16">
+            <path d="M11 13a5 5 0 1 0-4.975-5.5H4A1.5 1.5 0 0 0 2.5 6h-1A1.5 1.5 0 0 0 0 7.5v1A1.5 1.5 0 0 0 1.5 10h1A1.5 1.5 0 0 0 4 8.5h2.025A5 5 0 0 0 11 13m.5-7.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2a.5.5 0 0 1 1 0"/>
+          </svg>
+          </button>
+
+            <button
               aria-label="input"
               title="To go back to the current view "
               onclick={reset_to_home}
@@ -943,7 +1008,7 @@
               aria-label="input"
               title="To layout current view "
               onclick={run_layout}
-              class="btn btn-sm btn-delete"
+              class="btn btn-sm btn-dark"
             >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-2-fill" viewBox="0 0 16 16">
               <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H11a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 5 7h2.5V6A1.5 1.5 0 0 1 6 4.5zm-3 8A1.5 1.5 0 0 1 4.5 10h1A1.5 1.5 0 0 1 7 11.5v1A1.5 1.5 0 0 1 5.5 14h-1A1.5 1.5 0 0 1 3 12.5zm6 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 9 12.5z"/>
@@ -953,7 +1018,7 @@
             aria-label="input"
             title="To reset current view "
             onclick={reset_view}
-            class="btn btn-sm btn-delete"
+            class="btn btn-sm btn-dark"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
