@@ -209,11 +209,7 @@
             opacity: 0,
           },
         },
-      ],
-      layout: {
-        name: "circle",
-        fit: false,
-      },
+      ]
       //minZoom: 0.75, // Set the minimum zoom level
       //maxZoom: 3, // Optionally set a maximum zoom level
     });
@@ -297,7 +293,7 @@
   {
     query: 'node', // Applies to all nodes
     halign: 'center', // Horizontal alignment
-    valign: 'center', // Vertical alignment
+    valign: 'top', // Vertical alignment
     tpl: function (data) {
       const schema_icon = getSVG(data.schema); 
 
@@ -305,6 +301,7 @@
         <div style="
           display: flex;
           align-items: center;
+          pointer-events: none;
           background: #424649;
           border-radius: 8px;
           padding: 8px;
@@ -483,14 +480,21 @@
       let newNodes = cy.add(to_add);
       // console.log(newNodes);
 
+      run_layout()
       // Run layout first
-      let layout = cy.layout({
+    }
+  }
+
+  function run_layout(){
+
+    let layout = cy.layout({
         name: "breadthfirst",
-        fit: false,
+        nodeDimensionsIncludeLabels:true,
+        fit: true,
         directed: true,
         avoidOverlap: true, 
        "padding": 20,
-       "spacingFactor": 1.5,
+       "spacingFactor": 4,
        depthSort: function(a, b){ return a.data('level_weight') - b.data('level_weight') }
       });
 
@@ -505,7 +509,6 @@
           duration: 200, // Optional: Smooth transition
         });
       }, 200); // Give time for layout to finish
-    }
   }
 
   function removeSelected() {
@@ -938,23 +941,33 @@
 
             <button
               aria-label="input"
-              title="To reset current view "
-              onclick={reset_view}
+              title="To layout current view "
+              onclick={run_layout}
               class="btn btn-sm btn-delete"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                class="bi bi-trash3"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"
-                />
-              </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-2-fill" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H11a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 5 7h2.5V6A1.5 1.5 0 0 1 6 4.5zm-3 8A1.5 1.5 0 0 1 4.5 10h1A1.5 1.5 0 0 1 7 11.5v1A1.5 1.5 0 0 1 5.5 14h-1A1.5 1.5 0 0 1 3 12.5zm6 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 9 12.5z"/>
+            </svg>
             </button>
+            <button
+            aria-label="input"
+            title="To reset current view "
+            onclick={reset_view}
+            class="btn btn-sm btn-delete"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-trash3"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"
+              />
+            </svg>
+          </button>
           </div>
           <div id="cy"></div>
         </div>

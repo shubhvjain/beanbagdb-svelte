@@ -61,6 +61,7 @@ import SearchScript from "$lib/utils/SearchScript.svelte";
       let search  =  await BBDB.search({"selector":q});
       console.log(search)
       results = search.docs||[]
+      isFocused = true
       // console.log(search)
      
     } catch (error) {
