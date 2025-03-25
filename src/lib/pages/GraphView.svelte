@@ -125,25 +125,25 @@
       elements,
       wheelSensitivity: 0, // Disable zooming via trackpad scroll
       style: [
-        // {
-        //   selector: "node",
-        //   style: {
-        //     shape: "rectangle", // Small circular node for the icon
-        //     width: "30px", // Small enough to fit the icon
-        //     height: "30px",
-        //     "background-color": "#ffffff",
-        //     //'label': 'data(title)',  // Ensure label is set
-        //     // Set the background image dynamically
-        //     "background-image": function (ele) {
-        //       const schema = ele.data("schema");
-        //       return encodeSVG(schema);
-        //     },
-        //     "background-repeat": "no-repeat",
+        {
+          selector: "node",
+          style: {
+            shape: "ellipse", // Small circular node for the icon
+            width: "20px", // Small enough to fit the icon
+            height: "20px",
+            //"background-color": "#ffffff",
+            //'label': 'data(title)',  // Ensure label is set
+            // Set the background image dynamically
+            // "background-image": function (ele) {
+            //   const schema = ele.data("schema");
+            //   return encodeSVG(schema);
+            // },
+            //"background-repeat": "no-repeat",
 
-        //     // Dynamic label (multiple fields combined)
-        //     //'label': function(ele) {return `${ele.data('title')}`},
-        //   },
-        // },
+            // Dynamic label (multiple fields combined)
+            //'label': function(ele) {return `${ele.data('title')}`},
+          },
+        },
         {
           selector: "edge",
           style: {
@@ -309,7 +309,8 @@
       {
         query: 'node', // Applies to all nodes
         halign: 'center', // Horizontal alignment
-        valign: 'top', // Vertical alignment
+        valign: 'bottom', // Vertical alignment
+        valignBox: 'bottom',
         tpl: function (data) {
           const schema_icon = getSVG(data.schema); 
 
@@ -323,11 +324,11 @@
               padding: 8px;
               box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
               max-width: 250px;
+              white-space: normal;
+              word-wrap: break-word;
               font-size: 15px;
             ">
-              <div style="width: 25px; height: 25px; margin-right: 10px;">
-                ${schema_icon}
-              </div>
+              <div style="width: 25px; height: 25px; margin-right: 10px;">${schema_icon}</div>
               <span>${renderMathWithText(data.title)}</span>
             </div>
           `;
