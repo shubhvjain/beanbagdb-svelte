@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
-  let { page_bbdb_action, BBDB, page, excluded_schemas = [],custom_editors={} , show_history=true} = $props();
+  let { page_bbdb_action, BBDB, page, excluded_schemas = [],custom_editors={} , show_history=true,custom_app_editors} = $props();
   let loaded = $state(false);
   let loading = $state(true);
   let error = $state(null);
@@ -10,7 +10,7 @@
   let history = $state([])
   let selected_schema = $state(null);
   async function load_schemas(page1) {
-    let doc = await BBDB.plugins.txtcmd.run(page1);
+    let doc = await BBDB.apps.txtcmd.run(page1);
     return doc;
   }
   function sortByDataName(arr) {return arr.sort((a, b) => a.title.localeCompare(b.title))}
@@ -26,7 +26,7 @@
 
       if (!page) {
         try {
-          let run_cmd = await BBDB.plugins.txtcmd.parse_and_run("new");
+          let run_cmd = await BBDB.apps.txtcmd.parse_and_run("new");
           if (run_cmd.valid) {
             schemas = run_cmd.result;
             schemas = sortByDataName(schemas)
@@ -139,6 +139,7 @@
               new_doc={true}
               schema_name={selected_schema}
               {custom_editors}
+              {custom_app_editors}
             />
             <!-- <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action} /> -->
           </div>

@@ -15,13 +15,13 @@ export { default as ShortDoc } from './core/ShortDoc.svelte';
 
 // Components from pages
 export { default as DBPage } from './pages/DBPage.svelte';
-export { default as DBPlugins } from './pages/DBPlugins.svelte';
 export { default as DBSearch } from './pages/DBSearch.svelte';
 export { default as Document } from './pages/Document.svelte';
 export { default as Help } from './pages/Help.svelte';
 export { default as NewDocument } from './pages/NewDocument.svelte';
 export {default as GraphView} from "./pages/GraphView.svelte"
 export { default as Sample } from './pages/Sample.svelte';
+export {default as AppSpace} from "./pages/AppSpace.svelte"
 
 // Components from ui
 export { default as DBManager } from './ui/DBManager.svelte';

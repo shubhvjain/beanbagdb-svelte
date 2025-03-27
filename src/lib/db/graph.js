@@ -219,5 +219,5 @@ const find_neighbors = async (db,links) => {
 
 
 export const graph_query = {
-  actions: {find_neighbors,link_to_id}
+  find_neighbors,link_to_id
 };

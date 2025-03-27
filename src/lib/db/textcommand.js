@@ -109,7 +109,7 @@ const commands = {
       let qsplit = parts.join().split("?")
       if(qsplit.length>1){criteria.params = parse_params_string(qsplit[1])}
       criteria.type = qsplit[0]
-      let valid_type = ["info","plugins","settings","keys","help","schemas","search"]
+      let valid_type = ["info","settings","keys","help","schemas","search"]
       if(!valid_type.includes(criteria.type)){
         throw new Error(`Invalid page type. Valid pages : ${valid_type.join(",")}`)
       }
@@ -135,9 +135,6 @@ const commands = {
 
         return data
 
-      }else if(c_type=="plugins"){
-        // to show list of all plugins installed
-        // todo later not implemented yet 
       }else if(c_type=="settings"){
         // to show the list of all setting docs available 
         let search = await instance.search({"selector":{"schema":"system_setting"}})
@@ -300,5 +297,5 @@ const parse_and_run = async(instance, text) => {
 // const schemas =    []
 
 export const text_command = {
-  actions: {parse,run,parse_and_run}
+  parse,run,parse_and_run
 };

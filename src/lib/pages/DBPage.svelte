@@ -101,13 +101,12 @@
     keys: "Keys added to the database",
     settings: "Database settings",
     schemas: "List of schemas installed in the database",
-    plugins: "List of plugins installed",
   };
 
   onMount(async () => {
     //console.log("here");
     //console.log(page);
-    let dt = await BBDB.plugins["txtcmd"].parse_and_run(`page/${page.criteria.type}`);
+    let dt = await BBDB.apps["txtcmd"].parse_and_run(`page/${page.criteria.type}`);
     data = dt["result"];
     loaded = true;
   });
@@ -133,10 +132,6 @@
         {#if page.criteria.type == "search"}
           <h3>{titles[page.criteria.type]}</h3>
           <SearchPage {BBDB} page_bbdb_action={emit_bbdb_to_parent} />
-        {/if}
-
-        {#if page.criteria.type == "plugins"}
-          <h3>{titles[page.criteria.type]}</h3>
         {/if}
         {#if page.criteria.type == "keys"}
           <h3>{titles[page.criteria.type]}</h3>

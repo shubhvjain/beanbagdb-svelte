@@ -447,7 +447,7 @@
 
   onMount(async () => {
     await load_icons();
-    new_page_command = await BBDB.plugins["txtcmd"].parse("new");
+    new_page_command = await BBDB.apps["txtcmd"].parse("new");
     setTimeout(() => {
       load_graph();
       loaded = true;
@@ -456,7 +456,7 @@
 
   async function load_neighbor_subgraph(nodes) {
     console.log(nodes);
-    let graph = await BBDB.plugins.graph.find_neighbors(nodes);
+    let graph = await BBDB.apps.graph.find_neighbors(nodes);
     return graph;
   }
 
@@ -592,7 +592,7 @@
     else if (option.name == "textcmd") {
       console.log(option.data);
       // load_node_by_link(option.data.links)
-      let cms = await BBDB.plugins.txtcmd.parse(option.data.text);
+      let cms = await BBDB.apps.txtcmd.parse(option.data.text);
       console.log(cms);
       if (cms.valid) {
         if (cms.name == "open") {
@@ -1064,19 +1064,6 @@
     background: #1008084f;
   }
 
-  #graphLayoutBox {
-    position: absolute;
-    bottom: 10px;
-    right: 200px;
-    /* background: white; */
-    padding: 2px;
-    border: 1px solid #cccccc3d;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000; /* Ensure it stays above Cytoscape */
-    width: 500px;
-    background: #1008084f;
-  }
-
   #controlBox {
     position: absolute;
     top: 10px;
@@ -1088,46 +1075,4 @@
     z-index: 1000; /* Ensure it stays above Cytoscape */
     background: #1008084f;
   }
-
-  #detailsBox {
-    position: absolute;
-    top: 50px;
-    right: 10px;
-    /* background: white; */
-    padding: 2px;
-    border: 1px solid #cccccc3d;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000; /* Ensure it stays above Cytoscape */
-    background: #1008084f;
-    width: 500px;
-    height: 525px;
-    overflow-y: scroll;
-  }
-
-  #loadBox {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    /* background: white; */
-    padding: 2px;
-    border: 1px solid #cccccc3d;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000; /* Ensure it stays above Cytoscape */
-    max-width: 500px;
-    background: #1008084f;
-  }
-
-  #newBox {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    /* background: white; */
-    padding: 2px;
-    border: 1px solid #cccccc3d;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000; /* Ensure it stays above Cytoscape */
-    width: 450px;
-    background: #1008084f;
-  }
-
 </style>

@@ -9,12 +9,12 @@
   let loading = $state(true);
   let loaded = $state(false);
   let error = $state(null);
-  import SearchBox from "$lib/core/SearchBox.svelte";
-  import Doc from "$lib/core/Doc.svelte";
-  import EditEdge from "$lib/utils/EditEdge.svelte";
-  import ShortDoc from "$lib/core/ShortDoc.svelte";
-  import TextBlock from "$lib/utils/TextBlock.svelte";
-  import TextPreview from "$lib/utils/TextPreview.svelte";
+  // import SearchBox from "$lib/core/SearchBox.svelte";
+  // import Doc from "$lib/core/Doc.svelte";
+  // import EditEdge from "$lib/utils/EditEdge.svelte";
+  // import ShortDoc from "$lib/core/ShortDoc.svelte";
+  // import TextBlock from "$lib/utils/TextBlock.svelte";
+  // import TextPreview from "$lib/utils/TextPreview.svelte";
   onMount(async () => {
     try {
       if (!BBDB) {
@@ -44,7 +44,7 @@
       console.log(data);
     }
   }
-  //       let valid_type = ["info","plugins","settings","keys","help","schemas","search"]
+  //       let valid_type = ["info","settings","keys","help","schemas","search"]
   const default_app_icon = `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-window" viewBox="0 0 16 16">
   <path d="M2.5 4a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m1 .5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
   <path d="M2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm13 2v2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1M2 14a1 1 0 0 1-1-1V6h14v7a1 1 0 0 1-1 1z"/>
@@ -64,13 +64,6 @@
   <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
 </svg>`,
     },
-//     {
-//       command: "page/plugins",
-//       text: "View and manage plugins",
-//       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plugin" viewBox="0 0 16 16">
-//   <path fill-rule="evenodd" d="M1 8a7 7 0 1 1 2.898 5.673c-.167-.121-.216-.406-.002-.62l1.8-1.8a3.5 3.5 0 0 0 4.572-.328l1.414-1.415a.5.5 0 0 0 0-.707l-.707-.707 1.559-1.563a.5.5 0 1 0-.708-.706l-1.559 1.562-1.414-1.414 1.56-1.562a.5.5 0 1 0-.707-.706l-1.56 1.56-.707-.706a.5.5 0 0 0-.707 0L5.318 5.975a3.5 3.5 0 0 0-.328 4.571l-1.8 1.8c-.58.58-.62 1.6.121 2.137A8 8 0 1 0 0 8a.5.5 0 0 0 1 0"/>
-// </svg>`,
-//     },
     {
       command: "page/settings",
       text: "DB Settings",
@@ -200,30 +193,24 @@
         <h5 class="pb-1 mb-2 mt-2 border-bottom">App library</h5>
         <div class="row pt-2">
         {#each page.settings.app_library as app}
-          
             <div class="col-lg-4 card">
               <div class="card-body " style="text-align: center;">
-                
                 <button
                 class="btn btn-sm btn-link"
                 onclick={() => {
                   open_page(app.home_command);
-                }}
-              >
-              {@html app.svg_icon}
+                }}>
+                {@html app.svg_icon}
               </button>
               </div>
-              <h5 style="text-align: center;">{app.name}  
+              <h5 style="text-align: center;">{app.title}  
               </h5>
-              <button type="button" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{app.description}">
+              <button type="button" aria-label="App library info"  class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{app.description}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info" viewBox="0 0 16 16">
                   <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
                 </svg>
-              </button>
-              <!-- <p style="justify-content:center">{app.description}</p> -->
-              
+              </button>              
             </div>
-          
         {/each}
       </div>
       {/if}

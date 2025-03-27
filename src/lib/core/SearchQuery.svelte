@@ -170,7 +170,7 @@
   }
   async function load_schemas(){
     try {
-          let run_cmd = await BBDB.plugins.txtcmd.parse_and_run("new");
+          let run_cmd = await BBDB.apps.txtcmd.parse_and_run("new");
           schemas = run_cmd.result;
         } catch (error) {
           console.log(error);

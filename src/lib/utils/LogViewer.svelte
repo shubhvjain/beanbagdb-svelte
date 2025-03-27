@@ -14,7 +14,7 @@
     <div class="row">
       <div class="col-lg-12">
         {#if logs.length > 0}
-          <table class="table table-striped">
+          <table class="table table-striped table-responsive">
             <thead>
               <tr>
                 <th>App</th>
@@ -28,13 +28,13 @@
                 <tr>
                   <td>{log.data.app}</td>
                   <td>{log.data.text}</td>
-                  <td>{new Date(log.data.time * 1000).toLocaleString()}</td>
+                  <td>{new Date(log.meta.created_on * 1000).toLocaleString()}</td>
                   <td>
-                    {#if log.data.data?.steps}
+                    {#if log.data?.steps}
                       <details>
                         <summary>View Steps</summary>
                         <ul class="list-group">
-                          {#each log.data.data.steps as step}
+                          {#each log.data.steps as step}
                             <li class="list-group-item">{step}</li>
                           {/each}
                         </ul>

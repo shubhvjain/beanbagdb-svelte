@@ -42,10 +42,10 @@
       return;
     }
     try {
-      let search  =  await BBDB.plugins["txtcmd"].parse(`search/filter?${search_query.trim()}`);
+      let search  =  await BBDB.apps["txtcmd"].parse(`search/filter?${search_query.trim()}`);
       // console.log(search)
       if(search.valid){
-        let look = await  BBDB.plugins["txtcmd"].run(search)
+        let look = await  BBDB.apps["txtcmd"].run(search)
         results = look.result.docs
         isFocused = true
       }

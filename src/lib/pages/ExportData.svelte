@@ -74,8 +74,8 @@
       <h4>Export data as JSON</h4>
       <hr>
       <div class="mb-3">
-        <label class="form-label">Filename:</label>
-        <input type="text" class="form-control" bind:value={options.file_name} />
+        <label class="form-label" for="1">Filename:</label>
+        <input type="text" class="form-control" name="1" bind:value={options.file_name} />
       </div>
       <div class="form-check mb-3">
         <input
