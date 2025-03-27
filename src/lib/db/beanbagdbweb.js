@@ -204,7 +204,7 @@ export const sync_db_once = async (PouchDB,db)=>{
       throw new Error("No sync URL found")
     }
     const localDB  = new PouchDB(db.name);
-    const remoteDB = new PouchDB(db.sync_url); 
+    const remoteDB = new PouchDB(db.sync_url.trim()); 
     let sync_allowed = false
     let errors = []
     const mangoQuery = {
@@ -249,20 +249,30 @@ export const sync_db_once = async (PouchDB,db)=>{
     //console.log
     //sync_allowed = false
     if(sync_allowed && errors.length==0){
-      localDB.sync(remoteDB, {
-        live: false,       // Enable live syncing
-        retry: true       // Retry on failure
-      }).on('change', function (info) {
-        console.log('Data changed:', info);
-      }).on('paused', function (err) {
-        console.log('Replication paused:', err);
-      }).on('active', function () {
-        console.log('Replication resumed.');
-      }).on('error', function (err) {
-        console.error('Replication error:', err);
-      });
+      try {
+        await new Promise((resolve, reject) => {
+          localDB.sync(remoteDB, { live: false, retry: true })
+            .on('complete', resolve)
+            .on('error', reject);
+        });
+        return { success: true };
+      } catch (syncError) {
+        return { success: false, error: syncError.message };
+      }
+      // localDB.sync(remoteDB, {
+      //   live: false,       // Enable live syncing
+      //   retry: true       // Retry on failure
+      // }).on('change', function (info) {
+      //   console.log('Data changed:', info);
+      // }).on('paused', function (err) {
+      //   console.log('Replication paused:', err);
+      // }).on('active', function () {
+      //   console.log('Replication resumed.');
+      // }).on('error', function (err) {
+      //   console.error('Replication error:', err);
+      // });
     }else{
-      throw new Error(`Unble to sync. ${errors.join(".")} `)
+      throw new Error(`Unable to sync. ${errors.join(".")} `)
     }
   } catch (error) {
     throw error

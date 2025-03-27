@@ -18,15 +18,16 @@
   import SettingEditor from "$lib/editors/SettingEditor.svelte";
   import MediaEditor from "$lib/editors/MediaEditor.svelte";
   import ScriptEditor from "$lib/editors/ScriptEditor.svelte";
+  import AppSpace from "$lib/pages/AppSpace.svelte";
+  import TextEditor from "$lib/editors/TextEditor.svelte";
   let {
     BBDB,
     bbdb_action,
-
     new_doc = false,
     schema_name,
-
     edit_mode = "internal",
     custom_editors = {},
+    custom_app_editors=[],
     doc_key = {}
   } = $props();
 
@@ -92,6 +93,14 @@
         edit: true,
         view: true,
       }
+    },
+    system_text:{
+      component: TextEditor,
+      allow: {
+        new: true,
+        edit: true,
+        view: true,
+      }
     }
 
   };
@@ -104,6 +113,7 @@
   let schema = $state({});
 
   let new_data = $state({});
+  let new_app_data = $state({})
   // let new_meta = $state({}); // later
 
   let new_data_meta = $state({})
@@ -175,7 +185,6 @@
 }
 
   onMount(async () => {
-    //console.log(custom_editors)
     if (new_doc == true) {
       try {
         if (!schema_name) {
@@ -205,12 +214,9 @@
         }else{
           selected_component.options = {...default_options,...selected_component.options}
         }
-
-
         if(selected_component.options.new_show_title_input){
-          new_data_meta["title"] = `${schema_name} doc`
+          new_data_meta["title"] = `Doc`
         }
-
         //console.log(selected_component)
         loaded = true;
         show_add_editor = true
@@ -228,17 +234,13 @@
         let criteria = { ...doc_key, include_schema: true };
         let search = await BBDB.read(criteria);
         schema = search.schema.schema;
-        //console.log(schema);
         full_doc = search.doc;
         // validate meta and include default fields
         let ms = await BBDB.get({type:"editable_meta_schema"})
-        //console.log(ms)
-        //console.log(full_doc["meta"])
-        //console.log("-----")
         let new_meta = update_meta_obj(ms,full_doc["meta"])
         //console.log(new_meta) 
         full_doc["meta"] = new_meta
-        console.log(full_doc)
+        // console.log(full_doc)
         doc_data = full_doc.data;
         schema_name = search.schema.name
         if (system_schema[schema_name]) {
@@ -247,7 +249,7 @@
           selected_component = custom_editors[schema_name];
         }
         loaded = true;
-        console.log(mode);
+        // console.log(mode);
       } catch (error) {
         loaded = false;
         loaded_message = error.message; //"Doc search criteria not provided"
@@ -258,23 +260,24 @@
   async function new_handle_bbdb_action(option) {}
 
   async function new_handle_add_button() {
-    //console.log(new_data);
+    // console.log( JSON.stringify(new_app_data,null,2));
+    //let app_data_full = {...new_app_data}
     add_status.processing = true;
     try {
       let new_doc = { schema: schema_name, data: new_data }
       if(selected_component.options.new_show_title_input){
         new_doc["meta"] = new_data_meta
       }
+      let app_data = Object.fromEntries(Object.entries(new_app_data).filter(([_,value])=>Object.keys(value).length>0))
+      new_doc["app"] = {...app_data}
       let current_loc = await getCurrentLocationData()
       console.log(current_loc)
-
       if(current_loc){
         if(!new_doc["meta"]){
           new_doc["meta"] = {}
         }
         new_doc["meta"]["location"] = { created:current_loc,updated:{}  }
       }
-      console.log(new_doc)
       let resp = await BBDB.create(new_doc);
       console.log(resp);
       add_status.message = `Added ${resp.meta.link}`;
@@ -282,6 +285,7 @@
       add_status.links.push(resp.meta.link);
       bbdb_action(emit_bbdb_event("new_document_created",{link:resp.meta.link, _id:resp._id})) 
       new_data = get_blank_object(schema,schema_name)|| {} ;
+      new_app_data={}
       new_data_meta = {"title":""}
       show_add_editor = false
       setTimeout(()=>{
@@ -321,7 +325,7 @@
         update_obj["meta"] = partial_meta
       }
 
-        let update1 = await BBDB.update({
+      let update1 = await BBDB.update({
           criteria: doc_key,
           updates: update_obj,
           rev_id: full_doc._rev,
@@ -433,17 +437,38 @@
     new_data_meta.title += " "+generate_append(t)
   }
 
+  const update_app_data = async(update)=>{
+    // 
+    //console.log("here")
+    //console.log(update)
+    try {
+        let update1 = await BBDB.update({
+          criteria: doc_key,
+          updates: { app:update },
+          //rev_id: full_doc._rev,
+        });
+        console.log(update1);
+        bbdb_action(
+          emit_bbdb_event("show_ui_message", {
+            type: "success",
+            message: "App data updated",
+          })
+        );
+      } catch (error) {
+        await bbdb_action(
+          emit_bbdb_event("show_ui_message", {
+            type: "error",
+            message: error.message,
+          })
+        );
+    }
+  }
 </script>
 
 {#if loaded}
   {#if new_doc == true}
     {#if selected_component.allow.new}
       {#if selected_component.options.new_show_title_input}
-     
-     
-
-
-
        <div class="input-group">
               <input   bind:value={new_data_meta.title} type="text" class="form-control" aria-label="Text input with dropdown button">
               <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
@@ -472,6 +497,7 @@
           bind:data_valid= {add_data_valid}
         />
       </div>
+        <AppSpace bind:app_data={new_app_data} {BBDB} {bbdb_action} {new_doc} {schema_name} {custom_app_editors} />
         {#if add_data_valid}
           <button
             class="btn btn-primary btn-sm m-1"
@@ -799,6 +825,16 @@
     </details>
   </div>
 </div>
+  {#if mode=="edit"}
+  <div class="row">
+    <div class="col-lg-12">
+      <details>
+        <summary>App Data</summary>
+        <AppSpace on_update_click={update_app_data} app_data={full_doc["app"]} {BBDB} {bbdb_action} {new_doc} {schema_name} {custom_app_editors}  />
+      </details>
+    </div>
+  </div>
+  {/if}
   {/if}
 {:else}
   <!-- not loaded successfully -->

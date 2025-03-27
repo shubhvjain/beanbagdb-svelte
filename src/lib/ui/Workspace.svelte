@@ -16,7 +16,7 @@
   import Document from "$lib/pages/Document.svelte";
   import GraphView from "$lib/pages/GraphView.svelte";
   // import ImportData from "$lib/pages/ImportData.svelte";
-  let { db , PouchDB, uiComponents, settings ={}, onWorkspaceLoad  , custom_editors , additional_nav_items=[]} = $props();
+  let { db , PouchDB, uiComponents, settings ={}, onWorkspaceLoad  , custom_editors, custom_app_editors , additional_nav_items=[]} = $props();
   // export let db;
 
   let BBDB = $state(null);
@@ -43,43 +43,16 @@
   async function make_db_ready() {
     //console.log(db);
     await BBDB.ready();
-    await BBDB.load_plugin("txtcmd", text_command);
-    await BBDB.load_plugin("graph", graph_query);
-    console.log("Plugin loaded");
+    console.log("Ready")
+    await BBDB.load_scripts("txtcmd", text_command);
+    await BBDB.load_scripts("graph", graph_query);
+    console.log("Scripts loaded");
+    //console.log(BBDB.apps)
     // load workspace settings
   }
 
   let ui_setting_name = "ui_workspace";
 
-  async function get_setting_doc() {
-    let default_workspace_settings = {
-      theme: "dark",
-      live_sync: false,
-      recent: [],
-    };
-    let setting;
-    try {
-      setting = await BBDB.get({
-        type:"system_setting",
-        criteria: { name: ui_setting_name },
-      });
-    } catch (error) {
-      setting = await BBDB.modify_setting(
-        "ui_workspace",
-        default_workspace_settings,
-        "append"
-      );
-    }
-    return setting?.data?.value || default_workspace_settings;
-  }
-
-  async function update_ws_setting(key, value) {
-    let data = await BBDB.modify_setting(
-      "ui_workspace",
-      { key: value },
-      "append"
-    );
-  }
 
   async function sync_pouchdb() {
     try {
@@ -100,7 +73,7 @@
     if(!PouchDB){
       Loaded = true;
       Error = "Error : No PouchDB provided";
-      console.log("qqq")
+      console.log(Error)
       return
     }
     
@@ -137,7 +110,7 @@
     if(additional_nav_items){
       nav_items.outer = [...nav_items.outer, ...additional_nav_items];
     }
-    console.log(nav_items)
+    //console.log(nav_items)
     // Dynamically import Bootstrap for initializing dropdowns
     import("bootstrap").then(({ Dropdown }) => {
       const dropdownTriggerList = Array.from(
@@ -167,7 +140,13 @@
     }
 
     if (onWorkspaceLoad) {
-      await onWorkspaceLoad(BBDB);
+      try {
+        await onWorkspaceLoad(BBDB);  
+      } catch (error) {
+        console.log("error in onWorkSpaceLoad")
+        console.log(error)
+      }
+      
     }
 
     if(settings.initial_pages){
@@ -175,21 +154,8 @@
         runTextCommand(itm);
       });
     }else{
-      let test = [
-       // "new/system_script",
-       // "ui/graph",  
-        "home",
-        // "page/help",
-        //"page/search",
-        //  "page/plugins",
-        //"page/schemas",
-        // "page/keys",
-        //"page/settings",
-        // "new"
-      ];
-      test.forEach((itm) => {
-        runTextCommand(itm);
-      });
+      let test = ["home"];
+      test.forEach((itm) => {runTextCommand(itm)});
     }
     document.title = `${db.name} DB`;
   });
@@ -205,7 +171,7 @@
   }
 
   const runTextCommand = async (text) => {
-    let command = await BBDB.plugins["txtcmd"].parse(text);
+    let command = await BBDB.apps["txtcmd"].parse(text);
     if (command.valid) {
       let process_commands = {
         page: (cmd) => {
@@ -538,13 +504,13 @@
           </div>
 
           {#if page.name=="ui"}
-            <page.component this={page.component} {BBDB} {page} data={page.component_data} custom_editors={custom_editors} page_bbdb_action={handleBBDBActions} />
+            <page.component this={page.component} {BBDB} {page} data={page.component_data} {custom_app_editors} {custom_editors} page_bbdb_action={handleBBDBActions} />
           {:else if page.name == "page"}
             <DbPage {BBDB} {page} page_bbdb_action={handleBBDBActions} />
           {:else if page.name == "open"}
-            <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} custom_editors={custom_editors} />
+            <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} {custom_app_editors} {custom_editors} />
           {:else if page.name == "new"}
-            <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} custom_editors={custom_editors} />
+            <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} {custom_app_editors} {custom_editors} />
           {:else if page.name == "error"}
             <WorkSpaceErrorPage details={page} />
           {:else if page.name == "home"}

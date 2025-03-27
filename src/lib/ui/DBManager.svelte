@@ -78,23 +78,15 @@
 
   async function replicate_remote(name, url) {
     try {
-      const rep = PouchDB.replicate(url, name, {
-        live: false,
-        retry: true,
-      })
-        .on("complete", function (info) {
-          // handle complete
-          console.log(info);
-          return info;
-        })
-        .on("error", function (err) {
-          // handle error
-          throw err;
+        await new Promise((resolve, reject) => {
+          PouchDB.replicate(url, name, {live: false,retry: true})
+            .on('complete', resolve)
+            .on('error', reject);
         });
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+        return { success: true };
+      } catch (syncError) {
+        return { success: false, error: syncError.message };
+      }
   }
 
   function getCurrentTimeString24h() {
@@ -160,27 +152,36 @@
       message = "Encryption key must be at least 24 characters";
       return;
     }
-    databases = [
-      ...databases,
-      {
+    let new_db = 
+    {
         name: sanitizedName,
         note: "",
-        sync_url: option2.saveUrl ? option2.syncUrl : "",
+        sync_url: option2.saveUrl ? option2.syncUrl.trim() : "",
         encryption_key: option2.newEncryptionKey,
         editable: false,
         showKey: false,
         createdOn:getCurrentTimeString24h()
-      },
-    ];
+      }
+    
 
     try {
-      let res = await replicate_remote(option2.newName, option2.syncUrl);
-      console.log(res);
-      option2.newName = "";
-      option2.newEncryptionKey = "";
-      option2.syncUrl = "";
-      message = "Saved successfully";
-      saveToLocalStorage();
+      let res = await replicate_remote(option2.newName, option2.syncUrl.trim());
+      console.log(res)
+      if (res.success){
+        databases = [
+      ...databases,
+      new_db
+    ];
+        console.log(res);
+        option2.newName = "";
+        option2.newEncryptionKey = "";
+        option2.syncUrl = "";
+        message = "Saved successfully";
+        saveToLocalStorage();
+      }else{
+        console.log(res)
+        alert("Unable to sync")
+      }
     } catch (error) {
       console.log(error);
     }
