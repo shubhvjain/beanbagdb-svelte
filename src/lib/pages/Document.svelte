@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import {  emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
-  let { page_bbdb_action, BBDB, page,custom_editors,custom_app_editors } = $props();
+  let { page_bbdb_action, BBDB, page,custom_editors,custom_app_editors ,setting_schemas} = $props();
   let loaded = $state(false);
   let error = $state(null);
   let documentData = $state({});
@@ -92,7 +92,7 @@
 
   {:else if loaded ==true}
   <div class="container-fluid">
-    <Doc  {custom_app_editors} bbdb_action={on_bbdb_action}  custom_editors={custom_editors}  {BBDB}  doc_key={page.criteria}  />
+    <Doc  {custom_app_editors} bbdb_action={on_bbdb_action}  custom_editors={custom_editors}  {BBDB}  doc_key={page.criteria}  {setting_schemas} />
   </div>
   {/if}
 </div>

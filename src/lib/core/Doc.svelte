@@ -28,7 +28,8 @@
     edit_mode = "internal",
     custom_editors = {},
     custom_app_editors=[],
-    doc_key = {}
+    doc_key = {},
+    setting_schemas={}
   } = $props();
 
   // const system_docs1 = ["system_setting","system_script"];
@@ -75,7 +76,8 @@
         view: true,
       },
       options:{
-        new_show_title_input:false
+        new_show_title_input:false,
+        setting_schema:setting_schemas
       }
     },
     system_media:{
@@ -495,6 +497,7 @@
           {BBDB}
           bbdb_action={new_handle_bbdb_action}
           bind:data_valid= {add_data_valid}
+          options={selected_component.options}
         />
       </div>
         <AppSpace bind:app_data={new_app_data} {BBDB} {bbdb_action} {new_doc} {schema_name} {custom_app_editors} />
@@ -693,7 +696,8 @@
           {new_doc}
           {BBDB}
           bbdb_action={new_handle_bbdb_action}
-          bind:data_valid= {edit_data_valid}/>
+          bind:data_valid= {edit_data_valid}
+          options={selected_component.options}/>
           
       {:else}
         Viewing {schema_name} doc is not supported. You can download the data using
@@ -708,7 +712,8 @@
           {new_doc}
           {BBDB}
           bbdb_action={edit_handle_bbdb_action}
-          data_valid= {edit_data_valid}/>
+          data_valid= {edit_data_valid}
+          options={selected_component.options}/>
           
           {#if edit_data_valid==false}
             <p class="text text-danger">Validation error. Fix the errors to save changes</p>

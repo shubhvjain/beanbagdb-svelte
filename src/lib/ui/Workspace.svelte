@@ -6,6 +6,7 @@
   import { get_new_DB,sync_db_once} from "$lib/db/beanbagdbweb.js"; 
   import { text_command } from "$lib/db/textcommand.js";
   import {graph_query} from "$lib/db/graph.js"
+  import {plugins} from "$lib/db/dbutils.js"
   import {get_default_nav_items,get_database_details} from "../bbdb_actions.js"
 
   // pages to display
@@ -16,7 +17,7 @@
   import Document from "$lib/pages/Document.svelte";
   import GraphView from "$lib/pages/GraphView.svelte";
   // import ImportData from "$lib/pages/ImportData.svelte";
-  let { db , PouchDB, uiComponents, settings ={}, onWorkspaceLoad  , custom_editors, custom_app_editors , additional_nav_items=[]} = $props();
+  let { db , PouchDB, uiComponents, settings ={}, onWorkspaceLoad  , custom_editors, custom_app_editors , additional_nav_items=[],setting_schemas={}} = $props();
   // export let db;
 
   let BBDB = $state(null);
@@ -44,6 +45,7 @@
     //console.log(db);
     await BBDB.ready();
     console.log("Ready")
+    await BBDB.load_scripts("util",plugins)
     await BBDB.load_scripts("txtcmd", text_command);
     await BBDB.load_scripts("graph", graph_query);
     console.log("Scripts loaded");
@@ -508,9 +510,9 @@
           {:else if page.name == "page"}
             <DbPage {BBDB} {page} page_bbdb_action={handleBBDBActions} />
           {:else if page.name == "open"}
-            <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} {custom_app_editors} {custom_editors} />
+            <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} {custom_app_editors} {custom_editors} {setting_schemas} />
           {:else if page.name == "new"}
-            <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} {custom_app_editors} {custom_editors} />
+            <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} {custom_app_editors} {custom_editors} {setting_schemas} />
           {:else if page.name == "error"}
             <WorkSpaceErrorPage details={page} />
           {:else if page.name == "home"}

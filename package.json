@@ -55,7 +55,7 @@
 		"@lezer/lr": "^1.4.2",
 		"ajv": "^8.17.1",
 		"axios": "^1.7.9",
-		"beanbagdb": "^0.7.1",
+		"beanbagdb": "^0.8.0",
 		"bootstrap": "^5.3.3",
 		"codemirror": "^6.0.1",
 		"cytoscape": "^3.31.0",

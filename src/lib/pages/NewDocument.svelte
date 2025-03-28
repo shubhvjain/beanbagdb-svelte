@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { emit_bbdb_event } from "$lib/bbdb_actions.js";
   import Doc from "$lib/core/Doc.svelte";
-  let { page_bbdb_action, BBDB, page, excluded_schemas = [],custom_editors={} , show_history=true,custom_app_editors} = $props();
+  let { page_bbdb_action, BBDB, page, excluded_schemas = [],custom_editors={} , show_history=true,custom_app_editors,setting_schemas} = $props();
   let loaded = $state(false);
   let loading = $state(true);
   let error = $state(null);
@@ -140,6 +140,7 @@
               schema_name={selected_schema}
               {custom_editors}
               {custom_app_editors}
+              {setting_schemas}
             />
             <!-- <NewDoc schema={selected_schema} bbdb_action={on_bbdb_action} /> -->
           </div>

@@ -55,3 +55,4 @@ export * as pouchdbMin from './db/pouchdb.min.js';
 export * as textcommand from './db/textcommand.js';
 export * as graphplugin from './db/graph.js';
 export * as bbdb_actions from './bbdb_actions.js';
+export * as dbutils from "./db/dbutils.js";
