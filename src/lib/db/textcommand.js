@@ -221,7 +221,7 @@ const commands = {
   },
 };
 
-const parse = async (instance, text) => {
+const parse_text_command = async (instance, text) => {
   let data = {
     errors: [],
     valid: false,
@@ -257,7 +257,7 @@ const parse = async (instance, text) => {
   return data;
 };
 
-const run = async (instance, command) => {
+const run_text_command = async (instance, command) => {
   let data = {
     result:{},
     errors:[],
@@ -288,14 +288,14 @@ const run = async (instance, command) => {
   return data
 };
 
-const parse_and_run = async(instance, text) => {
-  let command = await parse(instance,text)
+const parse_and_run_text_command = async(instance, text) => {
+  let command = await parse_text_command(instance,text)
   //console.log(command)
-  let command_result = await run(instance,command)
+  let command_result = await run_text_command(instance,command)
   return command_result
 }
 // const schemas =    []
 
 export const text_command = {
-  parse,run,parse_and_run
+  parse_text_command,run_text_command,parse_and_run_text_command
 };

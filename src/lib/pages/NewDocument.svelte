@@ -10,7 +10,7 @@
   let history = $state([])
   let selected_schema = $state(null);
   async function load_schemas(page1) {
-    let doc = await BBDB.apps.txtcmd.run(page1);
+    let doc = await BBDB.apps.util.run_text_command(page1);
     return doc;
   }
   function sortByDataName(arr) {return arr.sort((a, b) => a.title.localeCompare(b.title))}
@@ -26,7 +26,7 @@
 
       if (!page) {
         try {
-          let run_cmd = await BBDB.apps.txtcmd.parse_and_run("new");
+          let run_cmd = await BBDB.apps.util.parse_and_run_text_command("new");
           if (run_cmd.valid) {
             schemas = run_cmd.result;
             schemas = sortByDataName(schemas)

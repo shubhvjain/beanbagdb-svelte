@@ -6,12 +6,9 @@ const install_default_records = async (instance, required_docs) => {
       let doc = await instance.read(element.search_criteria);
     } catch (error) {
       console.log(error.message);
-      //if(error.message.)
-      
       if (error.message.startsWith("Error in fetching document.")) {
-        console.log("creating a new doc")
+        console.log(`creating a new doc ${JSON.stringify(element.search_criteria)} `)
         let new_doc = await instance.create(element.new_data);
-        
       }
     }
   }

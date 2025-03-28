@@ -4,10 +4,9 @@
   import { BeanBagDB } from "beanbagdb";
   import { onMount } from "svelte";
   import { get_new_DB,sync_db_once} from "$lib/db/beanbagdbweb.js"; 
-  import { text_command } from "$lib/db/textcommand.js";
+  import {get_default_nav_items,get_database_details} from "../bbdb_actions.js" 
+  import {app as general_app} from "$lib/db/util_app.js"
   import {graph_query} from "$lib/db/graph.js"
-  import {plugins} from "$lib/db/dbutils.js"
-  import {get_default_nav_items,get_database_details} from "../bbdb_actions.js"
 
   // pages to display
   import WorkSpaceErrorPage from "./WorkSpaceErrorPage.svelte";
@@ -45,8 +44,17 @@
     //console.log(db);
     await BBDB.ready();
     console.log("Ready")
-    await BBDB.load_scripts("util",plugins)
-    await BBDB.load_scripts("txtcmd", text_command);
+    if(general_app.schemas.length>0){
+      await BBDB.initialize_app(general_app);
+    }
+    await BBDB.load_scripts("util",general_app.scripts)
+    try {
+        await BBDB.apps.util.install_default_records(general_app.default_records)  
+    } catch (error) {
+        console.log(error)
+    }
+    
+    //await BBDB.load_scripts("txtcmd", text_command);
     await BBDB.load_scripts("graph", graph_query);
     console.log("Scripts loaded");
     //console.log(BBDB.apps)
@@ -173,7 +181,7 @@
   }
 
   const runTextCommand = async (text) => {
-    let command = await BBDB.apps["txtcmd"].parse(text);
+    let command = await BBDB.apps.util.parse_text_command(text);
     if (command.valid) {
       let process_commands = {
         page: (cmd) => {

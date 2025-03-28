@@ -447,7 +447,7 @@
 
   onMount(async () => {
     await load_icons();
-    new_page_command = await BBDB.apps["txtcmd"].parse("new");
+    new_page_command = await BBDB.apps.util.parse_text_command("new");
     setTimeout(() => {
       load_graph();
       loaded = true;
@@ -592,7 +592,7 @@
     else if (option.name == "textcmd") {
       console.log(option.data);
       // load_node_by_link(option.data.links)
-      let cms = await BBDB.apps.txtcmd.parse(option.data.text);
+      let cms = await BBDB.apps.util.parse_text_command(option.data.text);
       console.log(cms);
       if (cms.valid) {
         if (cms.name == "open") {

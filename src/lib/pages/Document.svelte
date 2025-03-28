@@ -9,7 +9,7 @@
 
   async function load_doc(page1) {
     try {
-      let doc = await BBDB.apps.txtcmd.run(page1);
+      let doc = await BBDB.apps.util.run_text_command(page1);
     console.log(doc);
     return doc ;   
     } catch (error) {

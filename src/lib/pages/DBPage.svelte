@@ -106,7 +106,7 @@
   onMount(async () => {
     //console.log("here");
     //console.log(page);
-    let dt = await BBDB.apps["txtcmd"].parse_and_run(`page/${page.criteria.type}`);
+    let dt = await BBDB.apps.util.parse_and_run_text_command(`page/${page.criteria.type}`);
     data = dt["result"];
     loaded = true;
   });
