@@ -470,7 +470,7 @@
   const delete_doc = async()=>{
     try {
       console.log("hihi")
-      let deldoc = await BBDB.deleted(doc_key);
+      let deldoc = await BBDB.delete(doc_key);
       console.log(deldoc)
       loaded_message= "Doc deleted"
       loaded = false
