@@ -37,7 +37,6 @@
     if (system_settings[data.name]) {
       console.log(schema);
       schema = system_settings[data.name]["schema"];
-      console.log(schema);
       if(Object.keys(data.value).length==0){
         data.value = system_settings[data.name]["default_value"]
       }

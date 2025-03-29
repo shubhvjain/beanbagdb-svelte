@@ -213,13 +213,13 @@
       <div class="tab-pane fade show active" id="pills-disabled" role="tabpanel" aria-labelledby="pills-disabled-tab" tabindex="0">
         
         {#each search_query as q}
-          <button type="button" onclick={()=>{add_query(q.query);if(q.complete){  handleSearch() }  }} class="btn btn-secondary m-1">{q.text}</button>
+          <button type="button" onclick={()=>{add_query(q.query);if(q.complete){  handleSearch() }  }} class="btn btn-sm btn-secondary m-1">{q.text}</button>
         {/each}
         <details>
           <summary>Schemas</summary>
           <div class="scroll-container border p-1">
             {#each schemas as sch}
-            <button class="btn btn-secondary m-1" onclick={()=>{add_query(`{"schema":"${sch.name}"}`); handleSearch() }}  >{sch.title}</button>
+            <button class="btn btn-secondary btn-sm m-1" onclick={()=>{add_query(`{"schema":"${sch.name}"}`); handleSearch() }}  >{sch.title}</button>
           {/each}
             </div>
         </details>

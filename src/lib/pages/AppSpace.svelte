@@ -52,7 +52,7 @@
     <div class="col-lg-12">
     {#each custom_app_editors as app }
      
-      <app.component  bind:value={app_data[app.key]} {BBDB} />
+      <app.component {schema_name} {new_doc}   bind:value={app_data[app.key]} {BBDB} />
     {/each}
     </div>
   </div>
@@ -63,14 +63,14 @@
     <div class="col-lg-12">
     {#each custom_app_editors as app }
       <div class="mt-2">
-       
+        <app.component {new_doc} bind:value={app_data[app.key]} {BBDB} {schema_name} emit_update={()=>on_edit_update(app)} />
       <div>
-        <button class="btn btn-sm btn-secondary" onclick={()=>on_edit_update(app)}>Update</button>
+        <!-- <button class="btn btn-sm btn-secondary" onclick={()=>on_edit_update(app)}>Update app settings</button>
         {#if app?.show_remove}
           <button class="btn btn-sm btn-danger" onclick={()=>on_delete(app)} >{app.remove_message||"Remove"}</button>
-        {/if}
+        {/if} -->
       </div>
-      <app.component {new_doc} bind:value={app_data[app.key]} {BBDB} />
+      
       </div>
     {/each}
     </div>

@@ -20,6 +20,8 @@
   import ScriptEditor from "$lib/editors/ScriptEditor.svelte";
   import AppSpace from "$lib/pages/AppSpace.svelte";
   import TextEditor from "$lib/editors/TextEditor.svelte";
+  import ConfimButton from "$lib/ui/confimButton.svelte";
+
   let {
     BBDB,
     bbdb_action,
@@ -31,8 +33,6 @@
     doc_key = {},
     setting_schemas={}
   } = $props();
-
-  // const system_docs1 = ["system_setting","system_script"];
 
   const system_schema = {
     schema: {
@@ -187,6 +187,7 @@
 }
 
   onMount(async () => {
+    //console.log(setting_schemas)
     if (new_doc == true) {
       try {
         if (!schema_name) {
@@ -463,6 +464,18 @@
             message: error.message,
           })
         );
+    }
+  }
+
+  const delete_doc = async()=>{
+    try {
+      console.log("hihi")
+      let deldoc = await BBDB.deleted(doc_key);
+      console.log(deldoc)
+      loaded_message= "Doc deleted"
+      loaded = false
+    } catch (error) {
+      console.log(error)
     }
   }
 </script>
@@ -767,6 +780,9 @@
                 />
               </svg> Download doc (JSON)
             </button>
+            <!-- {#if !full_doc.schema.startsWith("system_") } -->
+            <ConfimButton title="Delete doc" onclick={delete_doc} />  
+            <!-- {/if} -->
             </div>
           </li>
 
