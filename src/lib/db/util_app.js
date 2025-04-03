@@ -41,8 +41,97 @@ let past_time = Math.floor((Date.now() - last_hour * 60 * 60 * 1000) / 1000); le
         schema: "system_script",
         data: { name: "recent-doc-search-script" },
       }
+    },
+    graph_settings:{
+      new_data: {
+        schema: "system_setting",
+        data: {
+          name:"graph_frontend",
+          value:{
+            "nodes" : {
+              "default":{
+                "color":"#424649"
+              }
+            },
+            "edges":{
+              "default":{
+                "color":"#666"
+              }
+            }
+          }
+        },
+        meta: {
+          title: "Graph frontend settings"
+        },
+        ref: {
+          ver: 1,
+          app: app_name
+        },
+      },
+      search_criteria: {
+        schema: "system_setting",
+        data: { name: "graph_frontend" },
+      }
     }
 },
-  setting_schema:{},
+  setting_schema:{
+    graph_frontend: {
+      "type": "object",
+      "title": "Edit graph frontend setting",
+      "description": "",
+      "properties": {
+        "name": {
+          "type": "string",
+          "readOnly": true
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "object",
+              "patternProperties": {
+                "^[a-zA-Z0-9_]+$": {
+                  "type": "object",
+                  "properties": {
+                    "color": {
+                      "type": "string",
+                      "pattern": "^#[0-9A-Fa-f]{6}$",
+                      "format":"color"
+                    }
+                  },
+                  "required": ["color"],
+                  "additionalProperties": true
+                }
+              },
+              "additionalProperties": true
+            },
+            "edges": {
+              "type": "object",
+              "patternProperties": {
+                "^[a-zA-Z0-9_]+$": {
+                  "type": "object",
+                  "properties": {
+                    "color": {
+                      "type": "string",
+                      "pattern": "^#[0-9A-Fa-f]{6}$",
+                      "format":"color"
+                    }
+                  },
+                  "required": ["color"],
+                  "additionalProperties": true
+                }
+              },
+              "additionalProperties": true
+            }
+
+          },
+          "required": ["nodes","edges"],
+          "additionalProperties": true
+        }
+      },
+      "required": ["name", "value"],
+      "additionalProperties": false
+    }
+  },
   schemas: [],
 };

@@ -53,7 +53,8 @@
     } catch (error) {
         console.log(error)
     }
-    
+    setting_schemas = {...setting_schemas,...general_app.setting_schema}
+    //console.log(setting_schemas)
     //await BBDB.load_scripts("txtcmd", text_command);
     await BBDB.load_scripts("graph", graph_query);
     console.log("Scripts loaded");

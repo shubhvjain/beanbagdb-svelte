@@ -6,6 +6,8 @@
   import cytoscapeHtmlLabel from "cytoscape-node-html-label";
   cytoscape.use(edgehandles);
   cytoscapeHtmlLabel(cytoscape);
+  import cola from "cytoscape-cola";
+  cytoscape.use(cola);
 
   import edgehandles from "cytoscape-edgehandles";
 
@@ -45,6 +47,30 @@
   let load_on_click = $state(true)
   const toggle_load_on_click = ()=>{
     load_on_click = !load_on_click
+  }
+
+  let graph_settings = $state({})
+  const load_settings = async ()=>{
+    let data = await BBDB.read({"schema":"system_setting","data":{"name":"graph_frontend"}})
+    console.log(data)
+    graph_settings = data.doc.data.value
+    console.log(graph_settings)
+  }
+
+  const get_schema_color = (name)=>{
+    if(graph_settings.nodes[name]&&graph_settings.nodes[name]["color"]){
+      return graph_settings.nodes[name]["color"]
+    }else{
+      return graph_settings.nodes["default"]["color"]
+    }
+  }
+
+  const get_edge_color = (name)=>{
+    if(graph_settings.edges[name]&&graph_settings.edges[name]["color"]){
+      return graph_settings.edges[name]["color"]
+    }else{
+      return graph_settings.edges["default"]["color"]
+    }
   }
 
   const layouts = [
@@ -156,6 +182,14 @@
             "text-background-color": "#fff",
             "text-background-opacity": 1,
             "text-margin-y": -10,
+            "line-color": function (ele) {
+              let color = get_edge_color(ele.data("edge_name"))
+              return color
+            },
+            "target-arrow-color": function (ele) {
+              let color = get_edge_color(ele.data("edge_name"))
+              return color
+            },
           },
         },
 
@@ -261,7 +295,7 @@
       // const name = node.data("name");
       // const type = node.data("type");
 
-      console.log(edge);
+      //console.log(edge.data());
       // // Show the box
       infoBox.style.display = "none";
       selectedNode = null;
@@ -313,13 +347,13 @@
         valignBox: 'bottom',
         tpl: function (data) {
           const schema_icon = getSVG(data.schema); 
-
+          const schema_color = get_schema_color(data.schema)
           return `
             <div style="
               display: flex;
               align-items: center;
               pointer-events: none;
-              background: #424649;
+              background: ${schema_color}; 
               border-radius: 8px;
               padding: 8px;
               box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
@@ -447,6 +481,7 @@
 
   onMount(async () => {
     await load_icons();
+    await load_settings()
     new_page_command = await BBDB.apps.util.parse_text_command("new");
     setTimeout(() => {
       load_graph();
@@ -526,35 +561,97 @@
     }
   }
 
-  function run_layout(){
+  function run_layout() {
 
-    let layout = cy.layout({
-        name: "breadthfirst",
-        nodeDimensionsIncludeLabels:true,
-        fit: false,
-        directed: true,
-        avoidOverlap: true, 
-       "padding": 10,
-       "spacingFactor": 3,
-       depthSort: function(a, b){ 
-        //return a.data('level_weight') - b.data('level_weight') 
-            // Get the incoming edge for each node (there should be at most one in a simple directed graph)
-          let edgeA = a.incomers('edge')[0]; // Get the first incoming edge (if any)
-          let edgeB = b.incomers('edge')[0]; 
+  // Apply Cola layout with adjusted spacing
+  let layout = cy.layout({
+    name: "cola",
+    nodeSpacing: function (node) {
+      return Math.max(30, node.boundingBox().w + 70); // Adjust spacing based on node width
+    },
+    edgeLength: function (edge) {
+      return 175; // Keep edges from getting too long
+    },
+    avoidOverlap: true,
+    //fit: true,         // Auto-adjust viewport
+    animate: false,     // Smooth transition
+    nodeDimensionsIncludeLabels: true,
+  });
 
-          // Extract level_weight from the edge, defaulting to 1 if no edge exists
-          let weightA = edgeA ? edgeA.data('level_weight') || 1 : 1;
-          let weightB = edgeB ? edgeB.data('level_weight') || 1 : 1;
+  layout.run();
 
-          return weightA - weightB;
-        }
-      });
+  // Ensure nodes fit well into the viewport after layout is complete
+  // setTimeout(() => {
+  //   cy.fit();
+  // }, 300);
+}
 
-      
+  function run_layout1(){
 
-      layout.run();
+    // let layout = cy.layout({
+    //     name: "breadthfirst",
+    //     nodeDimensionsIncludeLabels:true,
+    //     fit: false,
+    //     directed: true,
+    //     avoidOverlap: true, 
+    //    "padding": 30,
+    //    "spacingFactor": 2.5,
+    //    depthSort: function(a, b){ 
+    //     //return a.data('level_weight') - b.data('level_weight') 
+    //         // Get the incoming edge for each node (there should be at most one in a simple directed graph)
+    //       let edgeA = a.incomers('edge')[0]; // Get the first incoming edge (if any)
+    //       let edgeB = b.incomers('edge')[0]; 
 
-      
+    //       // Extract level_weight from the edge, defaulting to 1 if no edge exists
+    //       let weightA = edgeA ? edgeA.data('level_weight') || 1 : 1;
+    //       let weightB = edgeB ? edgeB.data('level_weight') || 1 : 1;
+
+    //       return weightA - weightB;
+    //     }
+    //   });
+    //   layout.run();
+
+
+//       cy.elements().components().forEach((component, i) => {
+//   component.layout({
+//     name: "breadthfirst",
+//     spacingFactor: 2,
+//     directed: true,
+//     avoidOverlap: true,
+//     boundingBox: {
+//       x1: i * 500, // Offset each tree horizontally
+//       y1: 0,
+//       w: 400,
+//       h: 400
+//     }
+//   }).run();
+// });
+
+// cy.layout({
+//   name: "breadthfirst",
+//   directed: true, // Ensure proper flow
+//   spacingFactor: 1.5, // Adjust node spacing
+//   avoidOverlap: true,
+//   maximalAdjustments: 2, // Prevent excessive stretching
+//   circle: false, // Make it more tree-like, not circular
+// }).run();
+// setTimeout(() => {
+//   cy.elements().components().forEach((component, i) => {
+//     component.layout({
+//       name: "breadthfirst",
+//       spacingFactor: 1.3,
+//       boundingBox: { x1: i * 600, y1: 0, w: 500, h: 500 }, // Space out clusters
+//     }).run();
+//   });
+// }, 100);
+
+cy.layout({
+  name: "cola",
+  nodeSpacing: 30,  // Adjust node distance
+  edgeLength: 50,   // Keep edges short
+  avoidOverlap: true,
+}).run();
+
       // Ensure animation happens *after* layout is applied
       // setTimeout(() => {
       //   let lastNode = newNodes.last(); // Get the last added node safely
