@@ -50,7 +50,9 @@ let past_time = Math.floor((Date.now() - last_hour * 60 * 60 * 1000) / 1000); le
           value:{
             "nodes" : {
               "default":{
-                "color":"#424649"
+                "background":"#424649",
+                "color":"#fff",
+                "fontsize":"15px"
               }
             },
             "edges":{
@@ -96,10 +98,21 @@ let past_time = Math.floor((Date.now() - last_hour * 60 * 60 * 1000) / 1000); le
                     "color": {
                       "type": "string",
                       "pattern": "^#[0-9A-Fa-f]{6}$",
-                      "format":"color"
+                      "format":"color",
+                      "default":"#fff"
+                    },
+                    "background": {
+                      "type": "string",
+                      "pattern": "^#[0-9A-Fa-f]{6}$",
+                      "format":"color",
+                      "default":"#424649"
+                    },
+                    "fontsize":{
+                      "type":"string",
+                      "default":"15px"
                     }
                   },
-                  "required": ["color"],
+                  "required": ["color","background","fontsize"],
                   "additionalProperties": true
                 }
               },

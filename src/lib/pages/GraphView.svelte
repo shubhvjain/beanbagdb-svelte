@@ -57,11 +57,11 @@
     console.log(graph_settings)
   }
 
-  const get_schema_color = (name)=>{
-    if(graph_settings.nodes[name]&&graph_settings.nodes[name]["color"]){
-      return graph_settings.nodes[name]["color"]
+  const get_node_prop = (name)=>{
+    if(graph_settings.nodes[name]){
+      return graph_settings.nodes[name]
     }else{
-      return graph_settings.nodes["default"]["color"]
+      return graph_settings.nodes["default"]
     }
   }
 
@@ -165,7 +165,6 @@
             //   return encodeSVG(schema);
             // },
             //"background-repeat": "no-repeat",
-
             // Dynamic label (multiple fields combined)
             //'label': function(ele) {return `${ele.data('title')}`},
           },
@@ -177,7 +176,10 @@
             "target-arrow-shape": "triangle",
             "line-color": "#666",
             "target-arrow-color": "#666",
-            label: "data(edge_name)",
+            //label: "data(edge_name)[data(level_weight)]",
+            "label": function (ele) {
+                return `${ele.data("edge_name")} [${ele.data("level_weight")}]`;
+            },
             "font-size": "14px",
             "text-background-color": "#fff",
             "text-background-opacity": 1,
@@ -347,20 +349,21 @@
         valignBox: 'bottom',
         tpl: function (data) {
           const schema_icon = getSVG(data.schema); 
-          const schema_color = get_schema_color(data.schema)
+          const prop = get_node_prop(data.schema)
           return `
             <div style="
               display: flex;
               align-items: center;
               pointer-events: none;
-              background: ${schema_color}; 
+              background: ${prop.background}; 
+              color${prop.color};
               border-radius: 8px;
               padding: 8px;
               box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
               max-width: 250px;
               white-space: normal;
               word-wrap: break-word;
-              font-size: 15px;
+              font-size: ${prop.fontsize};
             ">
               <div style="width: 25px; height: 25px; margin-right: 10px;">${schema_icon}</div>
               <span>${renderMathWithText(data.title)}</span>
@@ -576,6 +579,9 @@
     //fit: true,         // Auto-adjust viewport
     animate: false,     // Smooth transition
     nodeDimensionsIncludeLabels: true,
+    // edgeLength: function (edge) {
+    //   return edge.data("level_weight") * 20 + 20;
+    // },
   });
 
   layout.run();
