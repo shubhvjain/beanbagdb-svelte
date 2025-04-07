@@ -42,42 +42,53 @@
   let layoutJson = $state("");
   let errorMessage = $state("");
 
-  let initialZoom = $state() //cy.zoom();
-  let initialPan = $state() // cy.pan();
-  let load_on_click = $state(true)
-  const toggle_load_on_click = ()=>{
-    load_on_click = !load_on_click
-  }
+  let initialZoom = $state(); //cy.zoom();
+  let initialPan = $state(); // cy.pan();
+  let load_on_click = $state(true);
+  const toggle_load_on_click = () => {
+    load_on_click = !load_on_click;
+  };
 
-  let graph_settings = $state({})
-  const load_settings = async ()=>{
-    let data = await BBDB.read({"schema":"system_setting","data":{"name":"graph_frontend"}})
-    console.log(data)
-    graph_settings = data.doc.data.value
-    console.log(graph_settings)
-  }
+  let graph_settings = $state({});
+  const load_settings = async () => {
+    let data = await BBDB.read({
+      schema: "system_setting",
+      data: { name: "graph_frontend" },
+    });
+    console.log(data);
+    graph_settings = data.doc.data.value;
+    console.log(graph_settings);
+  };
 
-  const get_node_prop = (name)=>{
-    if(graph_settings.nodes[name]){
-      return graph_settings.nodes[name]
-    }else{
-      return graph_settings.nodes["default"]
+  const get_node_prop = (name) => {
+    if (graph_settings.nodes[name]) {
+      return graph_settings.nodes[name];
+    } else {
+      return graph_settings.nodes["default"];
     }
-  }
+  };
 
-  const get_edge_color = (name)=>{
-    if(graph_settings.edges[name]&&graph_settings.edges[name]["color"]){
-      return graph_settings.edges[name]["color"]
-    }else{
-      return graph_settings.edges["default"]["color"]
+  const get_edge_color = (name) => {
+    if (graph_settings.edges[name] && graph_settings.edges[name]["color"]) {
+      return graph_settings.edges[name]["color"];
+    } else {
+      return graph_settings.edges["default"]["color"];
     }
-  }
+  };
 
   const layouts = [
     { name: "Grid", config: { name: "grid", fit: true, padding: 10 } },
     { name: "Circle", config: { name: "circle", fit: true } },
     { name: "Concentric", config: { name: "concentric", minNodeSpacing: 50 } },
-    { name: "Breadthfirst", config: { "name": "breadthfirst", "directed": true,"padding": 5,"spacingFactor": 1.25} },
+    {
+      name: "Breadthfirst",
+      config: {
+        name: "breadthfirst",
+        directed: true,
+        padding: 5,
+        spacingFactor: 1.25,
+      },
+    },
     { name: "Random", config: { name: "random" } },
   ];
 
@@ -114,7 +125,7 @@
   }
 
   function getSVG(svgString) {
-    return icons[svgString] ? icons[svgString] : icons["default"]
+    return icons[svgString] ? icons[svgString] : icons["default"];
   }
   function renderMathWithText(text) {
     if (text) {
@@ -136,9 +147,10 @@
   <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
   <path d="M4.5 12.5A.5.5 0 0 1 5 12h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5m0-2A.5.5 0 0 1 5 10h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5m1.639-3.708 1.33.886 1.854-1.855a.25.25 0 0 1 .289-.047l1.888.974V8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V8s1.54-1.274 1.639-1.208M6.25 6a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5"/>
 </svg>`;
-    icons["system_deleted_document"] = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+    icons["system_deleted_document"] =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
   <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
-</svg>`
+</svg>`;
 
     //console.log(icons)
   };
@@ -177,20 +189,20 @@
             "line-color": "#666",
             "target-arrow-color": "#666",
             //label: "data(edge_name)[data(level_weight)]",
-            "label": function (ele) {
-                return `${ele.data("edge_name")} [${ele.data("level_weight")}]`;
+            label: function (ele) {
+              return `${ele.data("edge_name")} [${ele.data("level_weight")}]`;
             },
             "font-size": "14px",
             "text-background-color": "#fff",
             "text-background-opacity": 1,
             "text-margin-y": -10,
             "line-color": function (ele) {
-              let color = get_edge_color(ele.data("edge_name"))
-              return color
+              let color = get_edge_color(ele.data("edge_name"));
+              return color;
             },
             "target-arrow-color": function (ele) {
-              let color = get_edge_color(ele.data("edge_name"))
-              return color
+              let color = get_edge_color(ele.data("edge_name"));
+              return color;
             },
           },
         },
@@ -249,14 +261,13 @@
             opacity: 0,
           },
         },
-      ]
+      ],
       //minZoom: 0.75, // Set the minimum zoom level
       //maxZoom: 3, // Optionally set a maximum zoom level
     });
 
-   
     // Custom event listener to pan instead of zoom
-    cy.container().addEventListener('wheel', function(event) {
+    cy.container().addEventListener("wheel", function (event) {
       event.preventDefault(); // Prevent default zoom behavior
       const deltaX = event.deltaX; // Get horizontal scroll amount
       const deltaY = event.deltaY; // Get vertical scroll amount
@@ -268,10 +279,9 @@
 
     cy.ready(storeInitialView);
 
-
-
     // Handle node double-click
     cy.on("dblclick", "node", function (evt) {
+      // load the small editor 
       const node = evt.target;
       const name = node.data("name");
       const type = node.data("type");
@@ -281,11 +291,9 @@
       // if user already viewing doc , no need to show quick doc
       if (current_card == "view") return;
       // Show the box
-      infoBox.style.display = "none";
-      selectedNode = null;
-      selectedNodeId = null;
-      selectedEdge = null;
-      selectedEdgeId = null;
+      //toggle_edge_edit()
+      hide_short_doc()
+      eh.enableDrawMode();
 
       selectedNode = node;
       selectedNodeId = node.id();
@@ -299,12 +307,7 @@
 
       //console.log(edge.data());
       // // Show the box
-      infoBox.style.display = "none";
-      selectedNode = null;
-      selectedNodeId = null;
-      selectedEdge = null;
-      selectedEdgeId = null;
-
+      hide_short_doc()
       console.log(edge.data("edge_id"));
       selectedEdgeId = edge.data("edge_id");
       selectedEdge = edge;
@@ -318,13 +321,11 @@
 
     // Hide the box when clicking anywhere else
     cy.on("tap", function (event) {
-      if (event.target === cy) {
-        infoBox.style.display = "none";
-        selectedNode = null;
-        selectedNodeId = null;
-        selectedEdge = null;
-        selectedEdgeId = null;
-      }
+      hide_short_doc()
+      eh.disableDrawMode();
+      // if (event.target === cy) {
+      //   hide_short_doc()
+      // }
     });
 
     // cy.nodeHtmlLabel([
@@ -343,13 +344,13 @@
 
     cy.nodeHtmlLabel([
       {
-        query: 'node', // Applies to all nodes
-        halign: 'center', // Horizontal alignment
-        valign: 'bottom', // Vertical alignment
-        valignBox: 'bottom',
+        query: "node", // Applies to all nodes
+        halign: "center", // Horizontal alignment
+        valign: "bottom", // Vertical alignment
+        valignBox: "bottom",
         tpl: function (data) {
-          const schema_icon = getSVG(data.schema); 
-          const prop = get_node_prop(data.schema)
+          const schema_icon = getSVG(data.schema);
+          const prop = get_node_prop(data.schema);
           return `
             <div style="
               display: flex;
@@ -369,8 +370,8 @@
               <span>${renderMathWithText(data.title)}</span>
             </div>
           `;
-        }
-      }
+        },
+      },
     ]);
 
     // the default values of each option are outlined below:
@@ -378,28 +379,12 @@
       handleSize: 10,
       edgeType: "flat",
       loopAllowed: false, // Prevent self-loops
-
-      // canConnect: function (sourceNode, targetNode) {
-      //   // whether an edge can be created between source and target
-      //   return !sourceNode.same(targetNode); // e.g. disallow loops
-      // },
-      // edgeParams: function (sourceNode, targetNode) {
-      //   // for edges between the specified source and target
-      //   // return element object to be passed to cy.add() for edge
-      //   return {};
-      // },
       hoverDelay: 100, // time spent hovering over a target node before it is considered selected
-      //snap: false, // when enabled, the edge can be drawn by just moving close to a target node (can be confusing on compound graphs)
-      //snapThreshold: 50, // the target node must be less than or equal to this many pixels away from the cursor/finger
-      //snapFrequency: 15, // the number of times per second (Hz) that snap checks done (lower is less expensive)
-      //noEdgeEventsInDraw: true, // set events:no to edges during draws, prevents mouseouts on compounds
-      //disableBrowserGestures: true, // during an edge drawing gesture, disable browser gestures such as two-finger trackpad swipe and pinch-to-zoom
     };
 
     eh = cy.edgehandles(defaults);
     cy.on("ehcomplete", async (event, sourceNode, targetNode, addedEdge) => {
       try {
-
         // Check if an edge already exists
         let existingEdge = cy
           .edges()
@@ -430,6 +415,7 @@
           addedEdge.data({
             edge_name: "related_to",
             edge_id: data1._id,
+            level_weight: 1
           });
           console.log("Edge updated:", addedEdge.data());
         } else {
@@ -446,23 +432,26 @@
       const selectedNode = event.target;
       detail_id = null;
       setTimeout(() => {
-        load_selected_node(selectedNode.data("id"), selectedNode.data("link"),selectedNode);
+        load_selected_node(
+          selectedNode.data("id"),
+          selectedNode.data("link"),
+          selectedNode
+        );
       }, 250);
     });
   };
 
-  async function load_selected_node(id, link,current_node=null) {
+  async function load_selected_node(id, link, current_node = null) {
     if (current_card == "view") {
       console.log("gonna show the doc now");
       //console.log(selectedNode.data("id"));
       detail_id = id;
-      
     } else {
       detail_id = null;
     }
 
-    if(load_on_click){
-      loadNode([link],current_node);
+    if (load_on_click) {
+      loadNode([link], current_node);
     }
   }
 
@@ -484,7 +473,7 @@
 
   onMount(async () => {
     await load_icons();
-    await load_settings()
+    await load_settings();
     new_page_command = await BBDB.apps.util.parse_text_command("new");
     setTimeout(() => {
       load_graph();
@@ -498,13 +487,13 @@
     return graph;
   }
 
-  async function loadNode(nodes,currentNode=null) {
+  async function loadNode(nodes, currentNode = null) {
     //console.log(nodes);
     let load_nodes = await load_neighbor_subgraph(nodes);
     //console.log(load_nodes);
     let added = 0;
     let to_add = [];
-    
+
     for (let index = 0; index < load_nodes.length; index++) {
       const element = load_nodes[index];
       try {
@@ -518,21 +507,23 @@
           }
           let node = cy.getElementById(element.data.id);
 
-            if (node.nonempty()) {
-                console.log('Node exists:', node);
-            } else {
-                console.log('Node does not exist.');
-                to_add.push(element);
-                added++;
-            }    
+          if (node.nonempty()) {
+            console.log("Node exists:", node);
+          } else {
+            console.log("Node does not exist.");
+            to_add.push(element);
+            added++;
+          }
         }
         if (element.group == "edges") {
-          let edgeExists = cy.edges().some(edge => edge.data('edge_id') === element.data.edge_id);
+          let edgeExists = cy
+            .edges()
+            .some((edge) => edge.data("edge_id") === element.data.edge_id);
 
           if (!edgeExists) {
             to_add.push(element);
             added++;
-          }else{
+          } else {
             continue;
           }
         }
@@ -541,72 +532,69 @@
         console.log(error);
       }
     }
-    console.log(added)
-    console.log(to_add)
+    console.log(added);
+    console.log(to_add);
     if (added > 0) {
       let newNodes = cy.add(to_add);
       // console.log(newNodes);
 
       let currentZoom = cy.zoom();
       let currentPan = cy.pan();
-      run_layout()
+      run_layout();
       // Run layout first
-      cy.zoom(currentZoom);
+      //cy.zoom(currentZoom);
       //cy.pan(currentPan);
 
       setTimeout(() => {
         cy.zoom(currentZoom); // Restore zoom level
-        if(currentNode){
+        if (currentNode) {
           cy.center(currentNode); // Move view to keep the clicked node in focus
         }
-        
-    }, 50);
+      }, 50);
     }
   }
 
   function run_layout() {
+    // Apply Cola layout with adjusted spacing
+    let layout = cy.layout({
+      name: "cola",
+      nodeSpacing: function (node) {
+        return Math.max(30, node.boundingBox().w + 70); // Adjust spacing based on node width
+      },
+      edgeLength: function (edge) {
+        return 175; // Keep edges from getting too long
+      },
+      avoidOverlap: true,
+      //fit: true,         // Auto-adjust viewport
+      animate: false, // Smooth transition
+      nodeDimensionsIncludeLabels: true,
+      // edgeLength: function (edge) {
+      //   return edge.data("level_weight") * 20 + 20;
+      // },
+    });
 
-  // Apply Cola layout with adjusted spacing
-  let layout = cy.layout({
-    name: "cola",
-    nodeSpacing: function (node) {
-      return Math.max(30, node.boundingBox().w + 70); // Adjust spacing based on node width
-    },
-    edgeLength: function (edge) {
-      return 175; // Keep edges from getting too long
-    },
-    avoidOverlap: true,
-    //fit: true,         // Auto-adjust viewport
-    animate: false,     // Smooth transition
-    nodeDimensionsIncludeLabels: true,
-    // edgeLength: function (edge) {
-    //   return edge.data("level_weight") * 20 + 20;
-    // },
-  });
+    layout.run();
 
-  layout.run();
+    // Ensure nodes fit well into the viewport after layout is complete
+    // setTimeout(() => {
+    //   cy.fit();
+    // }, 300);
+  }
 
-  // Ensure nodes fit well into the viewport after layout is complete
-  // setTimeout(() => {
-  //   cy.fit();
-  // }, 300);
-}
-
-  function run_layout1(){
-
+  function run_layout1() {
     // let layout = cy.layout({
     //     name: "breadthfirst",
     //     nodeDimensionsIncludeLabels:true,
     //     fit: false,
     //     directed: true,
-    //     avoidOverlap: true, 
+    //     avoidOverlap: true,
     //    "padding": 30,
     //    "spacingFactor": 2.5,
-    //    depthSort: function(a, b){ 
-    //     //return a.data('level_weight') - b.data('level_weight') 
+    //    depthSort: function(a, b){
+    //     //return a.data('level_weight') - b.data('level_weight')
     //         // Get the incoming edge for each node (there should be at most one in a simple directed graph)
     //       let edgeA = a.incomers('edge')[0]; // Get the first incoming edge (if any)
-    //       let edgeB = b.incomers('edge')[0]; 
+    //       let edgeB = b.incomers('edge')[0];
 
     //       // Extract level_weight from the edge, defaulting to 1 if no edge exists
     //       let weightA = edgeA ? edgeA.data('level_weight') || 1 : 1;
@@ -617,56 +605,63 @@
     //   });
     //   layout.run();
 
+    //       cy.elements().components().forEach((component, i) => {
+    //   component.layout({
+    //     name: "breadthfirst",
+    //     spacingFactor: 2,
+    //     directed: true,
+    //     avoidOverlap: true,
+    //     boundingBox: {
+    //       x1: i * 500, // Offset each tree horizontally
+    //       y1: 0,
+    //       w: 400,
+    //       h: 400
+    //     }
+    //   }).run();
+    // });
 
-//       cy.elements().components().forEach((component, i) => {
-//   component.layout({
-//     name: "breadthfirst",
-//     spacingFactor: 2,
-//     directed: true,
-//     avoidOverlap: true,
-//     boundingBox: {
-//       x1: i * 500, // Offset each tree horizontally
-//       y1: 0,
-//       w: 400,
-//       h: 400
-//     }
-//   }).run();
-// });
+    // cy.layout({
+    //   name: "breadthfirst",
+    //   directed: true, // Ensure proper flow
+    //   spacingFactor: 1.5, // Adjust node spacing
+    //   avoidOverlap: true,
+    //   maximalAdjustments: 2, // Prevent excessive stretching
+    //   circle: false, // Make it more tree-like, not circular
+    // }).run();
+    // setTimeout(() => {
+    //   cy.elements().components().forEach((component, i) => {
+    //     component.layout({
+    //       name: "breadthfirst",
+    //       spacingFactor: 1.3,
+    //       boundingBox: { x1: i * 600, y1: 0, w: 500, h: 500 }, // Space out clusters
+    //     }).run();
+    //   });
+    // }, 100);
 
-// cy.layout({
-//   name: "breadthfirst",
-//   directed: true, // Ensure proper flow
-//   spacingFactor: 1.5, // Adjust node spacing
-//   avoidOverlap: true,
-//   maximalAdjustments: 2, // Prevent excessive stretching
-//   circle: false, // Make it more tree-like, not circular
-// }).run();
-// setTimeout(() => {
-//   cy.elements().components().forEach((component, i) => {
-//     component.layout({
-//       name: "breadthfirst",
-//       spacingFactor: 1.3,
-//       boundingBox: { x1: i * 600, y1: 0, w: 500, h: 500 }, // Space out clusters
-//     }).run();
-//   });
-// }, 100);
+    cy.layout({
+      name: "cola",
+      nodeSpacing: 30, // Adjust node distance
+      edgeLength: 50, // Keep edges short
+      avoidOverlap: true,
+    }).run();
 
-cy.layout({
-  name: "cola",
-  nodeSpacing: 30,  // Adjust node distance
-  edgeLength: 50,   // Keep edges short
-  avoidOverlap: true,
-}).run();
+    // Ensure animation happens *after* layout is applied
+    // setTimeout(() => {
+    //   let lastNode = newNodes.last(); // Get the last added node safely
+    //   cy.animate({
+    //     center: { eles: lastNode },
+    //     zoom: 0.75, // Adjust zoom level as needed
+    //     duration: 200, // Optional: Smooth transition
+    //   });
+    // }, 200); // Give time for layout to finish
+  }
 
-      // Ensure animation happens *after* layout is applied
-      // setTimeout(() => {
-      //   let lastNode = newNodes.last(); // Get the last added node safely
-      //   cy.animate({
-      //     center: { eles: lastNode },
-      //     zoom: 0.75, // Adjust zoom level as needed
-      //     duration: 200, // Optional: Smooth transition
-      //   });
-      // }, 200); // Give time for layout to finish
+  function hide_short_doc(){
+    infoBox.style.display = "none";
+    selectedNode = null;
+    selectedNodeId = null;
+    selectedEdge = null;
+    selectedEdgeId = null;
   }
 
   function removeSelected() {
@@ -682,17 +677,14 @@ cy.layout({
         node.data({ ...option.data.meta, id: option.data.id });
         console.log("updating");
       }
-    }
-    else if (option.name == "doc_deleted") {
+    } else if (option.name == "doc_deleted") {
       console.log(option);
       let node = cy.getElementById(option.data.id);
       if (node) {
         node.remove();
         console.log("node deleted");
       }
-    }  
-    
-    else if (option.name == "textcmd") {
+    } else if (option.name == "textcmd") {
       console.log(option.data);
       // load_node_by_link(option.data.links)
       let cms = await BBDB.apps.util.parse_text_command(option.data.text);
@@ -704,18 +696,28 @@ cy.layout({
       }
     } else if (option.name == "edge_updated") {
       let edge = cy.getElementById(option.data.id);
+
       if (edge) {
-        edge.data(option.data);
-        console.log("updating");
+        //edge.data(option.data);
+        edge.remove();
+        let element = await BBDB.read({"_id":option.data.id})
+        element = element.doc
+        let _edges=[]
+        _edges.push({"group":"edges",data:{  edge_id:element._id, id:element._id,edge_name:element.data.edge_name,source:element.data.node1,target:element.data.node2, level_weight: element.data.level_weight||1  }})
+        let newNodes = cy.add(_edges);
+        
+        //console.log(newNodes)
+        console.log("updated");
       }
     } else if (option.name == "edge_deleted") {
-      let edge = cy.edges().filter(edge => edge.data("edge_id") === option.data.id);
+      let edge = cy
+        .edges()
+        .filter((edge) => edge.data("edge_id") === option.data.id);
 
       if (edge.length > 0) {
         console.log("Edge found:", edge.data());
         edge.remove();
         console.log("delete");
-        
       } else {
         console.log("Edge not found.");
       }
@@ -745,16 +747,15 @@ cy.layout({
     cy.elements().remove();
   }
 
-
   function reset_to_home() {
-    cy.zoom(initialZoom);  // Reset zoom level
-    cy.pan(initialPan);    // Reset position
+    cy.zoom(initialZoom); // Reset zoom level
+    cy.pan(initialPan); // Reset position
   }
 
-  function zoom_in(){
+  function zoom_in() {
     cy.zoom(cy.zoom() * 1.2); // Increase zoom by 20%
   }
-  function zoom_out(){
+  function zoom_out() {
     cy.zoom(cy.zoom() * 0.8); // Decrease zoom by 20%
   }
 
@@ -763,7 +764,6 @@ cy.layout({
     initialZoom = cy.zoom();
     initialPan = cy.pan();
   }
-
 
   let current_card = $state("search");
   const change_card = (new_card) => {
@@ -936,11 +936,9 @@ cy.layout({
               aria-labelledby="nav-contact-tab"
               tabindex="0"
             >
-            
-             
               <div class="container-fluid">
                 <div class="row">
-                  <div class="col-lg-12 ">
+                  <div class="col-lg-12">
                     {#if detail_id}
                       <Doc
                         {BBDB}
@@ -948,15 +946,11 @@ cy.layout({
                         doc_key={{ _id: detail_id }}
                         bbdb_action={handle_bbdb_action}
                       />
-
-                      {:else}
+                    {:else}
                       <h5 class="p-1 m-2 mb-1 border-bottom">View Document</h5>
-                      <p
-                      class="text-body-secondary fw-lighter fst-italic text-wrap text-center"
-                    >
-                      Select a node and view it in detail
-                    </p>
-
+                      <p class="text-body-secondary fw-lighter fst-italic text-wrap text-center">
+                        Select a node and view it in detail
+                      </p>
                     {/if}
                   </div>
                 </div>
@@ -1065,15 +1059,24 @@ cy.layout({
             </button>
 
             <button
-            aria-label="input"
-            title="To load neighbors on node click "
-            onclick={()=>toggle_load_on_click()}
-            class="btn btn-sm {load_on_click ? 'btn-success' : 'btn-danger'}"
-          >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-node-plus-fill" viewBox="0 0 16 16">
-            <path d="M11 13a5 5 0 1 0-4.975-5.5H4A1.5 1.5 0 0 0 2.5 6h-1A1.5 1.5 0 0 0 0 7.5v1A1.5 1.5 0 0 0 1.5 10h1A1.5 1.5 0 0 0 4 8.5h2.025A5 5 0 0 0 11 13m.5-7.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2a.5.5 0 0 1 1 0"/>
-          </svg>
-          </button>
+              aria-label="input"
+              title="To load neighbors on node click "
+              onclick={() => toggle_load_on_click()}
+              class="btn btn-sm {load_on_click ? 'btn-success' : 'btn-danger'}"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-node-plus-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M11 13a5 5 0 1 0-4.975-5.5H4A1.5 1.5 0 0 0 2.5 6h-1A1.5 1.5 0 0 0 0 7.5v1A1.5 1.5 0 0 0 1.5 10h1A1.5 1.5 0 0 0 4 8.5h2.025A5 5 0 0 0 11 13m.5-7.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2a.5.5 0 0 1 1 0"
+                />
+              </svg>
+            </button>
 
             <button
               aria-label="input"
@@ -1081,9 +1084,18 @@ cy.layout({
               onclick={reset_to_home}
               class="btn btn-sm btn-dark"
             >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
-              <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-house"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"
+                />
+              </svg>
             </button>
 
             <button
@@ -1092,9 +1104,19 @@ cy.layout({
               onclick={zoom_in}
               class="btn btn-sm btn-dark"
             >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-plus-lg"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"
+                />
+              </svg>
             </button>
 
             <button
@@ -1103,9 +1125,18 @@ cy.layout({
               onclick={zoom_out}
               class="btn btn-sm btn-dark"
             >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash" viewBox="0 0 16 16">
-              <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"/>
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-dash"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"
+                />
+              </svg>
             </button>
 
             <button
@@ -1114,29 +1145,39 @@ cy.layout({
               onclick={run_layout}
               class="btn btn-sm btn-dark"
             >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-2-fill" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H11a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 5 7h2.5V6A1.5 1.5 0 0 1 6 4.5zm-3 8A1.5 1.5 0 0 1 4.5 10h1A1.5 1.5 0 0 1 7 11.5v1A1.5 1.5 0 0 1 5.5 14h-1A1.5 1.5 0 0 1 3 12.5zm6 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 9 12.5z"/>
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-diagram-2-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H11a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 5 7h2.5V6A1.5 1.5 0 0 1 6 4.5zm-3 8A1.5 1.5 0 0 1 4.5 10h1A1.5 1.5 0 0 1 7 11.5v1A1.5 1.5 0 0 1 5.5 14h-1A1.5 1.5 0 0 1 3 12.5zm6 0a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 9 12.5z"
+                />
+              </svg>
             </button>
             <button
-            aria-label="input"
-            title="To reset current view "
-            onclick={reset_view}
-            class="btn btn-sm btn-dark"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-trash3"
-              viewBox="0 0 16 16"
+              aria-label="input"
+              title="To reset current view "
+              onclick={reset_view}
+              class="btn btn-sm btn-dark"
             >
-              <path
-                d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"
-              />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-trash3"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"
+                />
+              </svg>
+            </button>
           </div>
           <div id="cy"></div>
         </div>
