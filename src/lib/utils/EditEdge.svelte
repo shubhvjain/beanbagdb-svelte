@@ -3,6 +3,7 @@
 
   let {BBDB,bbdb_action,edge_id} = $props()
   import {emit_bbdb_event} from "$lib/bbdb_actions.js" 
+  import ConfimButton from "$lib/ui/confimButton.svelte";
   let loaded = $state(false)
   let message  = $state("")
   let selected_name = $state(null)
@@ -69,8 +70,8 @@
   }
 
   const delete_edge = async ()=>{
-    let a = confirm("Sure?")
-    if(a){
+    //let a = confirm("Sure?")
+    //if(a){
       try {
       let dele = await BBDB.delete({"_id":edge_id})
       await bbdb_action(emit_bbdb_event("edge_deleted",{id:edge_id}))
@@ -80,7 +81,7 @@
       console.log(error)
       message = error.message
     }
-    }
+    //}
    
   }
 </script>
@@ -98,7 +99,8 @@
 
 <button class="btn btn-sm btn-primary p-1 m-1" onclick={save_edge}>Save</button>
 
-<button class="btn btn-sm btn-danger p-1 m-1" onclick={delete_edge}>Delete</button>
+<!-- <button class="btn btn-sm btn-danger p-1 m-1" onclick={delete_edge}>Delete</button> -->
 
+<ConfimButton title="Delete edge" onclick={delete_edge} />
 
 {/if}
