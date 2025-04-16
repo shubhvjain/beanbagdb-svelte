@@ -202,6 +202,7 @@
           if (!search) {
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
+              active:true,
               ...cmd,
               id: new_id,
               size: get_final_size("medium"),
@@ -225,6 +226,7 @@
           if (!search) {
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
+              active:true,
               ...cmd,
               id: new_id,
               size: get_final_size("medium"),
@@ -240,6 +242,7 @@
         new: (cmd) => {
           let new_id = Math.round(Math.random() * 10000);
           pages.push({
+            active:true,
               ...cmd,
               id: new_id,
               size:get_final_size("medium"),
@@ -257,6 +260,7 @@
           if (!search) {
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
+              active:true,
               ...cmd,
               id: new_id,
               size: get_final_size("small"),
@@ -287,6 +291,7 @@
           if(customUIComponents[cmd.criteria.page_key]){
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
+              active:true,
               ...cmd,
               id: new_id,
               size: get_final_size("medium"),
@@ -299,6 +304,7 @@
           }else if(system_ui[cmd.criteria.page_key]){
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
+              active:true,
               ...cmd,
               id: new_id,
               size: "large",
@@ -325,6 +331,7 @@
   function pushErrorPage(code, message) {
     let errorPage = {
       id: Math.round(Math.random() * 10000),
+      active:true,
       size: "small",
       name: "error",
       criteria: {},
@@ -345,7 +352,20 @@
 
   // Method to close a page
   function closePage(pageId) {
-    pages = pages.filter((page) => page.id !== pageId);
+    //console.log(pageId,pages)
+    // pages = pages.filter((page) => page.id !== pageId);
+
+    let page = pages.findIndex(itm=>itm.id==pageId)
+    //console.log(page)
+    if (page>-1){
+        pages[page]= {active:false} 
+    }
+
+    let inactive_page = pages.filter(x=>x.active==false)
+    if(inactive_page.length==pages.length){
+      pages=[]
+      //console.log("iniit")
+    }
   }
 
   function changePageSize(page) {
@@ -491,6 +511,7 @@
     <div class="pages-container">
      
       {#each pages as page}
+        {#if page.active}
         <div class="page {page.size}" id={page.id}>
           <div class="d-flex justify-content-between align-items-center">
             <span class="page-title"></span>
@@ -528,6 +549,7 @@
             <WorkSpaceHome {BBDB} {page} page_bbdb_action={handleBBDBActions} />
           {/if}
         </div>
+        {/if}
       {/each}
     </div>
   </div>

@@ -116,8 +116,9 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-lg-12">
+        <h5 class="border-bottom pb-3">{titles[page.criteria.type]}</h5>
         {#if page.criteria.type == "info"}
-          <h3>{titles[page.criteria.type]}</h3>
+          
           <ObjectViewer
             title="Metadata"
             data={data.meta}
@@ -126,24 +127,18 @@
           <LogViewer logs={data["logs"]} />
         {/if}
         {#if page.criteria.type == "help"}
-        <h3>{titles[page.criteria.type]}</h3>
           <Help params={page.criteria.params}  />
         {/if}
         {#if page.criteria.type == "search"}
-          <h3>{titles[page.criteria.type]}</h3>
           <SearchPage {BBDB} page_bbdb_action={emit_bbdb_to_parent} />
         {/if}
         {#if page.criteria.type == "keys"}
-          <h3>{titles[page.criteria.type]}</h3>
           <TableViewer data={data.docs} labels={labels.key_table} bbdb_action={emit_bbdb_to_parent}  />
         {/if}
         {#if page.criteria.type == "settings"}
-          <h3>{titles[page.criteria.type]}</h3>
           <TableViewer data={data.docs} labels={labels.setting_table} bbdb_action={emit_bbdb_to_parent}   />
         {/if}
-
         {#if page.criteria.type == "schemas"}
-          <h3>{titles[page.criteria.type]}</h3>
           <TableViewer data={data.docs} labels={labels.schema_table} bbdb_action={emit_bbdb_to_parent}  />
         {/if}
       </div>

@@ -1004,10 +1004,10 @@
         </details>
       </div>
     </div>
-    {#if mode == "edit"}
-      <div class="row">
-        <div class="col-lg-12">
-          <details>
+    
+    <div class="row">
+      <div class="col-lg-12">
+        <details>
             <summary>App Data</summary>
             <AppSpace
               on_update_click={update_app_data}
@@ -1020,8 +1020,7 @@
             />
           </details>
         </div>
-      </div>
-    {/if}
+    </div>
   {/if}
 {:else}
   <!-- not loaded successfully -->

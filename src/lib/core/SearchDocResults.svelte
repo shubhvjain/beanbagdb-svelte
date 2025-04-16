@@ -243,7 +243,7 @@
         </div>
       </details>
 
-      <details open>
+      <details>
         <summary>Record Details</summary>
         <pre>{selectedJSON
             ? JSON.stringify(selectedJSON, null, 2)

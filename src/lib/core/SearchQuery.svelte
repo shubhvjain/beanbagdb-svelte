@@ -47,11 +47,11 @@
       query:`{ "schema":"system_key"}`,
       complete:true
     },
-    {
-      text:"Graph edge constraints",
-      query:`{ "schema":"system_edge_constraint"}`,
-      complete:true
-    },
+    // {
+    //   text:"Graph edge constraints",
+    //   query:`{ "schema":"system_edge_constraint"}`,
+    //   complete:true
+    // },
     {
       text:"Graph edges",
       query:`{ "schema":"system_edge"}`,
@@ -188,105 +188,102 @@
 </script>
 
 <div class="container mt-4 mb-4">
+  <div class="card">
+    <div class="card-body">
 
+
+      <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+          <button class="nav-link active ft" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Common</button>
+          <button class="nav-link ft" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">JSON Query</button>
+          <button class="nav-link ft" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Form</button>
+          <button class="nav-link ft" id="nav-disabled-tab" data-bs-toggle="tab" data-bs-target="#nav-disabled" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false" >Search scripts</button>
+        </div>
+      </nav>
+      <div class="tab-content pt-2" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
+          {#each search_query as q}
+            <button type="button" onclick={()=>{add_query(q.query);if(q.complete){  handleSearch() }  }} class="btn btn-sm btn-outline-secondary m-1">{q.text}</button>
+          {/each}
+          <div class="scroll-container border p-1">
+            {#each schemas as sch}
+            <button class="btn btn-outline-secondary btn-sm m-1" onclick={()=>{add_query(`{"schema":"${sch.name}"}`); handleSearch() }}  >{sch.title}</button>
+          {/each}
+            </div>
+        </div>
+        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+          <label for="jsonInput" class="form-label">Enter JSON:</label>
+          <textarea
+            id="jsonInput"
+            class="form-control {isValidJson ? 'is-valid' : 'is-invalid'}"
+            rows="6"
+            bind:value={jsonInput}
+            onblur={validateJson}
+            placeholder="Enter JSON here..."
+          ></textarea>
+          <div class="invalid-feedback">Invalid JSON. Please check your input.</div>
+          <div class="valid-feedback">Valid JSON.</div>
+          <button class="btn btn-primary" onclick={handleSearch} disabled={!isValidJson}>
+            Search
+          </button>
+        </div>
+        <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
+
+          {#each conditions as condition, index}
+      <div class="row g-2 align-items-center mb-2">
+        <div class="col">
+          <input type="text" class="form-control" bind:value={condition.field} placeholder="Field" />
+        </div>
+        <div class="col">
+          <select class="form-select" bind:value={condition.operator}>
+            {#each Object.keys(operators) as op}
+              <option value={op}>{op}</option>
+            {/each}
+          </select>
+        </div>
+        <div class="col">
+          {#if dateFields.includes(condition.field) && condition.operator === 'in'}
+            <input type="datetime-local" class="form-control" bind:value={condition.value} />
+            <input type="datetime-local" class="form-control mt-2" bind:value={condition.valueEnd} />
+            <div class="btn-group mt-2">
+              <button class="btn btn-link" onclick={() => setDateRange(condition, 'today')}>Today</button>
+              <button class="btn btn-link" onclick={() => setDateRange(condition, 'this_week')}>This Week</button><br>
+              <button class="btn btn-link" onclick={() => setDateRange(condition, 'last_3_days')}>Last 3 Days</button>
+              <button class="btn btn-link" onclick={() => setDateRange(condition, 'last_6_hours')}>Last 6 Hours</button>
+              <button class="btn btn-link" onclick={() => setDateRange(condition, 'last_3_hours')}>Last 3 Hours</button>
+            </div>
+          {:else if dateFields.includes(condition.field)}
+            <input type="datetime-local" class="form-control" bind:value={condition.value} />
+          {:else}
+            <input type="text" class="form-control" bind:value={condition.value} placeholder="Value" />
+          {/if}
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-danger" onclick={() => removeCondition(index)}>Remove</button>
+        </div>
+      </div>
+      
+    {/each}
+      <hr>    
+         
+        <button class="btn btn-success me-2" onclick={addCondition}>Add Condition</button>
+        <button class="btn btn-warning" onclick={generateQuery}>Search</button> 
+        </div>
+        <div class="tab-pane fade" id="nav-disabled" role="tabpanel" aria-labelledby="nav-disabled-tab" tabindex="0">
+          <SearchScript {BBDB} on_return_query={run_search_script_query}  />
+        </div>
+      </div>
+
+
+
+     
+    </div>
+  </div>
     <!-- <textarea class="form-control mb-3" bind:value={inputQuery} placeholder="Paste JSON query here"></textarea> -->
     <!-- <button class="btn btn-primary mb-3" on:click={parseQuery}>Parse Query</button> -->
     
 
-    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="pills-disabled-tab" data-bs-toggle="pill" data-bs-target="#pills-disabled" type="button" role="tab" aria-controls="pills-disabled" aria-selected="true">Common</button>
-      </li>
-    
-      <li class="nav-item" role="presentation">
-        <button class="nav-link " id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="false">Form</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">JSON</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Search scripts</button>
-      </li>
-    
-    </ul>
-    <div class="tab-content" id="pills-tabContent">
-      <div class="tab-pane fade show active" id="pills-disabled" role="tabpanel" aria-labelledby="pills-disabled-tab" tabindex="0">
-        
-        {#each search_query as q}
-          <button type="button" onclick={()=>{add_query(q.query);if(q.complete){  handleSearch() }  }} class="btn btn-sm btn-secondary m-1">{q.text}</button>
-        {/each}
-        <details>
-          <summary>Schemas</summary>
-          <div class="scroll-container border p-1">
-            {#each schemas as sch}
-            <button class="btn btn-secondary btn-sm m-1" onclick={()=>{add_query(`{"schema":"${sch.name}"}`); handleSearch() }}  >{sch.title}</button>
-          {/each}
-            </div>
-        </details>
-      </div>
-      <div class="tab-pane fade " id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
-        
-        
-        {#each conditions as condition, index}
-    <div class="row g-2 align-items-center mb-2">
-      <div class="col">
-        <input type="text" class="form-control" bind:value={condition.field} placeholder="Field" />
-      </div>
-      <div class="col">
-        <select class="form-select" bind:value={condition.operator}>
-          {#each Object.keys(operators) as op}
-            <option value={op}>{op}</option>
-          {/each}
-        </select>
-      </div>
-      <div class="col">
-        {#if dateFields.includes(condition.field) && condition.operator === 'in'}
-          <input type="datetime-local" class="form-control" bind:value={condition.value} />
-          <input type="datetime-local" class="form-control mt-2" bind:value={condition.valueEnd} />
-          <div class="btn-group mt-2">
-            <button class="btn btn-link" onclick={() => setDateRange(condition, 'today')}>Today</button>
-            <button class="btn btn-link" onclick={() => setDateRange(condition, 'this_week')}>This Week</button><br>
-            <button class="btn btn-link" onclick={() => setDateRange(condition, 'last_3_days')}>Last 3 Days</button>
-            <button class="btn btn-link" onclick={() => setDateRange(condition, 'last_6_hours')}>Last 6 Hours</button>
-            <button class="btn btn-link" onclick={() => setDateRange(condition, 'last_3_hours')}>Last 3 Hours</button>
-          </div>
-        {:else if dateFields.includes(condition.field)}
-          <input type="datetime-local" class="form-control" bind:value={condition.value} />
-        {:else}
-          <input type="text" class="form-control" bind:value={condition.value} placeholder="Value" />
-        {/if}
-      </div>
-      <div class="col-auto">
-        <button class="btn btn-danger" onclick={() => removeCondition(index)}>Remove</button>
-      </div>
-    </div>
-    
-  {/each}
-    <hr>    
-       
-      <button class="btn btn-success me-2" onclick={addCondition}>Add Condition</button>
-      <button class="btn btn-warning" onclick={generateQuery}>Search</button>
-      </div>
-      <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab" tabindex="0">
-        <label for="jsonInput" class="form-label">Enter JSON:</label>
-        <textarea
-          id="jsonInput"
-          class="form-control {isValidJson ? 'is-valid' : 'is-invalid'}"
-          rows="6"
-          bind:value={jsonInput}
-          onblur={validateJson}
-          placeholder="Enter JSON here..."
-        ></textarea>
-        <div class="invalid-feedback">Invalid JSON. Please check your input.</div>
-        <div class="valid-feedback">Valid JSON.</div>
-        <button class="btn btn-primary" onclick={handleSearch} disabled={!isValidJson}>
-          Search
-        </button>
-      </div>
-      <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab" tabindex="0">
-       <SearchScript {BBDB} on_return_query={run_search_script_query}  />
-      </div>
-       </div>
+   
 </div>
 
 <style>
@@ -298,4 +295,8 @@
             overflow-x: auto;
             white-space: nowrap;
         }
+
+    .ft {
+      font-size: small;
+    }
 </style>
