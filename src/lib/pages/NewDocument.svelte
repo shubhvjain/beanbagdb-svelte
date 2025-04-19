@@ -123,7 +123,7 @@
         <div class="d-flex">
           <div class="p-2 flex-fill">
             <select
-              class="form-select form-select-lg mb-3"
+              class="form-select mb-1 mt-1"
               aria-label="select schema"
               onchange={(e) => {
                 load_schema_new(e.target.value);

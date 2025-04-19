@@ -55,6 +55,8 @@
           rev_id: full_doc._rev,
         });
         console.log(update1);
+        full_doc.meta = {...full_doc.meta,...data.data.update.meta}
+        //console.log("links are being updatedddddd")
         emit_update();
         return { update: true, error: null };
       } catch (error) {

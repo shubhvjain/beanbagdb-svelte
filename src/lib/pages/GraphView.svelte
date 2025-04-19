@@ -352,23 +352,29 @@
           const schema_icon = getSVG(data.schema);
           const prop = get_node_prop(data.schema);
           return `
+          <div>
             <div style="
               display: flex;
               align-items: center;
               pointer-events: none;
               background: ${prop.background}; 
               color${prop.color};
-              border-radius: 8px;
-              padding: 8px;
+              border-radius: 1px;
+              padding: 4px;
               box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
               max-width: 250px;
               white-space: normal;
               word-wrap: break-word;
               font-size: ${prop.fontsize};
+              margin-bottom:2px;
             ">
-              <div style="width: 25px; height: 25px; margin-right: 10px;">${schema_icon}</div>
-              <span>${renderMathWithText(data.title)}</span>
+              <div style="width: 25px; height: 25px; margin-right: 5px;">${schema_icon}</div>
+              <span>
+                
+                ${renderMathWithText(data.title)}</span>
             </div>
+            <span style="font-size:xx-small"><i>${data.link}</i></span>
+          </div>
           `;
         },
       },
@@ -487,7 +493,7 @@
     return graph;
   }
 
-  async function loadNode(nodes, currentNode = null) {
+  async function loadNode(nodes, currentNodeLink = null) {
     //console.log(nodes);
     let load_nodes = await load_neighbor_subgraph(nodes);
     //console.log(load_nodes);
@@ -532,8 +538,8 @@
         console.log(error);
       }
     }
-    console.log(added);
-    console.log(to_add);
+    //console.log(added);
+    //console.log(to_add);
     if (added > 0) {
       let newNodes = cy.add(to_add);
       // console.log(newNodes);
@@ -546,11 +552,27 @@
       //cy.pan(currentPan);
 
       setTimeout(() => {
-        cy.zoom(currentZoom); // Restore zoom level
-        if (currentNode) {
-          cy.center(currentNode); // Move view to keep the clicked node in focus
+        if(currentNodeLink){
+          let targetNode = cy.nodes(`[link = "${currentNodeLink}"]`);
+          console.log(targetNode)
+          if (targetNode.nonempty()) {
+            cy.center(targetNode)
+            //cy.fit(targetNode);
+            cy.zoom(currentZoom);
+          }
         }
       }, 50);
+    }else{
+      let currentZoom = cy.zoom();
+      if(nodes.length==1){
+        let targetNode = cy.nodes(`[link = "${nodes[0]}"]`);
+        //console.log(targetNode)
+        if (targetNode.nonempty()) {
+          cy.center(targetNode)
+          //cy.fit(targetNode);
+          cy.zoom(currentZoom);
+        }
+      }
     }
   }
 
@@ -728,9 +750,9 @@
       //   console.log("delete");
       // }
     } else if (option.name == "new_document_created") {
-      loadNode([option.data.link]);
+      loadNode([option.data.link],option.data.link);
     } else if (option.name == "load_this_node") {
-      loadNode([option.data.link]);
+      loadNode([option.data.link],option.data.link);
     }
   }
 

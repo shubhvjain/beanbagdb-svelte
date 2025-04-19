@@ -180,8 +180,10 @@
     console.log(q)
     on_submit({ valid:true, json: q })
   }
+  let divid = $state("")
   onMount(async()=>{
     await load_schemas()
+    divid = Math.floor(Math.random()*1000)
   })
 
 
@@ -194,14 +196,14 @@
 
       <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
-          <button class="nav-link active ft" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Common</button>
-          <button class="nav-link ft" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">JSON Query</button>
-          <button class="nav-link ft" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Form</button>
-          <button class="nav-link ft" id="nav-disabled-tab" data-bs-toggle="tab" data-bs-target="#nav-disabled" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false" >Search scripts</button>
+          <button class="nav-link active ft" id="nav-home-tab-{divid}" data-bs-toggle="tab" data-bs-target="#nav-home-{divid}" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Common</button>
+          <button class="nav-link ft" id="nav-profile-tab-{divid}" data-bs-toggle="tab" data-bs-target="#nav-profile-{divid}" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">JSON Query</button>
+          <button class="nav-link ft" id="nav-contact-tab-{divid}" data-bs-toggle="tab" data-bs-target="#nav-contact-{divid}" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Form</button>
+          <button class="nav-link ft" id="nav-disabled-tab-{divid}" data-bs-toggle="tab" data-bs-target="#nav-disabled-{divid}" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false" >Search scripts</button>
         </div>
       </nav>
       <div class="tab-content pt-2" id="nav-tabContent">
-        <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
+        <div class="tab-pane fade show active" id="nav-home-{divid}" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
           {#each search_query as q}
             <button type="button" onclick={()=>{add_query(q.query);if(q.complete){  handleSearch() }  }} class="btn btn-sm btn-outline-secondary m-1">{q.text}</button>
           {/each}
@@ -211,7 +213,7 @@
           {/each}
             </div>
         </div>
-        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+        <div class="tab-pane fade" id="nav-profile-{divid}" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
           <label for="jsonInput" class="form-label">Enter JSON:</label>
           <textarea
             id="jsonInput"
@@ -227,7 +229,7 @@
             Search
           </button>
         </div>
-        <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
+        <div class="tab-pane fade" id="nav-contact-{divid}" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
 
           {#each conditions as condition, index}
       <div class="row g-2 align-items-center mb-2">
@@ -269,7 +271,7 @@
         <button class="btn btn-success me-2" onclick={addCondition}>Add Condition</button>
         <button class="btn btn-warning" onclick={generateQuery}>Search</button> 
         </div>
-        <div class="tab-pane fade" id="nav-disabled" role="tabpanel" aria-labelledby="nav-disabled-tab" tabindex="0">
+        <div class="tab-pane fade" id="nav-disabled-{divid}" role="tabpanel" aria-labelledby="nav-disabled-tab" tabindex="0">
           <SearchScript {BBDB} on_return_query={run_search_script_query}  />
         </div>
       </div>
