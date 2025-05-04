@@ -131,6 +131,9 @@
     },
   });
 
+  // this keeps the reference to the selected component loaded in edit mode, this is used in the edit mode, when the save button is clicked to check if the component have "make_data_ready_before_save" method that is called before saving in the Db to allow the child component to make final updates to the data
+  let selected_component_in_edit = $state()
+
   let add_status = $state({
     processing: false,
     message: "Adding",
@@ -264,6 +267,9 @@
           selected_component = system_schema[schema_name];
         } else if (custom_editors[schema_name]) {
           selected_component = custom_editors[schema_name];
+          if(selected_component["options"]["edit_mode_by_default"]){
+            open_edit()
+          }
         }
         loaded = true;
         // console.log(mode);
@@ -337,6 +343,13 @@
 
   const edit_internal = async () => {
     try {
+      if(selected_component_in_edit){
+        console.log(selected_component_in_edit)
+        if(selected_component_in_edit.make_data_ready_before_save){
+          console.log("make_data_ready_before_save exists")
+          await selected_component_in_edit.make_data_ready_before_save()
+        }
+      }
       let current_loc = await getCurrentLocationData();
       let update_obj = { data: doc_data };
       if (current_loc) {
@@ -573,6 +586,7 @@
           <selected_component.component
             bind:data={new_data}
             {schema}
+            {schema_name}
             mode="edit"
             {new_doc}
             {BBDB}
@@ -851,6 +865,7 @@
         <selected_component.component
           bind:data={doc_data}
           {schema}
+          {schema_name}
           mode="view"
           {new_doc}
           {BBDB}
@@ -867,12 +882,14 @@
         <selected_component.component
           bind:data={doc_data}
           {schema}
+          {schema_name}
           mode="edit"
           {new_doc}
           {BBDB}
           bbdb_action={edit_handle_bbdb_action}
           data_valid={edit_data_valid}
           options={selected_component.options}
+          bind:this={selected_component_in_edit}
         />
 
         {#if edit_data_valid == false}
@@ -944,8 +961,7 @@
                       class="btn btn-link"
                       onclick={() =>
                         openMapInNewWindow(full_doc.meta.location.created)}
-                      >{full_doc.meta.location.created.latitude},{full_doc.meta
-                        .location.created.longitude}</button
+                      >Map</button
                     >
                   </div>
                 </li>
@@ -958,8 +974,7 @@
                       class="btn btn-link"
                       onclick={() =>
                         openMapInNewWindow(full_doc.meta.location.updated)}
-                      >{full_doc.meta.location.updated.latitude},{full_doc.meta
-                        .location.updated.longitude}</button
+                      >Map</button
                     >
                   </div>
                 </li>
@@ -1007,8 +1022,6 @@
     
     <div class="row">
       <div class="col-lg-12">
-        <details>
-            <summary>App Data</summary>
             <AppSpace
               on_update_click={update_app_data}
               app_data={full_doc["app"]}
@@ -1018,7 +1031,6 @@
               {schema_name}
               {custom_app_editors}
             />
-          </details>
         </div>
     </div>
   {/if}

@@ -25,6 +25,10 @@
   function sortByDataName(arr) {
     return arr.sort((a, b) => a.title.localeCompare(b.title));
   }
+  // function filterInactive(arr) {
+  //   //return arr.sort((a, b) => a.title.localeCompare(b.title));
+  //   return arr.filter(item => item.active !== false);
+  // }
 
   onMount(async () => {
     // console.log(page);
