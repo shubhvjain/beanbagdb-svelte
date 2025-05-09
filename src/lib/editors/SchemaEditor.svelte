@@ -7,7 +7,7 @@
   
 import RawJsonEditor from "../utils/RawJSONEditor.svelte";
 import ObjectViewer2 from "../utils/ObjectViewer2.svelte";
-
+import PrettyJson from "../utils/PrettyJSON.svelte";
   let loaded = $state(false);
 
   const on_data_change = (d)=>{
@@ -31,7 +31,7 @@ import ObjectViewer2 from "../utils/ObjectViewer2.svelte";
 
 {#if mode=="view"}
 <div class="pt-2">
-  <ObjectViewer2 data={data} />
+  <PrettyJson data={data} />
 </div>
 
 {:else if mode =="edit"}

@@ -3,7 +3,7 @@
 
   import JsonEditor from "../utils/JSONEditor.svelte";
   import ObjectViewer2 from "../utils/ObjectViewer2.svelte";
-
+  import PrettyJson from "../utils/PrettyJSON.svelte";
   let {
     data = $bindable({}),
     schema = {},
@@ -33,7 +33,7 @@
 
 {:else if mode == "view"}
 <div class="pt-3">
-  <ObjectViewer2 data={data}/>
+  <PrettyJson data={data} />
 </div>
 
 {/if}

@@ -92,7 +92,7 @@
         } else {
           data = theEditor.getValue();
           data_valid = true;
-          console.log(data);
+          //console.log(data);
         }
 
         // Emit inputChanged event
@@ -108,7 +108,7 @@
 
   onMount(async () => {
     // Initialize the editor on load
-    console.log(1);
+    //console.log(1);
 
     config = {
       editable: true,
@@ -125,23 +125,24 @@
       pre_check: false,
 
       editor_options: {
-        theme: "spectre",
-        //theme: "html",
+        //theme: "bootstrap4",
+        theme: "html",
         titleHidden: true,
         disable_collapse: true,
-        disable_edit_json: true,
+        disable_edit_json: false,
         disable_properties: true,
         use_default_values: true,
         disable_array_delete_last_row: true,
         disable_array_reorder: true,
         array_controls_top: false,
+        expand_height:true,
         ...editor_options,
       },
     };
 
     try {
       pre_checks();
-      console.log(2);
+      //console.log(2);
       setTimeout(() => {
         load_editor();
       }, 100);

@@ -14,6 +14,7 @@
   import { emit_bbdb_event, get_schema_schema } from "$lib/bbdb_actions.js";
 
   import ObjectViewer2 from "../utils/ObjectViewer2.svelte";
+  import PrettyJson from "$lib/utils/PrettyJSON.svelte";
   import JsonEditor from "../utils/JSONEditor.svelte";
 
   let loaded = $state(false);
@@ -60,7 +61,7 @@
         </ol>
         
       {:else}
-        <ObjectViewer2 {data} />
+        <PrettyJson {data} />
       {/if}
     </div>
   {:else if mode == "edit"}
