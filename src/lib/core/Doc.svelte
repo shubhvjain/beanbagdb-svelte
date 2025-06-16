@@ -113,6 +113,7 @@
   let loaded_message = $state("Loading");
 
   let schema = $state({});
+  let schema_full = $state({});
 
   let new_data = $state({});
   let new_app_data = $state({});
@@ -197,6 +198,7 @@
           criteria: { name: schema_name },
         });
         schema = schmea_search.data.schema;
+        schema_full = schmea_search.data
         if (schmea_search.data.active == false) {
           throw new Error(
             "This schema is not active. New document cannot be created"
@@ -254,6 +256,7 @@
         let criteria = { ...doc_key, include_schema: true };
         let search = await BBDB.read(criteria);
         schema = search.schema.schema;
+        schema_full = search.schema
         full_doc = search.doc;
         // validate meta and include default fields
         let ms = await BBDB.get({ type: "editable_meta_schema" });
@@ -1034,6 +1037,14 @@
         </div>
     </div>
   {/if}
+
+  {#if schema_full["settings"]["description_html"]}
+  <details>
+    <summary>About</summary>
+    {@html schema_full["settings"]["description_html"]}
+  </details>
+  {/if}
+
 {:else}
   <!-- not loaded successfully -->
 
