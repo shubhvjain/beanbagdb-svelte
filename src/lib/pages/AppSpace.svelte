@@ -63,7 +63,7 @@
     <div class="col-lg-12">
     {#each custom_app_editors as app }
       <div class="mt-2">
-        <app.component {new_doc} bind:value={app_data[app.key]} {BBDB} {schema_name} emit_update={()=>on_edit_update(app)} />
+        <app.component {new_doc} bind:value={app_data[app.key]} {BBDB} {schema_name} emit_update={()=>on_edit_update(app)}  {full_doc} />
       <div>
         <!-- <button class="btn btn-sm btn-secondary" onclick={()=>on_edit_update(app)}>Update app settings</button>
         {#if app?.show_remove}
