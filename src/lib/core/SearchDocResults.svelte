@@ -114,6 +114,10 @@
       display = special_fields[field](display);
     }
 
+    if(typeof(display) == "object"){
+      display = JSON.stringify(display)
+    }
+
     return display;
   }
 
