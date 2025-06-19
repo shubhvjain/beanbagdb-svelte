@@ -503,7 +503,7 @@
         updates: { app: update },
         //rev_id: full_doc._rev,
       });
-      console.log(update1);
+      //console.log(update1);
       bbdb_action(
         emit_bbdb_event("show_ui_message", {
           type: "success",
@@ -1033,6 +1033,7 @@
               {new_doc}
               {schema_name}
               {custom_app_editors}
+              {full_doc}
             />
         </div>
     </div>

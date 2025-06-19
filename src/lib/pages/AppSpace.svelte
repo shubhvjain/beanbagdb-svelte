@@ -2,7 +2,7 @@
  <script>
   import { onMount } from "svelte";
 
-  let {BBDB,bbdb_action,new_doc,schema_name,custom_app_editors,app_data=$bindable({}),on_update_click} = $props()
+  let {BBDB,bbdb_action,new_doc,schema_name,custom_app_editors,app_data=$bindable({}),on_update_click,full_doc} = $props()
   let loaded = $state(false)
   onMount(()=>{
     custom_app_editors.map(itm=>{
