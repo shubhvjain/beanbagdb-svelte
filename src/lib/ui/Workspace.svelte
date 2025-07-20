@@ -3,10 +3,13 @@
   import "./workspace.css";
   import { BeanBagDB } from "beanbagdb";
   import { onMount } from "svelte";
-  import { get_new_DB,sync_db_once} from "$lib/db/beanbagdbweb.js"; 
-  import {get_default_nav_items,get_database_details} from "../bbdb_actions.js" 
-  import {app as general_app} from "$lib/db/util_app.js"
-  import {graph_query} from "$lib/db/graph.js"
+  import { get_new_DB, sync_db_once } from "$lib/db/beanbagdbweb.js";
+  import {
+    get_default_nav_items,
+    get_database_details,
+  } from "../bbdb_actions.js";
+  import { app as general_app } from "$lib/db/util_app.js";
+  import { graph_query } from "$lib/db/graph.js";
 
   // pages to display
   import WorkSpaceErrorPage from "./WorkSpaceErrorPage.svelte";
@@ -16,22 +19,32 @@
   import Document from "$lib/pages/Document.svelte";
   import GraphView from "$lib/pages/GraphView.svelte";
   // import ImportData from "$lib/pages/ImportData.svelte";
-  let { db , PouchDB, uiComponents, settings ={}, onWorkspaceLoad  , custom_editors, custom_app_editors , additional_nav_items=[],setting_schemas={}} = $props();
+  let {
+    db,
+    PouchDB,
+    uiComponents,
+    settings = {},
+    onWorkspaceLoad,
+    custom_editors,
+    custom_app_editors,
+    additional_nav_items = [],
+    setting_schemas = {},
+  } = $props();
   // export let db;
 
   let BBDB = $state(null);
   let Loaded = $state(false);
   let Error = $state();
-
+  let latest_ver_installed = $state(false);
   let customUIComponents = $state({});
-  const registerComponent = (key,data)=>{
-    if(customUIComponents[key]){
-      console.log("Component already registered")
-      return
+  const registerComponent = (key, data) => {
+    if (customUIComponents[key]) {
+      console.log("Component already registered");
+      return;
     }
-    customUIComponents[key]= data
-    console.log("Component registered")
-  }
+    customUIComponents[key] = data;
+    console.log("Component registered");
+  };
 
   let workspace = $state({
     theme: "dark",
@@ -42,66 +55,98 @@
 
   async function make_db_ready() {
     //console.log(db);
-    await BBDB.ready();
-    console.log("Ready")
-    if(general_app.schemas.length>0){
-      await BBDB.initialize_app(general_app);
-    }
-    await BBDB.load_scripts("util",general_app.scripts)
+    // let check_installed_required = await BBDB.check_ready()
+    // if(!check_installed_required){
+
+    //   try {
+    //     let new_db = get_database_details(db.name)
+    //     let result = await sync_db_once(PouchDB,new_db);
+    //     console.log(result)
+    //     console.log("Synced")
+    //   } catch (error) {
+    //       console.log(error)
+    //   }
+    // }
+    // console.log("Making ready")
+
     try {
-        await BBDB.apps.util.install_default_records(general_app.default_records)  
+      await BBDB.ready(false);
+      latest_ver_installed = true;
     } catch (error) {
-        console.log(error)
+      console.log("error in initializing the database.");
+      latest_ver_installed = false;
     }
-    setting_schemas = {...setting_schemas,...general_app.setting_schema}
-    //console.log(setting_schemas)
-    //await BBDB.load_scripts("txtcmd", text_command);
-    await BBDB.load_scripts("graph", graph_query);
-    console.log("Scripts loaded");
-    //console.log(BBDB.apps)
-    // load workspace settings
+    if (latest_ver_installed) {
+      console.log("Ready");
+      if (general_app.schemas.length > 0) {
+        await BBDB.initialize_app(general_app);
+      }
+      await BBDB.load_scripts("util", general_app.scripts);
+      try {
+        await BBDB.apps.util.install_default_records(
+          general_app.default_records
+        );
+      } catch (error) {
+        console.log(error);
+      }
+      setting_schemas = { ...setting_schemas, ...general_app.setting_schema };
+      //console.log(setting_schemas)
+      //await BBDB.load_scripts("txtcmd", text_command);
+      await BBDB.load_scripts("graph", graph_query);
+      console.log("Scripts loaded");
+    }
+  }
+
+  async function update_to_latest_version1() {
+    try {
+      await BBDB.ready();
+      latest_ver_installed = true;
+    } catch (error) {
+      console.log(error);
+      latest_ver_installed = false;
+      Loaded = false;
+      Error = error.message;
+    }
   }
 
   let ui_setting_name = "ui_workspace";
 
-
   async function sync_pouchdb() {
     try {
       console.log(db);
-      let new_db = get_database_details(db.name)
-      let result = await sync_db_once(PouchDB,new_db);
+      let new_db = get_database_details(db.name);
+      let result = await sync_db_once(PouchDB, new_db);
       console.log(result);
-      addMessage("Synced with remote","success")
+      addMessage("Synced with remote", "success");
     } catch (error) {
-      addMessage(error.message,"error")
+      addMessage(error.message, "error");
       console.log(error);
     }
   }
 
-  let nav_items = $state({outer:[],inner:[]})
+  let nav_items = $state({ outer: [], inner: [] });
   onMount(async () => {
-
-    if(!PouchDB){
+    if (!PouchDB) {
       Loaded = true;
       Error = "Error : No PouchDB provided";
-      console.log(Error)
-      return
+      console.log(Error);
+      return;
     }
-    
+
     if (!BBDB) {
       if (!db) {
         Loaded = true;
         Error = "Error : No details about the database were provided";
-        return
+        return;
       }
       try {
-        BBDB = get_new_DB(PouchDB,db);
+        BBDB = get_new_DB(PouchDB, db);
         Loaded = true;
       } catch (error) {
         console.log(error);
         Error = "Error: " + error.message;
         Loaded = true;
-        return
+        return;
       }
     }
 
@@ -109,7 +154,7 @@
       Loaded = true;
       Error = "Invalid Database connection";
     }
-  
+
     // destroy_db("sample")
     if (uiComponents) {
       Object.keys(uiComponents).forEach((key) => {
@@ -117,8 +162,8 @@
       });
     }
     nav_items = get_default_nav_items();
-   
-    if(additional_nav_items){
+
+    if (additional_nav_items) {
       nav_items.outer = [...nav_items.outer, ...additional_nav_items];
     }
     //console.log(nav_items)
@@ -139,6 +184,26 @@
     } else {
       try {
         await make_db_ready();
+        if (latest_ver_installed) {
+          if (onWorkspaceLoad) {
+            try {
+              await onWorkspaceLoad(BBDB);
+            } catch (error) {
+              console.log("error in onWorkSpaceLoad");
+              console.log(error);
+            }
+          }
+          if (settings.initial_pages) {
+            settings.initial_pages.forEach((itm) => {
+              runTextCommand(itm);
+            });
+          } else {
+            let test = ["home"];
+            test.forEach((itm) => {
+              runTextCommand(itm);
+            });
+          }
+        }
       } catch (error1) {
         console.log(error1);
       }
@@ -150,30 +215,12 @@
       // }
     }
 
-    if (onWorkspaceLoad) {
-      try {
-        await onWorkspaceLoad(BBDB);  
-      } catch (error) {
-        console.log("error in onWorkSpaceLoad")
-        console.log(error)
-      }
-      
-    }
-
-    if(settings.initial_pages){
-      settings.initial_pages.forEach((itm) => {
-        runTextCommand(itm);
-      });
-    }else{
-      let test = ["home"];
-      test.forEach((itm) => {runTextCommand(itm)});
-    }
     document.title = `${db.name} DB`;
   });
 
-  function get_final_size(default_size="medium"){
-    let is_small_screen = window.innerWidth < 800
-    return is_small_screen?"full":default_size
+  function get_final_size(default_size = "medium") {
+    let is_small_screen = window.innerWidth < 800;
+    return is_small_screen ? "full" : default_size;
   }
 
   // Function to toggle the theme
@@ -186,11 +233,10 @@
     if (command.valid) {
       let process_commands = {
         page: (cmd) => {
-
-          let duplicate_allowed = ["search"]  
+          let duplicate_allowed = ["search"];
           let search = null;
 
-          if(!duplicate_allowed.includes(cmd.criteria.type)){
+          if (!duplicate_allowed.includes(cmd.criteria.type)) {
             search = pages.find(
               (item) =>
                 item.name == cmd.name &&
@@ -202,7 +248,7 @@
           if (!search) {
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
-              active:true,
+              active: true,
               ...cmd,
               id: new_id,
               size: get_final_size("medium"),
@@ -226,7 +272,7 @@
           if (!search) {
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
-              active:true,
+              active: true,
               ...cmd,
               id: new_id,
               size: get_final_size("medium"),
@@ -242,29 +288,26 @@
         new: (cmd) => {
           let new_id = Math.round(Math.random() * 10000);
           pages.push({
-            active:true,
-              ...cmd,
-              id: new_id,
-              size:get_final_size("medium"),
-            });
-            setTimeout(() => {
-              focusOnItem(new_id);
-            }, 10);
+            active: true,
+            ...cmd,
+            id: new_id,
+            size: get_final_size("medium"),
+          });
+          setTimeout(() => {
+            focusOnItem(new_id);
+          }, 10);
         },
         home: (cmd) => {
-          let search = pages.find(
-            (item) =>
-              item.name == cmd.name 
-          );
+          let search = pages.find((item) => item.name == cmd.name);
 
           if (!search) {
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
-              active:true,
+              active: true,
               ...cmd,
               id: new_id,
               size: get_final_size("small"),
-              settings : settings
+              settings: settings,
             });
             setTimeout(() => {
               focusOnItem(new_id);
@@ -274,7 +317,7 @@
             focusOnItem(search.id);
           }
         },
-        ui:(cmd)=>{
+        ui: (cmd) => {
           let search = pages.find(
             (item) =>
               item.name == cmd.name &&
@@ -282,46 +325,49 @@
               item.criteria.page_key == cmd.criteria.page_key
           );
           //console.log(search)
-          if(search){
+          if (search) {
             focusOnItem(search.id);
             return;
           }
-          let system_ui = {graph:{component:GraphView},export:{component:ExportData}}
-          console.log(cmd)
-          if(customUIComponents[cmd.criteria.page_key]){
+          let system_ui = {
+            graph: { component: GraphView },
+            export: { component: ExportData },
+          };
+          console.log(cmd);
+          if (customUIComponents[cmd.criteria.page_key]) {
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
-              active:true,
+              active: true,
               ...cmd,
               id: new_id,
               size: get_final_size("medium"),
               component: customUIComponents[cmd.criteria.page_key].component,
-              component_data: cmd.criteria.params
+              component_data: cmd.criteria.params,
             });
             setTimeout(() => {
               focusOnItem(new_id);
             }, 10);
-          }else if(system_ui[cmd.criteria.page_key]){
+          } else if (system_ui[cmd.criteria.page_key]) {
             let new_id = Math.round(Math.random() * 10000);
             pages.push({
-              active:true,
+              active: true,
               ...cmd,
               id: new_id,
               size: "large",
               component: system_ui[cmd.criteria.page_key].component,
-              component_data: cmd.criteria.params
+              component_data: cmd.criteria.params,
             });
             setTimeout(() => {
               focusOnItem(new_id);
             }, 10);
-          }else{
-            console.log("UI component not found")
+          } else {
+            console.log("UI component not found");
             pushErrorPage("command404", `${text}`);
           }
-        }
+        },
       };
-      console.log(command)
-      process_commands[command.name](command)
+      console.log(command);
+      process_commands[command.name](command);
     } else {
       console.log("Error in command. Show it ");
       pushErrorPage("command404", `${text}`);
@@ -331,7 +377,7 @@
   function pushErrorPage(code, message) {
     let errorPage = {
       id: Math.round(Math.random() * 10000),
-      active:true,
+      active: true,
       size: "small",
       name: "error",
       criteria: {},
@@ -355,15 +401,15 @@
     //console.log(pageId,pages)
     // pages = pages.filter((page) => page.id !== pageId);
 
-    let page = pages.findIndex(itm=>itm.id==pageId)
+    let page = pages.findIndex((itm) => itm.id == pageId);
     //console.log(page)
-    if (page>-1){
-        pages[page]= {active:false} 
+    if (page > -1) {
+      pages[page] = { active: false };
     }
 
-    let inactive_page = pages.filter(x=>x.active==false)
-    if(inactive_page.length==pages.length){
-      pages=[]
+    let inactive_page = pages.filter((x) => x.active == false);
+    if (inactive_page.length == pages.length) {
+      pages = [];
       //console.log("iniit")
     }
   }
@@ -375,21 +421,22 @@
     //page.size = newSize; // Update the size property
   }
 
-
-  import { writable } from 'svelte/store';
+  import { writable } from "svelte/store";
   import ExportData from "$lib/pages/ExportData.svelte";
 
   // Store to manage messages
-   const messageStore = writable([]);
+  const messageStore = writable([]);
 
   // Function to add a message
-   function addMessage(text, type = "info", timeout = 3000) {
+  function addMessage(text, type = "info", timeout = 3000) {
     const id = Date.now();
     messageStore.update((messages) => [...messages, { id, text, type }]);
 
     // Remove message after timeout
     setTimeout(() => {
-      messageStore.update((messages) => messages.filter((msg) => msg.id !== id));
+      messageStore.update((messages) =>
+        messages.filter((msg) => msg.id !== id)
+      );
     }, timeout);
   }
 
@@ -398,161 +445,249 @@
     if (action.name == "textcmd") {
       runTextCommand(action.data.text);
     }
-    if(action.name=="show_ui_message"){
-      addMessage(action.data.message,action.data.type)
+    if (action.name == "show_ui_message") {
+      addMessage(action.data.message, action.data.type);
     }
   }
+
   const sizes = ["small", "medium", "large", "full"];
 </script>
 
 {#if !Error & Loaded}
-  <div class="workspace container-fluid" data-bs-theme={workspace.theme}>
-    <nav class="navbar bg-body-tertiary">
-      <div class="container-fluid">
-        <h4 class="navbar-brand pl-4 ml-2 mb-0">
-          <code>{db.name}</code> DB
-        </h4>
-        <div class="d-flex" role="search">
-          <div class="message-container">
-            {#each $messageStore as message}
-              <div class="message {message.type}">
-                {message.text}
-              </div>
+  {#if latest_ver_installed}
+    <div class="workspace container-fluid" data-bs-theme={workspace.theme}>
+      <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+          <h4 class="navbar-brand pl-4 ml-2 mb-0">
+            <code>{db.name}</code> DB
+          </h4>
+          <div class="d-flex" role="search">
+            <div class="message-container">
+              {#each $messageStore as message}
+                <div class="message {message.type}">
+                  {message.text}
+                </div>
+              {/each}
+            </div>
+
+            <input
+              class="form-control form-control-sm"
+              bind:value={searchTerm}
+              placeholder="Text command"
+              aria-label="Search term"
+              type="text"
+              list="textcommands"
+            />
+
+            <datalist id="textcommands">
+              <!-- <option value="search/filter?"> -->
+              <option value="new"> </option><option value="home">
+              </option><option value="open/link/"> </option><option
+                value="open/id/"
+              >
+              </option><option value="ui/"> </option></datalist
+            >
+
+            <button
+              class="btn btn-sm btn-dark"
+              type="button"
+              onclick={() => runTextCommand(searchTerm)}
+              aria-label="Run text command.Type help for more"
+              title="Run text command.Type help for more"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-caret-right-fill"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"
+                />
+              </svg>
+            </button>
+            <!-- <button
+          onclick={toggleTheme}
+          type="button"
+          class="btn btn-dark btn-sm"
+          aria-label="Change theme"
+          title="toggle theme"
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            class="bi bi-palette-fill"
+            viewBox="0 0 16 16"
+          >
+            <path
+              d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07M8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3M5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"
+            />
+          </svg></button> -->
+
+            <button
+              onclick={sync_pouchdb}
+              type="button"
+              class="btn btn-dark b"
+              aria-label="Sync data"
+              title="Sync data"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-arrow-repeat"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"
+                />
+                <path
+                  fill-rule="evenodd"
+                  d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"
+                />
+              </svg>
+            </button>
+
+            {#each nav_items.outer as itm}
+              <button
+                class="btn btn-sm btn-dark"
+                type="button"
+                onclick={() => {
+                  runTextCommand(itm.command);
+                }}
+                aria-label="Run text command.Type help for more"
+                title="Run text command.Type help for more"
+              >
+                {@html itm.icon}
+              </button>
             {/each}
           </div>
-       
-          <input
-            class="form-control form-control-sm"
-            bind:value={searchTerm}
-            placeholder="Text command"
-            aria-label="Search term"
-            type="text"
-            list="textcommands"
-          />
-          
-          <datalist id="textcommands">
-            <!-- <option value="search/filter?"> -->
-            <option value="new">
-            <option value="home">
-            <option value="open/link/">
-            <option value="open/id/">
-            <option value="ui/">
-          </datalist>
-
-          <button
-            class="btn btn-sm btn-dark"
-            type="button"
-            onclick={() => runTextCommand(searchTerm)}
-            aria-label="Run text command.Type help for more"
-            title="Run text command.Type help for more"
-          >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
-            <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
-          </svg>
-          </button>
-          <!-- <button
-            onclick={toggleTheme}
-            type="button"
-            class="btn btn-dark btn-sm"
-            aria-label="Change theme"
-            title="toggle theme"
-            ><svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-palette-fill"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M12.433 10.07C14.133 10.585 16 11.15 16 8a8 8 0 1 0-8 8c1.996 0 1.826-1.504 1.649-3.08-.124-1.101-.252-2.237.351-2.92.465-.527 1.42-.237 2.433.07M8 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m4.5 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3M5 6.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"
-              />
-            </svg></button> -->
-
-          <button
-            onclick={sync_pouchdb}
-            type="button"
-            class="btn  btn-dark b"
-            aria-label="Sync data"
-            title="Sync data"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-arrow-repeat"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"
-              />
-              <path
-                fill-rule="evenodd"
-                d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"
-              />
-            </svg>
-          </button>
-
-          {#each  nav_items.outer as itm}
-          <button
-            class="btn btn-sm btn-dark"
-            type="button"
-            onclick={()=>{runTextCommand(itm.command)}}
-            aria-label="Run text command.Type help for more"
-            title="Run text command.Type help for more">
-          {@html itm.icon} 
-          </button>
-          {/each}
         </div>
-      </div>
-    </nav>
-    <!-- Pages Container -->
-    <div class="pages-container">
-     
-      {#each pages as page}
-        {#if page.active}
-        <div class="page {page.size}" id={page.id}>
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="page-title"></span>
-            <div class="d-flex align-items-center">
-              <button class="btn btn-sm text-secondary" aria-label="change page size" onclick={()=>changePageSize(page)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrows" viewBox="0 0 16 16">
-                  <path d="M1.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L2.707 7.5h10.586l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L13.293 8.5H2.707l1.147 1.146a.5.5 0 0 1-.708.708z"/>
-                </svg>
-              </button>
-             
+      </nav>
+      <!-- Pages Container -->
+      <div class="pages-container">
+        {#each pages as page}
+          {#if page.active}
+            <div class="page {page.size}" id={page.id}>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="page-title"></span>
+                <div class="d-flex align-items-center">
+                  <button
+                    class="btn btn-sm text-secondary"
+                    aria-label="change page size"
+                    onclick={() => changePageSize(page)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      class="bi bi-arrows"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M1.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L2.707 7.5h10.586l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L13.293 8.5H2.707l1.147 1.146a.5.5 0 0 1-.708.708z"
+                      />
+                    </svg>
+                  </button>
 
-              <button
-                class="btn btn-sm text-danger"
-                onclick={() => closePage(page.id)}
-                aria-label="Close page"
-              >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-              </svg>
-              </button>
+                  <button
+                    class="btn btn-sm text-danger"
+                    onclick={() => closePage(page.id)}
+                    aria-label="Close page"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      class="bi bi-x"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {#if page.name == "ui"}
+                <page.component
+                  this={page.component}
+                  {BBDB}
+                  {page}
+                  data={page.component_data}
+                  {custom_app_editors}
+                  {custom_editors}
+                  page_bbdb_action={handleBBDBActions}
+                />
+              {:else if page.name == "page"}
+                <DbPage {BBDB} {page} page_bbdb_action={handleBBDBActions} />
+              {:else if page.name == "open"}
+                <Document
+                  {BBDB}
+                  {page}
+                  page_bbdb_action={handleBBDBActions}
+                  {custom_app_editors}
+                  {custom_editors}
+                  {setting_schemas}
+                />
+              {:else if page.name == "new"}
+                <NewDocument
+                  {BBDB}
+                  {page}
+                  page_bbdb_action={handleBBDBActions}
+                  {custom_app_editors}
+                  {custom_editors}
+                  {setting_schemas}
+                />
+              {:else if page.name == "error"}
+                <WorkSpaceErrorPage details={page} />
+              {:else if page.name == "home"}
+                <WorkSpaceHome
+                  {BBDB}
+                  {page}
+                  page_bbdb_action={handleBBDBActions}
+                />
+              {/if}
             </div>
-          </div>
-
-          {#if page.name=="ui"}
-            <page.component this={page.component} {BBDB} {page} data={page.component_data} {custom_app_editors} {custom_editors} page_bbdb_action={handleBBDBActions} />
-          {:else if page.name == "page"}
-            <DbPage {BBDB} {page} page_bbdb_action={handleBBDBActions} />
-          {:else if page.name == "open"}
-            <Document {BBDB} {page} page_bbdb_action={handleBBDBActions} {custom_app_editors} {custom_editors} {setting_schemas} />
-          {:else if page.name == "new"}
-            <NewDocument {BBDB} {page} page_bbdb_action={handleBBDBActions} {custom_app_editors} {custom_editors} {setting_schemas} />
-          {:else if page.name == "error"}
-            <WorkSpaceErrorPage details={page} />
-          {:else if page.name == "home"}
-            <WorkSpaceHome {BBDB} {page} page_bbdb_action={handleBBDBActions} />
           {/if}
-        </div>
-        {/if}
-      {/each}
+        {/each}
+      </div>
     </div>
-  </div>
+  {:else}
+    <div class="alert alert-warning">
+      You database is not updated to the latest version. To use the database, it
+      must have the latest version.
+      <ol>
+        <li>
+          If this is a new database, install it <button
+            class="btn btn-link"
+            onclick={update_to_latest_version1}
+            >Install DB (refresh afterwards)
+          </button>
+        </li>
+
+        <li>
+          Sync to remote database first and check again<button
+            class="btn btn-link"  onclick={sync_pouchdb}>Sync (refresh afterwards)</button
+          >
+        </li>
+        <li>
+          Update to the latest version <button
+            class="btn btn-link"
+            onclick={update_to_latest_version1}
+            >Update
+          </button>
+        </li>
+      </ol>
+    </div>
+  {/if}
 {:else}
   <div class="alert alert-primary">
     {Error || "Loading"}
