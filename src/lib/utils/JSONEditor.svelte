@@ -8,16 +8,17 @@
     editor_options = {},
   } = $props();
 
-  // const dispatch = createEventDispatcher(); // Create event dispatcher
-
-  let theEditor = $state(null); // this is where the json editor is loaded
-
+  let theEditor = $state(null);
   let config = $state({});
+  let isInternalChange = $state(false); // Flag to prevent circular updates
+
   print = (obj) => {
     console.log(obj);
   };
+
   const _get_editor_name = () =>
     "editor-" + (Math.floor(Math.random() * 9000) + 1000);
+  
   const _set_error = (error, type = "alert-danger") => {
     config.error_class = type;
     config.show_error = error ? true : false;
@@ -28,15 +29,8 @@
     config.id = _get_editor_name();
     config.schema_exists = Object.keys(schema).length > 0;
     config.data_exists = Object.keys(data).length > 0;
-    const default_options_values = {
-      editable: true,
-    };
-    // Object.keys(default_options_values).map((key) => {
-    //   config[key] = options?.key || default_options_values[key];
-    // });
-    // console.log(config);
+    
     const must_all_be_true = [
-      // { condition: config.data_exists === true, message: "Data is missing" },
       {
         condition: config.schema_exists === true,
         message: "Schema is missing",
@@ -46,7 +40,6 @@
     let errors = must_all_be_true
       .filter((item) => !item.condition)
       .map((itm) => itm.message);
-    //print(errors);
 
     let all_good = errors.length === 0;
     if (!all_good) {
@@ -54,18 +47,12 @@
       throw new Error(config.error);
     }
     config.pre_checks = all_good;
-    //print(config)
   };
 
   const load_editor = () => {
-    //const { JSONEditor } = await import("@json-editor/json-editor");
     const element = document.getElementById(config.id);
-    // console.log(element)
     if (element) {
       const editorOptions = {
-        //show_errors:"change",
-        //show_opt_in:true,
-        //object_layout:"table",
         ...config.editor_options,
         schema: schema,
       };
@@ -80,36 +67,41 @@
         theEditor.disable();
       }
 
-      // theEditor.enable();
-
       theEditor.on("change", () => {
-        // Do something
         const errors = theEditor.validate();
         if (errors.length) {
           console.log(errors);
-          // display Error(`Validation Errors \n${valErrMag(errors)}`)
           data_valid = false;
         } else {
+          isInternalChange = true; // Set flag before updating
           data = theEditor.getValue();
           data_valid = true;
-          //console.log(data);
         }
-
-        // Emit inputChanged event
-        // dispatch('inputChanged', {
-        //   valid: errors.length === 0, // Check if there are validation errors
-        //   data: data // Return the current data
-        // });
       });
 
       config.editor_loaded = true;
     }, 100);
   };
 
-  onMount(async () => {
-    // Initialize the editor on load
-    //console.log(1);
+  // Watch for external changes to data prop
+  $effect(() => {
+    if (theEditor && config.editor_loaded && !isInternalChange) {
+      // Only update if the change came from outside the editor
+      const currentEditorValue = theEditor.getValue();
+      
+      // Check if data actually changed to avoid unnecessary updates
+      if (JSON.stringify(currentEditorValue) !== JSON.stringify(data)) {
+        theEditor.setValue(data);
+      }
+    }
+    
+    // Reset the flag after the effect runs
+    if (isInternalChange) {
+      isInternalChange = false;
+    }
+  });
 
+  onMount(async () => {
     config = {
       editable: true,
       data_exists: false,
@@ -125,7 +117,6 @@
       pre_check: false,
 
       editor_options: {
-        //theme: "bootstrap4",
         theme: "html",
         titleHidden: true,
         disable_collapse: true,
@@ -135,14 +126,13 @@
         disable_array_delete_last_row: true,
         disable_array_reorder: true,
         array_controls_top: false,
-        expand_height:true,
+        expand_height: true,
         ...editor_options,
       },
     };
 
     try {
       pre_checks();
-      //console.log(2);
       setTimeout(() => {
         load_editor();
       }, 100);

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-
+  import { marked } from 'marked';
   import {
     copy_to_clipboard,
     format_timestamp,
@@ -531,11 +531,87 @@
       console.log(error);
     }
   };
+
+  let isConverting = $state(false);
+
+// Get title from schema
+const getTitle = (key) => {
+  return schema?.properties?.[key]?.title || key;
+};
+
+// Convert data object to markdown format
+function dataToMarkdown(obj, level = 1) {
+  let markdown = '';
+  
+  for (const [key, value] of Object.entries(obj)) {
+    const title = getTitle(key);
+    const heading = '#'.repeat(Math.min(level + 2, 6));
+    
+    if (Array.isArray(value)) {
+      markdown += `${heading} ${title}\n\n`;
+      if (value.length === 0) {
+        markdown += `*Empty*\n\n`;
+      } else {
+        value.forEach(item => {
+          if (typeof item === 'object') {
+            markdown += `- ${JSON.stringify(item)}\n`;
+          } else {
+            markdown += `- ${item}\n`;
+          }
+        });
+        markdown += `\n`;
+      }
+    } else if (typeof value === 'object' && value !== null) {
+      markdown += `${heading} ${title}\n\n`;
+      markdown += dataToMarkdown(value, level + 1);
+    } else {
+      markdown += `**${title}:** ${value}\n\n`;
+    }
+  }
+  
+  return markdown;
+}
+  
+  async function copyAsMarkdown() {
+    isConverting = true;
+    
+    try {
+      let markdownText = '';
+      
+      // Add header from fulldoc.meta.title
+      if (full_doc?.meta?.title) {
+        markdownText += `# ${full_doc.meta.title}\n\n`;
+      }
+      
+      if (full_doc?.meta?.link) {
+        markdownText += `**Link:** ${full_doc.meta.link}\n\n`;
+      }
+      
+      if (full_doc?._id) {
+        markdownText += `**ID:** ${full_doc._id}\n\n`;
+      }
+      
+      if (full_doc) {
+        markdownText += `---\n\n`;
+      }
+      
+      // Add data content
+      markdownText += dataToMarkdown(full_doc.data);
+      
+      await navigator.clipboard.writeText(markdownText);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      alert('Failed to copy to clipboard');
+    } finally {
+      isConverting = false;
+    }
+  }
 </script>
 
 {#if loaded}
   {#if new_doc == true}
     {#if selected_component.allow.new}
+   
       {#if selected_component.options.new_show_title_input}
         <div class="input-group">
           <input
@@ -584,6 +660,28 @@
 
         <!-- <input class="form-control" bind:value={new_data_meta.title} type="text" placeholder="New {schema.title||"Document"} title" aria-label=".form-control-lg example">       -->
       {/if}
+      <details>
+        <summary>Metadata</summary>
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Link</span>
+            <input
+              type="text"
+              bind:value={new_data_meta.link}
+              class="form-control"
+              placeholder="Link"
+              aria-label="Link"
+              aria-describedby="basic-addon1"
+            />
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon2">Tags</span>
+            <TagsEditor
+            bbdb_action={add_update_meta_action_handler}
+            tags={new_data_meta.tags}
+            link="new_not_available"
+          />
+          </div>
+      </details>
       {#if show_add_editor}
         <div class="pt-2">
           <selected_component.component
@@ -619,28 +717,7 @@
         {/if}
       {/if}
 
-      <details>
-        <summary>Meta</summary>
-          <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Link</span>
-            <input
-              type="text"
-              bind:value={new_data_meta.link}
-              class="form-control"
-              placeholder="Link"
-              aria-label="Link"
-              aria-describedby="basic-addon1"
-            />
-          </div>
-          <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon2">Tags</span>
-            <TagsEditor
-            bbdb_action={add_update_meta_action_handler}
-            tags={new_data_meta.tags}
-            link="new_not_available"
-          />
-          </div>
-      </details>
+     
     {:else}
       New insertion of {schema_name} is not supported using this editor
     {/if}
@@ -717,8 +794,7 @@
               placeholder="Enter title"
             /> -->
 
-              <button class="btn btn-primary btn-sm" onclick={saveTitle}
-                >Save</button
+              <button class="btn btn-primary btn-sm" onclick={saveTitle}>Save</button
               >
             {:else}
               <!-- Display Mode -->
@@ -756,33 +832,7 @@
             {/if}
           </div>
           <div class="p-2">
-            <button
-              title="Click to copy link to clipboard"
-              class="btn btn-link btn-sm"
-              aria-label="Copy link to clipboard"
-              onclick={() => {
-                copy_to_clipboard(full_doc.meta.link);
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                class="bi bi-clipboard"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"
-                />
-                <path
-                  d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"
-                />
-              </svg>
-
-              <!-- {full_doc.meta.link} -->
-            </button>
-
+           
             {#if selected_component.allow.edit}
               {#if mode == "view"}
                 <button
@@ -863,6 +913,168 @@
       </div>
     </div>
 
+      <!-- meta data editor for all docs  -->
+      <div class="row">
+        <div class="col-lg-12">
+          <details>
+            <summary>Metadata</summary>
+
+            <div class="fw-lighter">
+              <div class="list-group">
+                <li class="list-group-item list-group-item-light">
+                  <div class="p-1">
+                    <button
+                      title="Download file as json"
+                      class="btn btn-dark btn-sm"
+                      onclick={() => {
+                        download_data(
+                          { doc: full_doc, schema },
+                          `${full_doc.meta.link}.json`
+                        );
+                      }}
+                      aria-label="JSON"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        fill="currentColor"
+                        class="bi bi-download"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+                        />
+                        <path
+                          d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+                        />
+                      </svg> Download doc (JSON)
+                    </button>
+  
+                    <button 
+                    class="btn btn-sm btn-dark"
+                    onclick={copyAsMarkdown}
+                    disabled={isConverting}
+                  >
+                    {#if isConverting}
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                      Converting...
+                    {:else}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                      </svg>
+                      Copy as Markdown
+                    {/if}
+                  </button>
+
+
+                  <button
+                  title="Click to copy link to clipboard"
+                  class="btn btn-dark btn-sm"
+                  aria-label="Copy link to clipboard"
+                  onclick={() => {
+                    copy_to_clipboard(full_doc.meta.link);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    class="bi bi-clipboard"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"
+                    />
+                    <path
+                      d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"
+                    />
+                  </svg> Copy link
+                </button>
+
+  
+                    <!-- {#if !full_doc.schema.startsWith("system_") } -->
+                    <ConfimButton title="Delete doc" onclick={delete_doc} />
+                    <!-- {/if} -->
+                  </div>
+                </li>
+  
+                <li class="list-group-item list-group-item-light">
+                  <div class="p-1"><i>Created</i></div>
+                  <div class="p-1">
+                    {format_timestamp(full_doc.meta.created_on)}
+                  </div>
+                </li>
+  
+                {#if full_doc.meta.location.created}
+                  <li class="list-group-item list-group-item-light">
+                    <div class="p-1"><i>Created at </i></div>
+                    <div class="p-1">
+                      <button
+                        class="btn btn-link"
+                        onclick={() =>
+                          openMapInNewWindow(full_doc.meta.location.created)}
+                        >Map</button
+                      >
+                    </div>
+                  </li>
+                {/if}
+                {#if full_doc.meta.location.updated}
+                  <li class="list-group-item list-group-item-light">
+                    <div class="p-1"><i>Updated at </i></div>
+                    <div class="p-1">
+                      <button
+                        class="btn btn-link"
+                        onclick={() =>
+                          openMapInNewWindow(full_doc.meta.location.updated)}
+                        >Map</button
+                      >
+                    </div>
+                  </li>
+                {/if}
+  
+                <!-- {#if full_doc.meta?.location && full_doc.meta?.location?.created?.latitude}
+            {/if}
+            {#if full_doc.meta?.location && full_doc.meta?.location?.updated.latitude}
+            {/if} -->
+  
+                <li class="list-group-item list-group-item-light">
+                  <div class="p-1"><i>Tags</i></div>
+                  <div class="p-1">
+                    <TagsEditor
+                      bbdb_action={edit_update_meta_action_handler}
+                      link={full_doc.meta.link}
+                      tags={full_doc.meta.tags}
+                    />
+                  </div>
+                </li>
+                {#if full_doc.meta.updated_on}
+                  <li class="list-group-item list-group-item-light">
+                    <div class="p-2"><i>Updated</i></div>
+                    <div class="p-2">
+                      {format_timestamp(full_doc.meta.updated_on)}
+                    </div>
+                  </li>
+                {/if}
+                <li class="list-group-item list-group-item-light">
+                  <div class="p-1"><i>Link</i></div>
+                  <LinkEditor
+                    bbdb_action={edit_update_meta_action_handler}
+                    bind:link={full_doc.meta.link}
+                  />
+                </li>
+                <li class="list-group-item list-group-item-light">
+                  <div class="p-1"><i>ID</i></div>
+                  <div class="p-1">{full_doc._id}</div>
+                </li>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+
     {#if mode == "view"}
       {#if selected_component.allow.view}
         <selected_component.component
@@ -906,122 +1118,7 @@
       {/if}
     {/if}
 
-    <!-- meta data editor for all docs  -->
-    <div class="row">
-      <div class="col-lg-12">
-        <details>
-          <summary>Metadata</summary>
-
-          <div class=" fw-lighter p-2">
-            <div class="list-group">
-              <li class="list-group-item list-group-item-light">
-                <div class="p-1">
-                  <button
-                    title="Download file as json"
-                    class="btn btn-link btn-sm"
-                    onclick={() => {
-                      download_data(
-                        { doc: full_doc, schema },
-                        `${full_doc.meta.link}.json`
-                      );
-                    }}
-                    aria-label="JSON"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      fill="currentColor"
-                      class="bi bi-download"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
-                      />
-                      <path
-                        d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
-                      />
-                    </svg> Download doc (JSON)
-                  </button>
-                  <!-- {#if !full_doc.schema.startsWith("system_") } -->
-                  <ConfimButton title="Delete doc" onclick={delete_doc} />
-                  <!-- {/if} -->
-                </div>
-              </li>
-
-              <li class="list-group-item list-group-item-light">
-                <div class="p-1"><i>Created</i></div>
-                <div class="p-1">
-                  {format_timestamp(full_doc.meta.created_on)}
-                </div>
-              </li>
-
-              {#if full_doc.meta.location.created}
-                <li class="list-group-item list-group-item-light">
-                  <div class="p-1"><i>Created at </i></div>
-                  <div class="p-1">
-                    <button
-                      class="btn btn-link"
-                      onclick={() =>
-                        openMapInNewWindow(full_doc.meta.location.created)}
-                      >Map</button
-                    >
-                  </div>
-                </li>
-              {/if}
-              {#if full_doc.meta.location.updated}
-                <li class="list-group-item list-group-item-light">
-                  <div class="p-1"><i>Updated at </i></div>
-                  <div class="p-1">
-                    <button
-                      class="btn btn-link"
-                      onclick={() =>
-                        openMapInNewWindow(full_doc.meta.location.updated)}
-                      >Map</button
-                    >
-                  </div>
-                </li>
-              {/if}
-
-              <!-- {#if full_doc.meta?.location && full_doc.meta?.location?.created?.latitude}
-          {/if}
-          {#if full_doc.meta?.location && full_doc.meta?.location?.updated.latitude}
-          {/if} -->
-
-              <li class="list-group-item list-group-item-light">
-                <div class="p-1"><i>Tags</i></div>
-                <div class="p-1">
-                  <TagsEditor
-                    bbdb_action={edit_update_meta_action_handler}
-                    link={full_doc.meta.link}
-                    tags={full_doc.meta.tags}
-                  />
-                </div>
-              </li>
-              {#if full_doc.meta.updated_on}
-                <li class="list-group-item list-group-item-light">
-                  <div class="p-2"><i>Updated</i></div>
-                  <div class="p-2">
-                    {format_timestamp(full_doc.meta.updated_on)}
-                  </div>
-                </li>
-              {/if}
-              <li class="list-group-item list-group-item-light">
-                <div class="p-1"><i>Link</i></div>
-                <LinkEditor
-                  bbdb_action={edit_update_meta_action_handler}
-                  bind:link={full_doc.meta.link}
-                />
-              </li>
-              <li class="list-group-item list-group-item-light">
-                <div class="p-1"><i>ID</i></div>
-                <div class="p-1">{full_doc._id}</div>
-              </li>
-            </div>
-          </div>
-        </details>
-      </div>
-    </div>
+  
     
     <div class="row">
       <div class="col-lg-12">
